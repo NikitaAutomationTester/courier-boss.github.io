@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Сначала загружаем все HTML страницы
   await loadPages();
 
+  // Загружаем сохранённые данные пользователя
+  await loadAllUserData();
+
   // Получаем кнопки меню
   const createReportBtn = document.getElementById("createReport");
   const myReportsBtn = document.getElementById("myReports");
@@ -18,6 +21,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     myRoute: !!myRouteBtn,
     financeBtn: !!financeBtn,
   });
+
+  // Показываем информацию о пользователе (для отладки)
+  const user = getCurrentTelegramUser();
+  if (user) {
+    console.log(
+      `Пользователь: ${user.first_name} ${user.last_name || ""} (ID: ${user.id})`,
+    );
+  } else {
+    console.log("Пользователь не определён (используется тестовый режим)");
+  }
 
   // Настраиваем главную кнопку Telegram
   tg.MainButton.setText("Закрыть");

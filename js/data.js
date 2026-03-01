@@ -241,7 +241,7 @@ const medicalCentersDB = {
 
 // ========== ДАННЫЕ ПО ФИНАНСАМ ==========
 const financeDB = {
-  // Для курьера с ID = 1
+  // Для курьера с ID = 1 (заглушка, будет заменяться при загрузке)
   1: {
     currentDebt: 0,
     transactions: [],
@@ -250,39 +250,121 @@ const financeDB = {
 
 // ========== ХРАНИЛИЩЕ ДЕТАЛЕЙ ОТЧЁТОВ ==========
 const reportDetailsDB = {
-  // Для курьера с ID = 1
+  // Для курьера с ID = 1 (заглушка, будет заменяться при загрузке)
   1: [],
 };
 
-// ========== ТЕКУЩИЙ КУРЬЕР ==========
+// ========== ТЕКУЩИЙ КУРЬЕР (ЗАГЛУШКА) ==========
 const CURRENT_COURIER_ID = 1;
+
+// ========== ФУНКЦИИ ДЛЯ РАБОТЫ С ДАННЫМИ ==========
+
+// Сохранить финансы текущего пользователя
+async function saveFinanceData() {
+  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  const key = `finance_${userId}`;
+  const finance = getCurrentFinance();
+  await saveToCloud(key, finance);
+}
+
+// Сохранить отчёт
+async function saveReport(reportDate, reportData) {
+  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  const key = `report_${userId}_${reportDate}`;
+  await saveToCloud(key, reportData);
+}
+
+// Загрузить все отчёты пользователя
+async function loadAllReports() {
+  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  const reports = [];
+
+  return new Promise((resolve) => {
+    callCloudStorage("getKeys", {}, async (error, keys) => {
+      if (error || !keys) {
+        console.log("Не удалось получить список ключей");
+        resolve([]);
+        return;
+      }
+
+      // Фильтруем ключи, относящиеся к отчётам этого пользователя
+      const reportKeys = keys.filter((key) =>
+        key.startsWith(`report_${userId}_`),
+      );
+
+      // Загружаем каждый отчёт
+      for (const key of reportKeys) {
+        const data = await loadFromCloud(key);
+        if (data) {
+          reports.push(data);
+        }
+      }
+
+      // Сортируем по дате (от новых к старым)
+      reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // Сохраняем в reportDetailsDB
+      reportDetailsDB[userId] = reports;
+
+      console.log(`Загружено ${reports.length} отчётов`);
+      resolve(reports);
+    });
+  });
+}
+
+// Загрузить все данные пользователя при старте
+async function loadAllUserData() {
+  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+
+  // Загружаем финансы
+  const financeKey = `finance_${userId}`;
+  const financeData = await loadFromCloud(financeKey);
+  if (financeData) {
+    financeDB[userId] = financeData;
+    console.log("Финансовые данные загружены");
+  } else {
+    // Если данных нет, создаём пустые
+    if (!financeDB[userId]) {
+      financeDB[userId] = {
+        currentDebt: 0,
+        transactions: [],
+      };
+    }
+  }
+
+  // Загружаем отчёты
+  await loadAllReports();
+
+  // Обновляем интерфейс, если нужно
+  if (typeof loadFinanceData === "function") loadFinanceData();
+}
+
+// Получить текущего пользователя Telegram
+function getCurrentTelegramUser() {
+  return tg.initDataUnsafe?.user;
+}
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 
-// Функция для получения маршрута текущего курьера
 function getCurrentCourierRoute() {
   const courier = couriersDB[CURRENT_COURIER_ID];
   if (!courier) {
     console.error("Курьер не найден");
     return [];
   }
-
   const route = courier.routeOrder
-    .map((centerId) => {
-      return medicalCentersDB[centerId];
-    })
+    .map((centerId) => medicalCentersDB[centerId])
     .filter((center) => center);
-
   return route;
 }
 
-// Функция для получения финансов текущего курьера
 function getCurrentFinance() {
-  if (!financeDB[CURRENT_COURIER_ID]) {
-    financeDB[CURRENT_COURIER_ID] = {
+  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  if (!financeDB[userId]) {
+    financeDB[userId] = {
       currentDebt: 0,
       transactions: [],
     };
   }
-  return financeDB[CURRENT_COURIER_ID];
+  return financeDB[userId];
 }

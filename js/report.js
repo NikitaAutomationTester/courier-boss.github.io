@@ -149,7 +149,7 @@ function updateSubmitButtonState() {
   }
 }
 
-function submitReport() {
+async function submitReport() {
   if (!reportDateInput || !reportDateInput.value) {
     reportDateInput.classList.remove("valid");
     reportDateInput.classList.add("error");
@@ -208,27 +208,36 @@ function submitReport() {
     description: `Отчёт`,
   });
 
-  // Сохраняем детали отчёта
-  if (!reportDetailsDB[CURRENT_COURIER_ID]) {
-    reportDetailsDB[CURRENT_COURIER_ID] = [];
-  }
+  // Сохраняем финансы в CloudStorage
+  await saveFinanceData();
 
-  reportDetailsDB[CURRENT_COURIER_ID].unshift({
-    date: dateValue,
-    formattedDate: formattedDate,
-    points: selectedPointsData,
-    total: reportTotal,
-  });
-
+  // Создаём объект отчёта
   const reportData = {
-    courierId: CURRENT_COURIER_ID,
     date: dateValue,
     formattedDate: formattedDate,
     points: selectedPointsData,
     total: reportTotal,
   };
 
-  console.log("Отправка отчёта:", reportData);
+  // Сохраняем отчёт в CloudStorage
+  await saveReport(dateValue, reportData);
+
+  // Добавляем в локальное хранилище
+  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  if (!reportDetailsDB[userId]) {
+    reportDetailsDB[userId] = [];
+  }
+  reportDetailsDB[userId].unshift(reportData);
+
+  const fullReportData = {
+    courierId: userId,
+    date: dateValue,
+    formattedDate: formattedDate,
+    points: selectedPointsData,
+    total: reportTotal,
+  };
+
+  console.log("Отправка отчёта:", fullReportData);
 
   tg.showPopup({
     title: "Отчёт отправлен",
