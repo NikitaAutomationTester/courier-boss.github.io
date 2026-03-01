@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Курьерская служба</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container" id="mainContainer">
+      <header>
+        <div class="logo-container">
+          <h1>BBEx</h1>
+        </div>
+        <p class="subtitle">Курьерская служба</p>
+      </header>
+
+      <main>
+        <h2>Меню</h2>
+        <div class="menu">
+          <button class="menu-button" id="createReport">Создать отчёт</button>
+          <button class="menu-button" id="myReports">Мои отчёты</button>
+          <button class="menu-button" id="myRoute">Мой маршрут</button>
+          <button class="menu-button" id="financeBtn">Финансы</button>
+        </div>
+      </main>
+
+      <footer id="mainFooter">
+        <p>© 2026 BBEx. Все права защищены</p>
+      </footer>
+
+      <!-- Контейнер для загрузки страниц (БЕЗ закрывающего тега) -->
+      <div id="pageContainer"></div>
+
+      <!-- Закрываем mainContainer -->
+    </div>
+
+    <!-- Подключаем JS модули -->
+    <script src="js/telegram.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/route.js"></script>
+    <script src="js/report.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/reportsList.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

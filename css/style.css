@@ -1,0 +1,786 @@
+/* Базовые сбросы */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    color: var(--tg-theme-text-color, #000000);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    width: 100%;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+header h1 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+header p {
+    font-size: 18px;
+    color: var(--tg-theme-hint-color, #666666);
+}
+
+main h2 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: var(--tg-theme-text-color, #000000);
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.menu-button {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    width: 100%;
+    text-align: left;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.menu-button:hover {
+    opacity: 0.9;
+}
+
+footer {
+    margin-top: 25px;
+    text-align: center;
+    padding: 15px 0;
+    color: #999;
+    font-size: 13px;
+    border-top: 1px solid #eee;
+}
+
+/* ===== СТРАНИЦА МАРШРУТА ===== */
+.route-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: var(--tg-theme-link-color, #2481cc);
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.back-button:hover {
+    background-color: var(--tg-theme-hint-color, #f0f0f0);
+}
+
+/* ===== СТРАНИЦА СОЗДАНИЯ ОТЧЁТА ===== */
+.report-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+/* Поле выбора даты */
+.date-selector {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.date-input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-family: inherit;
+    border: 2px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 12px;
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    color: var(--tg-theme-text-color, #000000);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+/* Синяя рамка когда поле в фокусе */
+.date-input:focus {
+    border-color: var(--tg-theme-button-color, #40a7e3);
+}
+
+/* Красная рамка когда есть класс error */
+.date-input.error {
+    border-color: #ff3b30;
+}
+
+/* Синяя рамка когда есть класс valid */
+.date-input.valid {
+    border-color: var(--tg-theme-button-color, #40a7e3);
+}
+
+.date-input::placeholder {
+    color: var(--tg-theme-hint-color, #999);
+    opacity: 1;
+}
+
+.date-label {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--tg-theme-hint-color, #999);
+    pointer-events: none;
+    transition: all 0.2s;
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    padding: 0 4px;
+}
+
+.date-input:focus + .date-label,
+.date-input:not(:placeholder-shown) + .date-label {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--tg-theme-button-color, #40a7e3);
+}
+
+.report-total {
+    margin-top: 20px;
+    padding: 16px;
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    border-radius: 12px;
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000);
+}
+
+
+.submit-report-btn {
+    width: 100%;
+    padding: 18px;
+    margin-top: 15px;
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.submit-report-btn:hover {
+    opacity: 0.9;
+}
+
+.submit-report-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== СТРАНИЦА ФИНАНСОВ ===== */
+.finance-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.finance-header h2 {
+    font-size: 20px;
+    color: var(--tg-theme-text-color, #000);
+}
+
+.debt-container {
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.debt-label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #666);
+    margin-bottom: 4px;
+}
+
+.debt-amount {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000);
+}
+
+/* Кнопка действия в финансах */
+.action-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: var(--tg-theme-button-text-color, #ffffff);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.action-btn:hover {
+    opacity: 0.9;
+}
+
+/* Страница истории операций */
+.history-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.history-header h2 {
+    font-size: 20px;
+    color: var(--tg-theme-text-color, #000);
+}
+
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 10px;
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.transaction-desc {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000);
+}
+
+.transaction-date {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #999);
+}
+
+.transaction-amount {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.transaction-amount.positive {
+    color: #4caf50;
+}
+
+.transaction-amount.negative {
+    color: #ff3b30;
+}
+
+/* ===== СТРАНИЦА СПИСКА ОТЧЁТОВ ===== */
+.reports-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.reports-header h2 {
+    font-size: 20px;
+    color: var(--tg-theme-text-color, #000);
+}
+
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.report-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.report-item:hover {
+    opacity: 0.9;
+    border-color: var(--tg-theme-button-color, #40a7e3);
+}
+
+.report-item:active {
+    transform: scale(0.99);
+}
+
+.report-icon {
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+.report-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.report-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000);
+}
+
+.report-date {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color, #999);
+}
+
+.report-amount {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-button-color, #40a7e3);
+}
+
+/* ===== СТРАНИЦА ДЕТАЛЬНОГО ОТЧЁТА ===== */
+.report-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.report-detail-header h2 {
+    font-size: 18px;
+    color: var(--tg-theme-text-color, #000);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Карточка точки в детальном отчёте */
+.report-point-card {
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 10px;
+    padding: 10px 12px;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.report-point-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.report-point-check {
+    color: #4caf50;
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+.report-point-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.report-point-salary {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4caf50;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+
+.report-point-details {
+    margin-left: 26px;
+    font-size: 13px;
+    color: var(--tg-theme-hint-color, #666);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* ===== КАРТОЧКИ ДЛЯ МАРШРУТА И ОТЧЁТА ===== */
+.medical-centers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.center-card {
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 10px;
+    padding: 8px 10px;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Карточка для отчёта (с чекбоксом) */
+.report-card {
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 10px;
+    padding: 8px 10px;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* Эффект нажатия на карточку */
+.report-card:active {
+    transform: scale(0.99);
+    background-color: var(--tg-theme-secondary-bg-color, #e0e0e0);
+}
+
+/* Выделение выбранной карточки зелёным */
+.report-card.selected {
+    border-color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.1);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+}
+
+/* Чередование фона для чётных карточек */
+.center-card:nth-child(even),
+.report-card:nth-child(even) {
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+}
+
+.report-card:nth-child(even).selected {
+    background-color: rgba(76, 175, 80, 0.15);
+}
+
+/* Верхняя строка карточки */
+.center-header, .report-header-card {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    pointer-events: none;
+}
+
+.checkbox-wrapper {
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--tg-theme-button-color, #40a7e3);
+    pointer-events: none;
+}
+
+.order-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 8px;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+.name-time-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    min-width: 0;
+    pointer-events: none;
+}
+
+.center-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 8px;
+    flex: 1;
+    min-width: 0;
+    pointer-events: none;
+}
+
+.center-time {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tg-theme-button-color, #40a7e3);
+    background-color: rgba(64, 167, 227, 0.1);
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+/* Зарплата в карточке */
+.salary-badge {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.1);
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    margin-left: 8px;
+    pointer-events: none;
+}
+
+/* Детали */
+.center-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 32px;
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    color: var(--tg-theme-text-color, #333);
+    line-height: 1.3;
+    pointer-events: none;
+}
+
+.detail-icon {
+    font-size: 13px;
+    min-width: 18px;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.detail-text {
+    flex: 1;
+    word-break: break-word;
+    color: var(--tg-theme-text-color, #333);
+    pointer-events: none;
+}
+
+/* Строка с графиком и лабораторией (в одну строку) */
+.compact-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    pointer-events: none;
+}
+
+.compact-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Разделитель */
+.separator {
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 12px;
+    pointer-events: none;
+}
+
+/* Адаптация под тёмную тему Telegram */
+@media (prefers-color-scheme: dark) {
+    .center-card:nth-child(even),
+    .report-card:nth-child(even) {
+        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+    }
+    
+    .report-card.selected {
+        background-color: rgba(76, 175, 80, 0.2);
+        border-color: #81c784;
+    }
+    
+    .report-card:nth-child(even).selected {
+        background-color: rgba(76, 175, 80, 0.25);
+    }
+    
+    .salary-badge {
+        color: #81c784;
+        background-color: rgba(129, 199, 132, 0.15);
+    }
+    
+    .report-card:active {
+        background-color: #3a3a3a;
+    }
+    
+    .date-input {
+        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+        border-color: #444;
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .date-input:focus {
+        border-color: var(--tg-theme-button-color, #40a7e3);
+    }
+    
+    .date-input.error {
+        border-color: #ff453a;
+    }
+    
+    .date-input.valid {
+        border-color: var(--tg-theme-button-color, #40a7e3);
+    }
+    
+    .date-label {
+        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+    }
+    
+    .finance-header h2 {
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .debt-container {
+        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+        border-color: #444;
+    }
+    
+    .debt-amount {
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .action-btn {
+        background-color: var(--tg-theme-button-color, #40a7e3);
+    }
+    
+    .history-header h2 {
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .transaction-item {
+        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+        border-color: #444;
+    }
+    
+    .transaction-desc {
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .reports-header h2 {
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .report-item {
+        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+        border-color: #444;
+    }
+    
+    .report-title {
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .report-detail-header h2 {
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .report-point-card {
+        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+        border-color: #444;
+    }
+    
+    .report-point-name {
+        color: var(--tg-theme-text-color, #fff);
+    }
+}
+
+/* Контейнер для загружаемых страниц */
+.page-content {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* Общие стили для суммы в отчётах */
+.total-sum {
+    color: var(--tg-theme-button-color, #40a7e3);
+    font-size: 22px;
+    font-weight: 600;
+}

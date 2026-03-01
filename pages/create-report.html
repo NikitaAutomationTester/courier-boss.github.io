@@ -1,0 +1,28 @@
+<div id="reportPage" class="page-content" style="display: none">
+  <div class="report-header">
+    <button class="back-button" id="backFromReport">← Назад</button>
+    <h2>Создать отчёт</h2>
+  </div>
+
+  <!-- Поле выбора даты -->
+  <div class="date-selector">
+    <input type="date" id="reportDate" class="date-input" placeholder=" " />
+    <label for="reportDate" class="date-label">Выберите дату</label>
+  </div>
+
+  <!-- Контейнер для списка медцентров с чекбоксами -->
+  <div id="reportCentersList" class="medical-centers-list">
+    <!-- Сюда будут добавляться элементы через JavaScript -->
+  </div>
+
+  <!-- Блок с итоговой суммой -->
+  <div class="report-total">
+    <div class="total-row">
+      <span>Итого зарплата за день:</span>
+      <span id="totalSalary" class="total-sum">0₽</span>
+    </div>
+  </div>
+
+  <!-- Кнопка отправки отчёта -->
+  <button class="submit-report-btn" id="submitReport">ОТПРАВИТЬ ОТЧЁТ</button>
+</div>
