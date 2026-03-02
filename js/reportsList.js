@@ -1,25 +1,37 @@
 // ========== ФУНКЦИИ ДЛЯ МОИХ ОТЧЁТОВ ==========
 
-// Хранилище отправленных отчётов
+// Хранилище отправленных отчётов (будет обновляться при загрузке)
 let sentReports = [];
 
 function loadReportsListData() {
-  // Загружаем детали отчётов из хранилища
-  if (reportDetailsDB[CURRENT_COURIER_ID]) {
-    sentReports = reportDetailsDB[CURRENT_COURIER_ID];
+  const userId = getUserId(); // Получаем реальный ID пользователя
+  console.log(
+    "🔄 loadReportsListData: Загрузка отчётов для пользователя:",
+    userId,
+  );
+
+  // Берём отчёты из памяти для этого пользователя
+  if (reportDetailsDB[userId]) {
+    sentReports = reportDetailsDB[userId];
+    console.log("✅ Загружено отчётов из памяти:", sentReports.length);
   } else {
     sentReports = [];
+    console.log("⚠️ Отчёты не найдены в памяти для пользователя", userId);
   }
-  console.log("Загружено отчётов:", sentReports.length);
+
   renderReportsList();
 }
 
 function renderReportsList() {
-  if (!reportsList) return;
+  if (!reportsList) {
+    console.log("❌ reportsList не найден в DOM");
+    return;
+  }
 
   if (sentReports.length === 0) {
     reportsList.innerHTML =
       '<div class="report-item" style="justify-content: center;">Нет отправленных отчётов</div>';
+    console.log("📭 Список отчётов пуст");
     return;
   }
 
@@ -29,6 +41,8 @@ function renderReportsList() {
   const sortedReports = [...sentReports].sort(
     (a, b) => new Date(b.date) - new Date(a.date),
   );
+
+  console.log(`📊 Рендерим ${sortedReports.length} отчётов`);
 
   sortedReports.forEach((report) => {
     const item = document.createElement("div");
@@ -45,17 +59,46 @@ function renderReportsList() {
       </div>
     `;
 
-    // Добавляем обработчик клика
+    // Добавляем обработчик клика для открытия детального отчёта
     item.addEventListener("click", function () {
       showReportDetail(report);
     });
 
     reportsList.appendChild(item);
   });
+
+  console.log("✅ Список отчётов отрендерен");
+}
+
+function showReportsListPage() {
+  console.log("📱 Открываем страницу списка отчётов");
+
+  // Скрываем все другие страницы
+  if (mainMenu) mainMenu.style.display = "none";
+  if (routePage) routePage.style.display = "none";
+  if (reportPage) reportPage.style.display = "none";
+  if (financePage) financePage.style.display = "none";
+  if (historyPage) historyPage.style.display = "none";
+  if (reportDetailPage) reportDetailPage.style.display = "none";
+
+  // Скрываем футер
+  const footer = document.getElementById("mainFooter");
+  if (footer) footer.style.display = "none";
+
+  // ПОКАЗЫВАЕМ страницу списка отчётов
+  if (reportsListPage) {
+    reportsListPage.style.display = "block";
+    console.log("✅ Страница reportsListPage открыта");
+  } else {
+    console.log("❌ reportsListPage не найден в DOM");
+  }
+
+  // Загружаем данные для правильного пользователя
+  loadReportsListData();
 }
 
 function showReportDetail(report) {
-  console.log("Открываем детальный отчёт:", report);
+  console.log("📄 Открываем детальный отчёт:", report);
 
   if (reportsListPage) reportsListPage.style.display = "none";
   if (reportDetailPage) reportDetailPage.style.display = "block";
@@ -73,9 +116,18 @@ function showReportDetail(report) {
 }
 
 function renderReportDetailPoints(points, totalAmount) {
-  if (!reportDetailPoints) return;
+  if (!reportDetailPoints) {
+    console.log("❌ reportDetailPoints не найден");
+    return;
+  }
 
   reportDetailPoints.innerHTML = "";
+
+  if (!points || points.length === 0) {
+    reportDetailPoints.innerHTML =
+      '<div class="report-point-card">Нет данных о точках</div>';
+    return;
+  }
 
   points.forEach((point) => {
     const card = document.createElement("div");
