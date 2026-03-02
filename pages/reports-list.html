@@ -1,7 +1,32 @@
-<div id="reportsListPage" class="page-content" style="display: none">
+<div id="reportsListPage" style="display: none">
   <div class="reports-header">
     <button class="back-button" id="backFromReportsList">← Назад</button>
     <h2>Мои отчёты</h2>
+  </div>
+
+  <!-- Компактный блок фильтрации -->
+  <div class="reports-filter">
+    <div class="filter-tabs">
+      <button class="filter-tab" data-filter="week">Неделя</button>
+      <button class="filter-tab" data-filter="month">Месяц</button>
+      <button class="filter-tab" data-filter="all">Все</button>
+      <button class="filter-tab" id="showPeriodBtn">Период</button>
+    </div>
+
+    <!-- Блок выбора периода (скрыт по умолчанию) -->
+    <div class="period-panel" id="periodPanel" style="display: none">
+      <div class="period-inputs">
+        <div class="period-field">
+          <span class="period-label">С</span>
+          <input type="date" id="dateFrom" class="date-input-small" />
+        </div>
+        <div class="period-field">
+          <span class="period-label">По</span>
+          <input type="date" id="dateTo" class="date-input-small" />
+        </div>
+      </div>
+      <button class="apply-btn" id="applyPeriod">Применить</button>
+    </div>
   </div>
 
   <!-- Контейнер для списка отчётов -->

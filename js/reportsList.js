@@ -1,50 +1,182 @@
 // ========== ФУНКЦИИ ДЛЯ МОИХ ОТЧЁТОВ ==========
 
-// Хранилище отправленных отчётов (будет обновляться при загрузке)
+// Хранилище отправленных отчётов
 let sentReports = [];
+let filteredReports = [];
 
-function loadReportsListData() {
-  const userId = getUserId(); // Получаем реальный ID пользователя
-  console.log("🔄 loadReportsListData: Загрузка отчётов для пользователя:", userId);
-  
-  // Берём отчёты из памяти для этого пользователя
-  if (reportDetailsDB[userId]) {
-    sentReports = reportDetailsDB[userId];
-    console.log("✅ Загружено отчётов из памяти:", sentReports.length);
-  } else {
-    sentReports = [];
-    console.log("⚠️ Отчёты не найдены в памяти для пользователя", userId);
+// Переменные для фильтрации
+let currentFilter = "all";
+let dateFrom = null;
+let dateTo = null;
+
+function initFilters() {
+  const filterTabs = document.querySelectorAll(".filter-tab[data-filter]");
+  const showPeriodBtn = document.getElementById("showPeriodBtn");
+  const periodPanel = document.getElementById("periodPanel");
+  const applyBtn = document.getElementById("applyPeriod");
+  const dateFromInput = document.getElementById("dateFrom");
+  const dateToInput = document.getElementById("dateTo");
+
+  if (!filterTabs.length) return;
+
+  // Обработчики для табов
+  filterTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      filterTabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+
+      currentFilter = tab.dataset.filter;
+      dateFrom = null;
+      dateTo = null;
+
+      if (periodPanel) periodPanel.style.display = "none";
+      if (dateFromInput) dateFromInput.value = "";
+      if (dateToInput) dateToInput.value = "";
+
+      applyFilter();
+    });
+  });
+
+  // Показать/скрыть панель периода
+  if (showPeriodBtn) {
+    showPeriodBtn.addEventListener("click", () => {
+      const isVisible = periodPanel.style.display === "block";
+      periodPanel.style.display = isVisible ? "none" : "block";
+
+      if (!isVisible) {
+        // Убираем активный класс с других табов
+        filterTabs.forEach((t) => t.classList.remove("active"));
+        showPeriodBtn.classList.add("active");
+        currentFilter = "period";
+      }
+    });
   }
-  
-  renderReportsList();
+
+  // Применить период
+  if (applyBtn) {
+    applyBtn.addEventListener("click", () => {
+      if (dateFromInput.value && dateToInput.value) {
+        dateFrom = new Date(dateFromInput.value);
+        dateTo = new Date(dateToInput.value);
+        dateTo.setHours(23, 59, 59); // Включаем конечную дату полностью
+
+        filterTabs.forEach((t) => t.classList.remove("active"));
+        showPeriodBtn.classList.add("active");
+        currentFilter = "period";
+
+        applyFilter();
+      } else {
+        alert("Выберите начальную и конечную дату");
+      }
+    });
+  }
 }
 
-function renderReportsList() {
-  if (!reportsList) {
-    console.log("❌ reportsList не найден в DOM");
+function applyFilter() {
+  if (!sentReports || sentReports.length === 0) {
+    renderReportsList([]);
     return;
   }
 
-  if (sentReports.length === 0) {
-    reportsList.innerHTML = '<div class="report-item" style="justify-content: center;">Нет отправленных отчётов</div>';
-    console.log("📭 Список отчётов пуст");
+  let filtered = [...sentReports];
+  const today = new Date();
+
+  switch (currentFilter) {
+    case "week":
+      const weekAgo = new Date();
+      weekAgo.setDate(today.getDate() - 7);
+      filtered = sentReports.filter(
+        (report) => new Date(report.date) >= weekAgo,
+      );
+      break;
+
+    case "month":
+      const monthAgo = new Date();
+      monthAgo.setMonth(today.getMonth() - 1);
+      filtered = sentReports.filter(
+        (report) => new Date(report.date) >= monthAgo,
+      );
+      break;
+
+    case "period":
+      if (dateFrom && dateTo) {
+        filtered = sentReports.filter((report) => {
+          const reportDate = new Date(report.date);
+          return reportDate >= dateFrom && reportDate <= dateTo;
+        });
+      }
+      break;
+
+    case "all":
+    default:
+      // все отчёты
+      break;
+  }
+
+  renderReportsList(filtered);
+}
+
+function loadReportsListData() {
+  const userId = getUserId();
+  console.log("🔄 Загрузка отчётов для пользователя:", userId);
+
+  if (reportDetailsDB[userId]) {
+    sentReports = reportDetailsDB[userId];
+    console.log("✅ Загружено отчётов:", sentReports.length);
+  } else {
+    sentReports = [];
+  }
+
+  // Сбрасываем фильтры
+  currentFilter = "all";
+  dateFrom = null;
+  dateTo = null;
+
+  // Обновляем UI фильтров
+  const filterTabs = document.querySelectorAll(".filter-tab[data-filter]");
+  filterTabs.forEach((tab) => {
+    if (tab.dataset.filter === "all") {
+      tab.classList.add("active");
+    } else {
+      tab.classList.remove("active");
+    }
+  });
+
+  const showPeriodBtn = document.getElementById("showPeriodBtn");
+  if (showPeriodBtn) showPeriodBtn.classList.remove("active");
+
+  const periodPanel = document.getElementById("periodPanel");
+  if (periodPanel) periodPanel.style.display = "none";
+
+  const dateFromInput = document.getElementById("dateFrom");
+  const dateToInput = document.getElementById("dateTo");
+  if (dateFromInput) dateFromInput.value = "";
+  if (dateToInput) dateToInput.value = "";
+
+  applyFilter();
+}
+
+function renderReportsList(reports) {
+  if (!reportsList) return;
+
+  if (!reports || reports.length === 0) {
+    reportsList.innerHTML =
+      '<div class="empty-list-message">Нет отчётов за выбранный период</div>';
     return;
   }
 
-  reportsList.innerHTML = '';
+  reportsList.innerHTML = "";
 
-  // Сортируем отчёты по дате (от новых к старым)
-  const sortedReports = [...sentReports].sort((a, b) => 
-    new Date(b.date) - new Date(a.date)
+  // Сортируем по дате (от новых к старым)
+  const sortedReports = [...reports].sort(
+    (a, b) => new Date(b.date) - new Date(a.date),
   );
 
-  console.log(`📊 Рендерим ${sortedReports.length} отчётов`);
-
   sortedReports.forEach((report) => {
-    const item = document.createElement('div');
-    item.className = 'report-item';
-    
-    const [year, month, day] = report.date.split('-');
+    const item = document.createElement("div");
+    item.className = "report-item";
+
+    const [year, month, day] = report.date.split("-");
     const formattedDate = `${day}.${month}.${year}`;
 
     item.innerHTML = `
@@ -55,15 +187,9 @@ function renderReportsList() {
       </div>
     `;
 
-    // Добавляем обработчик клика для открытия детального отчёта
-    item.addEventListener('click', function() {
-      showReportDetail(report);
-    });
-
+    item.addEventListener("click", () => showReportDetail(report));
     reportsList.appendChild(item);
   });
-  
-  console.log("✅ Список отчётов отрендерен");
 }
 
 function showReportsListPage() {
@@ -76,30 +202,27 @@ function showReportsListPage() {
   if (financePage) financePage.style.display = "none";
   if (historyPage) historyPage.style.display = "none";
   if (reportDetailPage) reportDetailPage.style.display = "none";
-  
-  // Скрываем футер
+
   const footer = document.getElementById("mainFooter");
   if (footer) footer.style.display = "none";
-  
-  // ПОКАЗЫВАЕМ страницу списка отчётов
+
   if (reportsListPage) {
     reportsListPage.style.display = "block";
-    console.log("✅ Страница reportsListPage открыта");
-  } else {
-    console.log("❌ reportsListPage не найден в DOM");
+
+    // Инициализируем фильтры при первом открытии
+    if (!window.filtersInitialized) {
+      initFilters();
+      window.filtersInitialized = true;
+    }
   }
 
-  // Проверяем, загружены ли данные
-  if (typeof dataLoaded !== 'undefined' && dataLoaded) {
-    // Данные уже загружены — показываем сразу
-    console.log("📊 Данные уже загружены, показываем отчёты");
+  if (typeof dataLoaded !== "undefined" && dataLoaded) {
     loadReportsListData();
   } else {
-    // Данные ещё грузятся — показываем заглушку
     if (reportsList) {
-      reportsList.innerHTML = '<div class="report-item" style="justify-content: center;">⏳ Загрузка отчётов...</div>';
+      reportsList.innerHTML =
+        '<div class="empty-list-message">⏳ Загрузка отчётов...</div>';
     }
-    console.log("⏳ Данные ещё загружаются, показываем заглушку");
   }
 }
 
@@ -109,34 +232,30 @@ function showReportDetail(report) {
   if (reportsListPage) reportsListPage.style.display = "none";
   if (reportDetailPage) reportDetailPage.style.display = "block";
 
-  // Форматируем дату для заголовка
-  const [year, month, day] = report.date.split('-');
+  const [year, month, day] = report.date.split("-");
   const formattedDate = `${day}.${month}.${year}`;
-  
+
   if (reportDetailTitle) {
     reportDetailTitle.textContent = `Отчёт за ${formattedDate}`;
   }
 
-  // Отображаем реальные точки из отчёта
   renderReportDetailPoints(report.points, report.total);
 }
 
 function renderReportDetailPoints(points, totalAmount) {
-  if (!reportDetailPoints) {
-    console.log("❌ reportDetailPoints не найден");
-    return;
-  }
+  if (!reportDetailPoints) return;
 
-  reportDetailPoints.innerHTML = '';
+  reportDetailPoints.innerHTML = "";
 
   if (!points || points.length === 0) {
-    reportDetailPoints.innerHTML = '<div class="report-point-card">Нет данных о точках</div>';
+    reportDetailPoints.innerHTML =
+      '<div class="report-point-card">Нет данных о точках</div>';
     return;
   }
 
-  points.forEach(point => {
-    const card = document.createElement('div');
-    card.className = 'report-point-card';
+  points.forEach((point) => {
+    const card = document.createElement("div");
+    card.className = "report-point-card";
 
     card.innerHTML = `
       <div class="report-point-header">
@@ -154,6 +273,6 @@ function renderReportDetailPoints(points, totalAmount) {
   });
 
   if (reportDetailTotal) {
-    reportDetailTotal.textContent = totalAmount + '₽';
+    reportDetailTotal.textContent = totalAmount + "₽";
   }
 }
