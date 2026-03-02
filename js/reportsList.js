@@ -19,16 +19,25 @@ function initFilters() {
 
   if (!filterTabs.length) return;
 
-  // Обработчики для табов
+  // Функция снятия выделения со всех табов
+  function deactivateAllTabs() {
+    filterTabs.forEach((t) => t.classList.remove("active"));
+    if (showPeriodBtn) showPeriodBtn.classList.remove("active");
+  }
+
+  // Обработчики для табов (За неделю, За месяц, Все)
   filterTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
-      filterTabs.forEach((t) => t.classList.remove("active"));
+      // Снимаем выделение со всех
+      deactivateAllTabs();
+      // Выделяем текущий таб
       tab.classList.add("active");
 
       currentFilter = tab.dataset.filter;
       dateFrom = null;
       dateTo = null;
 
+      // Скрываем панель периода и очищаем поля
       if (periodPanel) periodPanel.style.display = "none";
       if (dateFromInput) dateFromInput.value = "";
       if (dateToInput) dateToInput.value = "";
@@ -37,17 +46,29 @@ function initFilters() {
     });
   });
 
-  // Показать/скрыть панель периода
+  // Обработчик для кнопки "За период"
   if (showPeriodBtn) {
     showPeriodBtn.addEventListener("click", () => {
       const isVisible = periodPanel.style.display === "block";
+
+      // Переключаем панель
       periodPanel.style.display = isVisible ? "none" : "block";
 
       if (!isVisible) {
-        // Убираем активный класс с других табов
-        filterTabs.forEach((t) => t.classList.remove("active"));
+        // Снимаем выделение со всех табов
+        deactivateAllTabs();
+        // Выделяем кнопку "За период"
         showPeriodBtn.classList.add("active");
         currentFilter = "period";
+      } else {
+        // Если панель скрыта, снимаем выделение с "За период"
+        showPeriodBtn.classList.remove("active");
+        // Возвращаем фильтр на "Все"
+        currentFilter = "all";
+        filterTabs.forEach((t) => {
+          if (t.dataset.filter === "all") t.classList.add("active");
+        });
+        applyFilter();
       }
     });
   }
@@ -60,7 +81,9 @@ function initFilters() {
         dateTo = new Date(dateToInput.value);
         dateTo.setHours(23, 59, 59); // Включаем конечную дату полностью
 
-        filterTabs.forEach((t) => t.classList.remove("active"));
+        // Снимаем выделение со всех табов
+        deactivateAllTabs();
+        // Выделяем кнопку "За период"
         showPeriodBtn.classList.add("active");
         currentFilter = "period";
 
