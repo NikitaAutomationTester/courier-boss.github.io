@@ -469,3 +469,21 @@ function getCurrentFinance() {
   }
   return financeDB[userId];
 }
+// Функция для получения ID пользователя (улучшенная версия)
+function getUserId() {
+  // Пробуем получить из Telegram
+  try {
+    const telegramId = tg?.initDataUnsafe?.user?.id;
+    if (telegramId) {
+      console.log("✅ Получен Telegram ID:", telegramId);
+      return telegramId;
+    }
+  } catch (e) {
+    console.warn("Ошибка получения Telegram ID:", e);
+  }
+
+  // Если не получилось, пробуем получить из CloudStorage (если там был сохранён)
+  // Или используем тестовый ID
+  console.log("⚠️ Используем тестовый ID = 1");
+  return 1;
+}

@@ -1,5 +1,12 @@
 // ========== ГЛАВНЫЙ ФАЙЛ ИНИЦИАЛИЗАЦИИ ==========
 
+// Проверка авторизации
+console.log("🔍 Проверка авторизации:");
+console.log("window.Telegram:", !!window.Telegram);
+console.log("tg:", !!tg);
+console.log("tg.initData:", tg?.initData);
+console.log("tg.initDataUnsafe:", tg?.initDataUnsafe);
+с
 document.addEventListener("DOMContentLoaded", async function () {
   console.log("📱 DOM загружен");
 
