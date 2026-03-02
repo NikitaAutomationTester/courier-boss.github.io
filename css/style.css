@@ -474,51 +474,59 @@ footer {
     margin-top: 8px;
 }
 
-.period-label {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color, #999);
-    margin-bottom: 4px;
-}
-
-.date-input-small {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-    border-radius: 8px;
-    background-color: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #000);
-    font-size: 14px;
-    font-family: inherit;
-    box-sizing: border-box;
-}
-
-/* ЖЁСТКИЙ ФИКС ДЛЯ iOS */
-@supports (-webkit-touch-callout: none) {
-    .period-panel > div:first-child {
-        gap: 8px !important;
+/* Мобильная версия для периода - поля друг под другом */
+@media (max-width: 600px) {
+    .period-mobile-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+    
+    .period-field {
+        width: 100%;
+    }
+    
+    .period-label {
+        font-size: 12px;
+        color: var(--tg-theme-hint-color, #999);
+        margin-bottom: 4px;
     }
     
     .date-input-small {
-        padding: 8px 6px !important;
-        font-size: 13px !important;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        border-radius: 8px;
+        background-color: var(--tg-theme-bg-color, #fff);
+        color: var(--tg-theme-text-color, #000);
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+}
+
+/* Десктоп версия - поля рядом */
+@media (min-width: 601px) {
+    .period-mobile-stack {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+    }
+    
+    .period-field {
+        flex: 1;
+    }
+}
+
+/* iOS фикс */
+@supports (-webkit-touch-callout: none) {
+    .date-input-small {
+        font-size: 16px !important;
     }
     
     .date-input-small::-webkit-datetime-edit {
         padding: 0 !important;
     }
-    
-    .date-input-small::-webkit-datetime-edit-fields-wrapper {
-        padding: 0 !important;
-    }
-    
-    .date-input-small::-webkit-datetime-edit-text {
-        padding: 0 !important;
-    }
-}
-
-.date-input-small:focus {
-    outline: none;
-    border-color: var(--tg-theme-button-color, #40a7e3);
 }
 
 .apply-btn {

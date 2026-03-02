@@ -15,24 +15,14 @@
 
     <!-- Блок выбора периода (скрыт по умолчанию) -->
     <div class="period-panel" id="periodPanel" style="display: none">
-      <div style="display: flex; gap: 10px; width: 100%">
-        <div style="flex: 1; min-width: 0">
+      <div class="period-mobile-stack">
+        <div class="period-field">
           <div class="period-label">С</div>
-          <input
-            type="date"
-            id="dateFrom"
-            class="date-input-small"
-            style="width: 100%; box-sizing: border-box"
-          />
+          <input type="date" id="dateFrom" class="date-input-small" />
         </div>
-        <div style="flex: 1; min-width: 0">
+        <div class="period-field">
           <div class="period-label">По</div>
-          <input
-            type="date"
-            id="dateTo"
-            class="date-input-small"
-            style="width: 100%; box-sizing: border-box"
-          />
+          <input type="date" id="dateTo" class="date-input-small" />
         </div>
       </div>
       <button class="apply-btn" id="applyPeriod">Применить</button>
