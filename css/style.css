@@ -846,3 +846,25 @@ footer {
         color: var(--tg-theme-text-color, #fff);
     }
 }
+
+/* ФИКС ТОЛЬКО ДЛЯ iOS - ширина поля даты */
+@media (max-width: 600px) {
+    .date-input {
+        width: calc(100% - 0px) !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Убираем лишние внутренние отступы на iOS */
+    .date-input::-webkit-datetime-edit {
+        padding: 0;
+    }
+    
+    .date-input::-webkit-datetime-edit-fields-wrapper {
+        padding: 0;
+    }
+    
+    .date-input::-webkit-datetime-edit-text {
+        padding: 0 2px;
+    }
+}
