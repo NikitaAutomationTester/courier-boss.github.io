@@ -5,6 +5,20 @@
     box-sizing: border-box;
 }
 
+/* ПЕРЕОПРЕДЕЛЕНИЕ СТИЛЕЙ ДЛЯ КНОПОК МЕНЮ */
+.menu-button {
+  background-color: var(--tg-theme-button-color, #40a7e3) !important;
+  background: var(--tg-theme-button-color, #40a7e3) !important;
+  color: var(--tg-theme-button-text-color, #ffffff) !important;
+}
+
+/* Убедимся, что никакие другие стили не влияют */
+.menu-button:hover {
+  opacity: 0.9 !important;
+  background-color: var(--tg-theme-button-color, #40a7e3) !important;
+}
+
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--tg-theme-bg-color, #ffffff);
