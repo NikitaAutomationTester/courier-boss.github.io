@@ -264,7 +264,7 @@ footer {
     cursor: not-allowed;
 }
 
-/* ===== СТРАНИЦА ФИНАНСОВ (ОБНОВЛЕННЫЙ ДИЗАЙН) ===== */
+/* ===== СТРАНИЦА ФИНАНСОВ ===== */
 .finance-header {
     display: flex;
     align-items: center;
@@ -453,6 +453,175 @@ footer {
 .report-date {
     font-size: 13px;
     color: var(--tg-theme-hint-color, #999);
+}
+
+/* ===== ФИЛЬТРЫ ДЛЯ ОТЧЁТОВ ===== */
+.reports-filter {
+    margin-bottom: 20px;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.filter-tab {
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-tab:hover {
+    color: var(--tg-theme-text-color, #000);
+}
+
+.filter-tab.active {
+    color: var(--tg-theme-button-color, #40a7e3);
+    border-bottom-color: var(--tg-theme-button-color, #40a7e3);
+}
+
+.period-panel {
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
+}
+
+.period-inputs {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: nowrap;
+}
+
+@media (max-width: 600px) {
+    .period-inputs {
+        gap: 12px;
+    }
+}
+
+.period-field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.period-label {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #999);
+}
+
+.date-input-small {
+    width: 100%;
+    padding: 10px 8px;
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 8px;
+    background-color: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #000);
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+/* Специальные стили только для iOS */
+@supports (-webkit-touch-callout: none) {
+    .period-inputs {
+        gap: 8px;
+    }
+    
+    .date-input-small {
+        font-size: 14px;
+        padding: 10px 6px;
+        min-width: 0;
+        width: 100%;
+    }
+    
+    /* Фикс для очень маленьких экранов */
+    @media (max-width: 400px) {
+        .period-inputs {
+            gap: 6px;
+        }
+        
+        .date-input-small {
+            padding: 8px 4px;
+            font-size: 13px;
+        }
+    }
+}
+
+/* Очень старые iPhone SE и подобные */
+@media (max-width: 320px) {
+    .period-inputs {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .period-field {
+        width: 100%;
+    }
+}
+
+.date-input-small:focus {
+    outline: none;
+    border-color: var(--tg-theme-button-color, #40a7e3);
+}
+
+.apply-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.apply-btn:hover {
+    opacity: 0.9;
+}
+
+/* Сообщение о пустом списке */
+.empty-list-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 14px;
+}
+
+/* Адаптация для тёмной темы */
+@media (prefers-color-scheme: dark) {
+    .filter-tab:hover {
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .period-panel {
+        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+        border-color: #444;
+    }
+    
+    .date-input-small {
+        background-color: #1a1a1a;
+        border-color: #444;
+        color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .date-input-small:focus {
+        border-color: var(--tg-theme-button-color, #40a7e3);
+    }
 }
 
 /* ===== СТРАНИЦА ДЕТАЛЬНОГО ОТЧЁТА ===== */
@@ -868,257 +1037,5 @@ footer {
     
     .report-point-name {
         color: var(--tg-theme-text-color, #fff);
-    }
-}
-
-/* ===== ФИЛЬТРЫ ДЛЯ ОТЧЁТОВ ===== */
-.reports-filter {
-    margin-bottom: 20px;
-}
-
-.filter-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
-.filter-tab {
-    flex: 1;
-    padding: 10px 0;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-tab:hover {
-    color: var(--tg-theme-text-color, #000);
-}
-
-.filter-tab.active {
-    color: var(--tg-theme-button-color, #40a7e3);
-    border-bottom-color: var(--tg-theme-button-color, #40a7e3);
-}
-
-.period-panel {
-    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
-    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 8px;
-}
-
-.period-inputs {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.period-field {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.period-label {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color, #999);
-}
-
-.date-input-small {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-    border-radius: 8px;
-    background-color: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #000);
-    font-size: 14px;
-    font-family: inherit;
-}
-
-.date-input-small:focus {
-    outline: none;
-    border-color: var(--tg-theme-button-color, #40a7e3);
-}
-
-.apply-btn {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--tg-theme-button-color, #40a7e3);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.apply-btn:hover {
-    opacity: 0.9;
-}
-
-/* Сообщение о пустом списке */
-.empty-list-message {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 14px;
-}
-
-/* Адаптация для тёмной темы */
-@media (prefers-color-scheme: dark) {
-    .filter-tab:hover {
-        color: var(--tg-theme-text-color, #fff);
-    }
-    
-    .period-panel {
-        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
-        border-color: #444;
-    }
-    
-    .date-input-small {
-        background-color: #1a1a1a;
-        border-color: #444;
-        color: var(--tg-theme-text-color, #fff);
-    }
-    
-    .date-input-small:focus {
-        border-color: var(--tg-theme-button-color, #40a7e3);
-    }
-}
-
-/* ===== ФИЛЬТРЫ ДЛЯ ОТЧЁТОВ ===== */
-.reports-filter {
-    margin-bottom: 20px;
-}
-
-.filter-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
-.filter-tab {
-    flex: 1;
-    padding: 10px 0;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-tab:hover {
-    color: var(--tg-theme-text-color, #000);
-}
-
-.filter-tab.active {
-    color: var(--tg-theme-button-color, #40a7e3);
-    border-bottom-color: var(--tg-theme-button-color, #40a7e3);
-}
-
-.period-panel {
-    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
-    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 8px;
-}
-
-.period-inputs {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-}
-
-@media (max-width: 480px) {
-    .period-inputs {
-        gap: 12px;
-    }
-}
-
-.period-field {
-    flex: 1;
-    min-width: 120px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.period-label {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color, #999);
-}
-
-.date-input-small {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-    border-radius: 8px;
-    background-color: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #000);
-    font-size: 14px;
-    font-family: inherit;
-}
-
-.date-input-small:focus {
-    outline: none;
-    border-color: var(--tg-theme-button-color, #40a7e3);
-}
-
-.apply-btn {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--tg-theme-button-color, #40a7e3);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.apply-btn:hover {
-    opacity: 0.9;
-}
-
-/* Сообщение о пустом списке */
-.empty-list-message {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 14px;
-}
-
-/* Адаптация для тёмной темы */
-@media (prefers-color-scheme: dark) {
-    .filter-tab:hover {
-        color: var(--tg-theme-text-color, #fff);
-    }
-    
-    .period-panel {
-        background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
-        border-color: #444;
-    }
-    
-    .date-input-small {
-        background-color: #1a1a1a;
-        border-color: #444;
-        color: var(--tg-theme-text-color, #fff);
-    }
-    
-    .date-input-small:focus {
-        border-color: var(--tg-theme-button-color, #40a7e3);
     }
 }
