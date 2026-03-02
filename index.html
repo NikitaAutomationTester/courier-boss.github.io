@@ -51,6 +51,219 @@
       console.log("✅ Eruda console activated");
     </script>
 
+    <!-- ОТЛАДОЧНЫЕ КНОПКИ (вынесены ЗА ПРЕДЕЛЫ .container) -->
+    <div
+      style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 10000;
+        max-width: 200px;
+      "
+    >
+      <button
+        onclick="checkTelegramData()"
+        style="
+          background: #40a7e3;
+          color: white;
+          border: none;
+          border-radius: 20px;
+          padding: 8px 12px;
+          font-size: 14px;
+          font-weight: bold;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+          cursor: pointer;
+          opacity: 0.9;
+        "
+      >
+        🔍 Telegram Data
+      </button>
+      <button
+        onclick="checkCloudStorage()"
+        style="
+          background: #4caf50;
+          color: white;
+          border: none;
+          border-radius: 20px;
+          padding: 8px 12px;
+          font-size: 14px;
+          font-weight: bold;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+          cursor: pointer;
+          opacity: 0.9;
+        "
+      >
+        💾 CloudStorage
+      </button>
+      <button
+        onclick="clearAllData()"
+        style="
+          background: #ff3b30;
+          color: white;
+          border: none;
+          border-radius: 20px;
+          padding: 8px 12px;
+          font-size: 14px;
+          font-weight: bold;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+          cursor: pointer;
+          opacity: 0.9;
+        "
+      >
+        🗑️ Очистить
+      </button>
+    </div>
+
+    <script>
+      // Функции для отладки
+      function checkTelegramData() {
+        console.log("🔍 ===== ПРОВЕРКА TELEGRAM DATA =====");
+        console.log("window.Telegram существует:", !!window.Telegram);
+        console.log("tg существует:", !!tg);
+        console.log("tg.initData:", tg?.initData);
+        console.log("tg.initDataUnsafe:", tg?.initDataUnsafe);
+        console.log("tg.initDataUnsafe?.user:", tg?.initDataUnsafe?.user);
+        console.log(
+          "tg.initDataUnsafe?.user?.id:",
+          tg?.initDataUnsafe?.user?.id,
+        );
+        console.log(
+          "getUserId():",
+          typeof getUserId === "function" ? getUserId() : "функция не найдена",
+        );
+        console.log("🔍 ===== КОНЕЦ ПРОВЕРКИ =====");
+
+        alert(
+          "📱 Telegram Data:\n" +
+            "tg существует: " +
+            !!tg +
+            "\n" +
+            "initData: " +
+            (tg?.initData ? "✅ есть" : "❓ нет") +
+            "\n" +
+            "user: " +
+            (tg?.initDataUnsafe?.user ? "✅ есть" : "❓ нет") +
+            "\n" +
+            "user.id: " +
+            (tg?.initDataUnsafe?.user?.id || "не определён"),
+        );
+      }
+
+      function checkCloudStorage() {
+        console.log("💾 ===== ПРОВЕРКА CLOUDSTORAGE =====");
+        console.log("CloudStorage доступен:", !!tg?.CloudStorage);
+
+        if (tg?.CloudStorage) {
+          tg.CloudStorage.getKeys(function (err, keys) {
+            if (err) {
+              console.log("❌ Ошибка получения ключей:", err);
+              alert("❌ Ошибка получения ключей: " + JSON.stringify(err));
+            } else {
+              console.log("📋 Ключи в CloudStorage:", keys);
+
+              if (keys && keys.length > 0) {
+                // Покажем содержимое первого ключа
+                tg.CloudStorage.getItem(keys[0], function (err, val) {
+                  if (err) {
+                    console.log("❌ Ошибка получения значения:", err);
+                  } else {
+                    console.log("📦 Данные по ключу", keys[0], ":", val);
+                    try {
+                      const parsed = JSON.parse(val);
+                      console.log("📊 Распарсенные данные:", parsed);
+                    } catch (e) {
+                      console.log("❌ Ошибка парсинга:", e);
+                    }
+                  }
+                });
+
+                alert(
+                  "💾 CloudStorage:\n" +
+                    "Ключей: " +
+                    keys.length +
+                    "\n" +
+                    "Первый ключ: " +
+                    keys[0],
+                );
+              } else {
+                alert("💾 CloudStorage пуст");
+              }
+            }
+          });
+        } else {
+          console.log("❌ CloudStorage НЕ доступен");
+          alert("❌ CloudStorage НЕ доступен");
+        }
+        console.log("💾 ===== КОНЕЦ ПРОВЕРКИ =====");
+      }
+
+      function clearAllData() {
+        if (
+          !confirm("⚠️ Вы уверены, что хотите удалить ВСЕ сохранённые данные?")
+        ) {
+          return;
+        }
+
+        console.log("🗑️ ===== ОЧИСТКА ДАННЫХ =====");
+
+        // Очищаем память
+        if (typeof financeDB !== "undefined") {
+          Object.keys(financeDB).forEach((key) => {
+            financeDB[key] = { currentDebt: 0, transactions: [] };
+          });
+          console.log("✅ financeDB очищен");
+        }
+
+        if (typeof reportDetailsDB !== "undefined") {
+          Object.keys(reportDetailsDB).forEach((key) => {
+            reportDetailsDB[key] = [];
+          });
+          console.log("✅ reportDetailsDB очищен");
+        }
+
+        // Очищаем CloudStorage
+        if (tg?.CloudStorage) {
+          tg.CloudStorage.getKeys(function (err, keys) {
+            if (err) {
+              console.log("❌ Ошибка получения ключей:", err);
+            } else if (keys && keys.length > 0) {
+              let deleted = 0;
+              keys.forEach((key) => {
+                tg.CloudStorage.removeItem(key, function (err) {
+                  if (!err) {
+                    deleted++;
+                    console.log(`✅ Ключ ${key} удалён`);
+                  }
+                  if (deleted === keys.length) {
+                    console.log(
+                      `✅ Все ${keys.length} ключей удалены из CloudStorage`,
+                    );
+                    alert(`🗑️ Данные очищены. Удалено ${keys.length} ключей.`);
+                    // Обновим интерфейс
+                    if (typeof loadFinanceData === "function")
+                      loadFinanceData();
+                    if (typeof loadReportsListData === "function")
+                      loadReportsListData();
+                  }
+                });
+              });
+            } else {
+              console.log("📭 CloudStorage уже пуст");
+              alert("📭 CloudStorage уже пуст");
+            }
+          });
+        } else {
+          console.log("❌ CloudStorage недоступен");
+          alert("❌ CloudStorage недоступен");
+        }
+
+        console.log("🗑️ ===== КОНЕЦ ОЧИСТКИ =====");
+      }
+    </script>
+
     <!-- Подключаем JS модули в правильном порядке -->
     <script src="js/telegram.js"></script>
     <script src="js/data.js"></script>
