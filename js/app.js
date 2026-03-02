@@ -1,12 +1,15 @@
 // ========== ГЛАВНЫЙ ФАЙЛ ИНИЦИАЛИЗАЦИИ ==========
 
+// Глобальный флаг загрузки данных
+let dataLoaded = false;
+
 document.addEventListener("DOMContentLoaded", async function () {
   console.log("📱 DOM загружен");
 
   // Сначала загружаем все HTML страницы
   await loadPages();
 
-  // Получаем кнопки меню (это должно быть сразу после загрузки страниц)
+  // Получаем кнопки меню
   const createReportBtn = document.getElementById("createReport");
   const myReportsBtn = document.getElementById("myReports");
   const myRouteBtn = document.getElementById("myRoute");
@@ -19,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     financeBtn: !!financeBtn,
   });
 
-  // ========== НАЗНАЧАЕМ ОБРАБОТЧИКИ (ВНЕ ЗАВИСИМОСТИ ОТ ЗАГРУЗКИ ДАННЫХ) ==========
+  // ========== НАЗНАЧАЕМ ОБРАБОТЧИКИ ==========
 
   if (myRouteBtn) {
     myRouteBtn.addEventListener("click", showRoutePage);
@@ -102,6 +105,26 @@ document.addEventListener("DOMContentLoaded", async function () {
     reportDateInput.addEventListener("change", validateDateInput);
     reportDateInput.addEventListener("input", validateDateInput);
   }
+
+  // Загружаем данные пользователя с задержкой
+  setTimeout(async () => {
+    console.log("🔄 Начинаем загрузку данных пользователя...");
+    await loadAllUserData();
+    dataLoaded = true;
+    console.log("✅ Загрузка данных завершена");
+
+    // Если сейчас открыта страница финансов, обновим её
+    if (financePage && financePage.style.display === "block") {
+      console.log("💰 Обновляем страницу финансов после загрузки");
+      loadFinanceData();
+    }
+
+    // Если сейчас открыта страница списка отчётов, обновим её
+    if (reportsListPage && reportsListPage.style.display === "block") {
+      console.log("📊 Обновляем страницу списка отчётов после загрузки");
+      loadReportsListData();
+    }
+  }, 500);
 
   console.log("✅ Инициализация завершена");
 });

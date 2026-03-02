@@ -93,8 +93,19 @@ function showReportsListPage() {
     console.log("❌ reportsListPage не найден в DOM");
   }
 
-  // Загружаем данные для правильного пользователя
-  loadReportsListData();
+  // Проверяем, загружены ли данные
+  if (typeof dataLoaded !== "undefined" && dataLoaded) {
+    // Данные уже загружены — показываем сразу
+    console.log("📊 Данные уже загружены, показываем отчёты");
+    loadReportsListData();
+  } else {
+    // Данные ещё грузятся — показываем заглушку
+    if (reportsList) {
+      reportsList.innerHTML =
+        '<div class="report-item" style="justify-content: center;">⏳ Загрузка отчётов...</div>';
+    }
+    console.log("⏳ Данные ещё загружаются, показываем заглушку");
+  }
 }
 
 function showReportDetail(report) {

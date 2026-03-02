@@ -2,6 +2,7 @@
 
 function loadFinanceData() {
   const finance = getCurrentFinance();
+  console.log("💰 Загрузка финансовых данных:", finance);
 
   // Обновляем текущий долг
   if (currentDebtSpan) {
@@ -71,5 +72,37 @@ function renderFullTransactionsList(transactions) {
     infoItem.style.fontSize = "12px";
     infoItem.innerHTML = "Показаны последние 20 операций";
     historyTransactionsList.appendChild(infoItem);
+  }
+}
+
+function showFinancePage() {
+  console.log("💰 Открываем страницу финансов");
+
+  if (mainMenu) mainMenu.style.display = "none";
+  if (routePage) routePage.style.display = "none";
+  if (reportPage) reportPage.style.display = "none";
+  if (historyPage) historyPage.style.display = "none";
+  if (reportsListPage) reportsListPage.style.display = "none";
+  if (reportDetailPage) reportDetailPage.style.display = "none";
+
+  const footer = document.getElementById("mainFooter");
+  if (footer) footer.style.display = "none";
+
+  if (financePage) {
+    financePage.style.display = "block";
+    console.log("✅ Страница финансов открыта");
+  }
+
+  // Проверяем, загружены ли данные
+  if (typeof dataLoaded !== "undefined" && dataLoaded) {
+    // Данные уже загружены — показываем сразу
+    console.log("💰 Данные уже загружены, показываем финансы");
+    loadFinanceData();
+  } else {
+    // Данные ещё грузятся — показываем заглушку
+    if (currentDebtSpan) {
+      currentDebtSpan.textContent = "⏳ загрузка...";
+    }
+    console.log("⏳ Данные ещё загружаются, показываем заглушку");
   }
 }
