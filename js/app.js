@@ -1,12 +1,13 @@
 // ========== ГЛАВНЫЙ ФАЙЛ ИНИЦИАЛИЗАЦИИ ==========
 
 document.addEventListener("DOMContentLoaded", async function () {
-  console.log("DOM загружен");
+  console.log("📱 DOM загружен");
 
   // Сначала загружаем все HTML страницы
   await loadPages();
 
   // Загружаем сохранённые данные пользователя
+  console.log("🔄 Начинаем загрузку данных пользователя...");
   await loadAllUserData();
 
   // Получаем кнопки меню
@@ -15,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const myRouteBtn = document.getElementById("myRoute");
   const financeBtn = document.getElementById("financeBtn");
 
-  console.log("Кнопки найдены:", {
+  console.log("🔍 Кнопки найдены:", {
     createReport: !!createReportBtn,
     myReports: !!myReportsBtn,
     myRoute: !!myRouteBtn,
@@ -26,17 +27,19 @@ document.addEventListener("DOMContentLoaded", async function () {
   const user = getCurrentTelegramUser();
   if (user) {
     console.log(
-      `Пользователь: ${user.first_name} ${user.last_name || ""} (ID: ${user.id})`,
+      `👤 Пользователь: ${user.first_name} ${user.last_name || ""} (ID: ${user.id})`,
     );
   } else {
-    console.log("Пользователь не определён (используется тестовый режим)");
+    console.log("👤 Пользователь не определён (используется тестовый режим)");
   }
 
   // Настраиваем главную кнопку Telegram
-  tg.MainButton.setText("Закрыть");
-  tg.MainButton.onClick(function () {
-    tg.close();
-  });
+  if (tg) {
+    tg.MainButton.setText("Закрыть");
+    tg.MainButton.onClick(function () {
+      tg.close();
+    });
+  }
 
   // Настраиваем валидацию даты
   if (reportDateInput) {
@@ -99,4 +102,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (viewHistoryBtn) {
     viewHistoryBtn.addEventListener("click", showHistoryPage);
   }
+
+  console.log("✅ Инициализация завершена");
 });

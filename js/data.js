@@ -259,43 +259,137 @@ const CURRENT_COURIER_ID = 1;
 
 // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С ДАННЫМИ ==========
 
+// Функция для получения ID пользователя
+function getUserId() {
+  try {
+    return tg?.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  } catch (e) {
+    console.warn("Ошибка получения ID пользователя:", e);
+    return CURRENT_COURIER_ID;
+  }
+}
+
+// Сохранить данные в CloudStorage
+async function saveToCloud(key, data) {
+  const cloud = tg?.CloudStorage;
+  if (!cloud) {
+    console.warn(`⚠️ CloudStorage недоступен, данные ${key} не сохранены`);
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      const jsonData = JSON.stringify(data);
+      cloud.setItem(key, jsonData, (error) => {
+        if (error) {
+          console.error(`❌ Ошибка сохранения ${key}:`, error);
+          reject(error);
+        } else {
+          console.log(`✅ Данные ${key} сохранены в CloudStorage`);
+          resolve();
+        }
+      });
+    } catch (e) {
+      console.error("❌ Ошибка при сериализации данных:", e);
+      reject(e);
+    }
+  });
+}
+
+// Загрузить данные из CloudStorage
+async function loadFromCloud(key) {
+  const cloud = tg?.CloudStorage;
+  if (!cloud) {
+    console.warn(`⚠️ CloudStorage недоступен`);
+    return null;
+  }
+
+  return new Promise((resolve) => {
+    cloud.getItem(key, (error, value) => {
+      if (error) {
+        console.log(`⚠️ Ошибка загрузки ${key}:`, error);
+        resolve(null);
+      } else if (!value) {
+        console.log(`📭 Данные ${key} не найдены`);
+        resolve(null);
+      } else {
+        try {
+          const data = JSON.parse(value);
+          console.log(`✅ Данные ${key} загружены:`, data);
+          resolve(data);
+        } catch (e) {
+          console.error(`❌ Ошибка парсинга ${key}:`, e);
+          resolve(null);
+        }
+      }
+    });
+  });
+}
+
 // Сохранить финансы текущего пользователя
 async function saveFinanceData() {
-  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  const userId = getUserId();
   const key = `finance_${userId}`;
   const finance = getCurrentFinance();
+  console.log(
+    `💾 Сохраняем финансы для пользователя ${userId} по ключу ${key}`,
+  );
   await saveToCloud(key, finance);
 }
 
 // Сохранить отчёт
 async function saveReport(reportDate, reportData) {
-  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  const userId = getUserId();
   const key = `report_${userId}_${reportDate}`;
+  console.log(
+    `💾 Сохраняем отчёт для пользователя ${userId} по ключу: ${key}`,
+    reportData,
+  );
   await saveToCloud(key, reportData);
 }
 
 // Загрузить все отчёты пользователя
 async function loadAllReports() {
-  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  const userId = getUserId();
+  console.log(`🔄 Загрузка отчётов для пользователя ID: ${userId}`);
+
   const reports = [];
 
   return new Promise((resolve) => {
-    callCloudStorage("getKeys", {}, async (error, keys) => {
-      if (error || !keys) {
-        console.log("Не удалось получить список ключей");
+    const cloud = tg?.CloudStorage;
+    if (!cloud) {
+      console.warn("⚠️ CloudStorage недоступен");
+      resolve([]);
+      return;
+    }
+
+    cloud.getKeys(async (error, keys) => {
+      if (error) {
+        console.error("❌ Ошибка получения ключей:", error);
         resolve([]);
         return;
       }
+
+      if (!keys || keys.length === 0) {
+        console.log("📭 Нет сохранённых ключей");
+        resolve([]);
+        return;
+      }
+
+      console.log("🔑 Найденные ключи:", keys);
 
       // Фильтруем ключи, относящиеся к отчётам этого пользователя
       const reportKeys = keys.filter((key) =>
         key.startsWith(`report_${userId}_`),
       );
+      console.log("📋 Ключи отчётов:", reportKeys);
 
       // Загружаем каждый отчёт
       for (const key of reportKeys) {
+        console.log(`📤 Загрузка отчёта по ключу: ${key}`);
         const data = await loadFromCloud(key);
         if (data) {
+          console.log(`✅ Отчёт загружен:`, data);
           reports.push(data);
         }
       }
@@ -306,7 +400,7 @@ async function loadAllReports() {
       // Сохраняем в reportDetailsDB
       reportDetailsDB[userId] = reports;
 
-      console.log(`Загружено ${reports.length} отчётов`);
+      console.log(`📊 Загружено ${reports.length} отчётов`);
       resolve(reports);
     });
   });
@@ -314,16 +408,21 @@ async function loadAllReports() {
 
 // Загрузить все данные пользователя при старте
 async function loadAllUserData() {
-  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  console.log("🔄 ===== ЗАПУСК loadAllUserData =====");
+
+  const userId = getUserId();
+  console.log("👤 Загрузка данных для пользователя:", userId);
 
   // Загружаем финансы
   const financeKey = `finance_${userId}`;
+  console.log(`💰 Пытаемся загрузить финансы по ключу: ${financeKey}`);
+
   const financeData = await loadFromCloud(financeKey);
   if (financeData) {
+    console.log("✅ Финансы загружены:", financeData);
     financeDB[userId] = financeData;
-    console.log("Финансовые данные загружены");
   } else {
-    // Если данных нет, создаём пустые
+    console.log("⚠️ Финансы не найдены, создаём пустые");
     if (!financeDB[userId]) {
       financeDB[userId] = {
         currentDebt: 0,
@@ -333,15 +432,17 @@ async function loadAllUserData() {
   }
 
   // Загружаем отчёты
+  console.log("📁 Загружаем отчёты...");
   await loadAllReports();
 
-  // Обновляем интерфейс, если нужно
-  if (typeof loadFinanceData === "function") loadFinanceData();
+  console.log("✅ ===== loadAllUserData ЗАВЕРШЕНА =====");
+  console.log("📊 Итоговый reportDetailsDB:", JSON.stringify(reportDetailsDB));
+  console.log("💰 Итоговый financeDB:", JSON.stringify(financeDB));
 }
 
 // Получить текущего пользователя Telegram
 function getCurrentTelegramUser() {
-  return tg.initDataUnsafe?.user;
+  return tg?.initDataUnsafe?.user;
 }
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
@@ -349,7 +450,7 @@ function getCurrentTelegramUser() {
 function getCurrentCourierRoute() {
   const courier = couriersDB[CURRENT_COURIER_ID];
   if (!courier) {
-    console.error("Курьер не найден");
+    console.error("❌ Курьер не найден");
     return [];
   }
   const route = courier.routeOrder
@@ -359,7 +460,7 @@ function getCurrentCourierRoute() {
 }
 
 function getCurrentFinance() {
-  const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+  const userId = getUserId();
   if (!financeDB[userId]) {
     financeDB[userId] = {
       currentDebt: 0,
