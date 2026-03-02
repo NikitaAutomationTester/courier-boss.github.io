@@ -116,7 +116,7 @@ footer {
     border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
 }
 
-/* Поле выбора даты - ИСПРАВЛЕНО ДЛЯ МОБИЛЬНЫХ */
+/* Поле выбора даты */
 .date-selector {
     margin-bottom: 20px;
     position: relative;
@@ -264,7 +264,7 @@ footer {
     cursor: not-allowed;
 }
 
-/* ===== СТРАНИЦА ФИНАНСОВ ===== */
+/* ===== СТРАНИЦА ФИНАНСОВ (ОБНОВЛЕННЫЙ ДИЗАЙН) ===== */
 .finance-header {
     display: flex;
     align-items: center;
@@ -279,31 +279,36 @@ footer {
     color: var(--tg-theme-text-color, #000);
 }
 
+/* Блок с текущим долгом - в стиле карточек отчётов */
 .debt-container {
     background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
     border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
     border-radius: 12px;
-    padding: 16px;
+    padding: 16px 20px;
     margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .debt-label {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color, #666);
-    margin-bottom: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--tg-theme-text-color, #000);
 }
 
 .debt-amount {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 600;
-    color: var(--tg-theme-text-color, #000);
+    color: var(--tg-theme-button-color, #40a7e3);
 }
 
 /* Кнопка действия в финансах */
 .action-btn {
     width: 100%;
-    padding: 14px;
-    margin-top: 20px;
+    padding: 16px;
+    margin-top: 10px;
     background-color: var(--tg-theme-button-color, #40a7e3);
     color: var(--tg-theme-button-text-color, #ffffff);
     border: none;
@@ -317,6 +322,10 @@ footer {
 
 .action-btn:hover {
     opacity: 0.9;
+}
+
+.action-btn:active {
+    transform: scale(0.98);
 }
 
 /* Страница истории операций */
@@ -345,7 +354,7 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
+    padding: 14px 16px;
     background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
     border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
     border-radius: 10px;
@@ -358,7 +367,7 @@ footer {
 }
 
 .transaction-desc {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: var(--tg-theme-text-color, #000);
 }
@@ -369,7 +378,7 @@ footer {
 }
 
 .transaction-amount {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
 }
 
@@ -723,6 +732,7 @@ footer {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
+        padding-right: 12px;
     }
     
     /* Фикс для iOS, где date input может иметь особые отступы */
@@ -740,6 +750,16 @@ footer {
     
     .medical-centers-list {
         width: 100%;
+    }
+}
+
+/* ЖЁСТКИЙ ФИКС ДЛЯ iOS - только ширина */
+@supports (-webkit-touch-callout: none) {
+    .date-input {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        padding-right: 12px !important;
     }
 }
 
@@ -799,8 +819,12 @@ footer {
         border-color: #444;
     }
     
-    .debt-amount {
+    .debt-label {
         color: var(--tg-theme-text-color, #fff);
+    }
+    
+    .debt-amount {
+        color: var(--tg-theme-button-color, #40a7e3);
     }
     
     .action-btn {
@@ -844,27 +868,5 @@ footer {
     
     .report-point-name {
         color: var(--tg-theme-text-color, #fff);
-    }
-}
-
-/* ФИКС ТОЛЬКО ДЛЯ iOS - ширина поля даты */
-@media (max-width: 600px) {
-    .date-input {
-        width: calc(100% - 0px) !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    
-    /* Убираем лишние внутренние отступы на iOS */
-    .date-input::-webkit-datetime-edit {
-        padding: 0;
-    }
-    
-    .date-input::-webkit-datetime-edit-fields-wrapper {
-        padding: 0;
-    }
-    
-    .date-input::-webkit-datetime-edit-text {
-        padding: 0 2px;
     }
 }
