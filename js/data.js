@@ -261,25 +261,18 @@ const CURRENT_COURIER_ID = 1;
 
 // Функция для получения ID пользователя (улучшенная версия)
 function getUserId() {
-  // Пробуем получить из Telegram
   try {
     // Проверяем через initDataUnsafe (доступно в Mini Apps)
     if (tg?.initDataUnsafe?.user?.id) {
       const telegramId = tg.initDataUnsafe.user.id;
-      console.log("✅ Получен Telegram ID:", telegramId);
+      console.log("✅ getUserId() получил Telegram ID:", telegramId);
       return telegramId;
     }
-
-    // Пробуем через initData (если есть)
-    if (tg?.initData) {
-      console.log("📦 Есть initData, но нет user.id");
-    }
   } catch (e) {
-    console.warn("⚠️ Ошибка получения Telegram ID:", e);
+    console.warn("⚠️ Ошибка получения Telegram ID в getUserId():", e);
   }
 
-  // Если нет Telegram данных, используем тестовый ID
-  console.log("⚠️ Telegram данные отсутствуют, используем тестовый ID = 1");
+  console.log("⚠️ getUserId() использует тестовый ID = 1");
   return 1;
 }
 
@@ -353,6 +346,7 @@ async function saveFinanceData() {
 
 // Сохранить отчёт
 async function saveReport(reportDate, reportData) {
+  console.log("🔥🔥🔥 saveReport ВЫЗВАНА! 🔥🔥🔥"); // ВРЕМЕННО для отладки
   const userId = getUserId();
   const key = `report_${userId}_${reportDate}`;
   console.log(
@@ -420,11 +414,24 @@ async function loadAllReports() {
   });
 }
 
-// Загрузить все данные пользователя при старте
+// Загрузить все данные пользователя при старте (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 async function loadAllUserData() {
   console.log("🔄 ===== ЗАПУСК loadAllUserData =====");
 
-  const userId = getUserId();
+  // ПРИНУДИТЕЛЬНО получаем ID из Telegram
+  let userId = 1; // значение по умолчанию
+
+  try {
+    if (tg?.initDataUnsafe?.user?.id) {
+      userId = tg.initDataUnsafe.user.id;
+      console.log("✅ Получен реальный Telegram ID:", userId);
+    } else {
+      console.log("⚠️ Telegram ID не доступен, используем тестовый ID = 1");
+    }
+  } catch (e) {
+    console.log("❌ Ошибка получения ID:", e);
+  }
+
   console.log("👤 Загрузка данных для пользователя:", userId);
 
   // Загружаем финансы
@@ -437,17 +444,60 @@ async function loadAllUserData() {
     financeDB[userId] = financeData;
   } else {
     console.log("⚠️ Финансы не найдены, создаём пустые");
-    if (!financeDB[userId]) {
-      financeDB[userId] = {
-        currentDebt: 0,
-        transactions: [],
-      };
-    }
+    financeDB[userId] = {
+      currentDebt: 0,
+      transactions: [],
+    };
   }
 
   // Загружаем отчёты
   console.log("📁 Загружаем отчёты...");
-  await loadAllReports();
+
+  const reports = [];
+  const cloud = tg?.CloudStorage;
+
+  if (cloud) {
+    // Получаем все ключи
+    const keys = await new Promise((resolve) => {
+      cloud.getKeys((err, keys) => {
+        if (err) {
+          console.log("❌ Ошибка получения ключей:", err);
+          resolve([]);
+        } else {
+          resolve(keys || []);
+        }
+      });
+    });
+
+    console.log("🔑 Найденные ключи:", keys);
+
+    // Фильтруем ключи, относящиеся к отчётам этого пользователя
+    const reportKeys = keys.filter((key) =>
+      key.startsWith(`report_${userId}_`),
+    );
+    console.log("📋 Ключи отчётов для пользователя", userId, ":", reportKeys);
+
+    // Загружаем каждый отчёт
+    for (const key of reportKeys) {
+      const data = await loadFromCloud(key);
+      if (data) {
+        reports.push(data);
+      }
+    }
+
+    // Сортируем по дате (от новых к старым)
+    reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Сохраняем в reportDetailsDB
+    reportDetailsDB[userId] = reports;
+
+    console.log(
+      `📊 Загружено ${reports.length} отчётов для пользователя ${userId}`,
+    );
+  } else {
+    console.log("⚠️ CloudStorage недоступен");
+    reportDetailsDB[userId] = [];
+  }
 
   console.log("✅ ===== loadAllUserData ЗАВЕРШЕНА =====");
   console.log("📊 Итоговый reportDetailsDB:", JSON.stringify(reportDetailsDB));
