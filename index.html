@@ -14,6 +14,52 @@
     />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
+    <style>
+      /* Специальные стили только для отладочных кнопок */
+      .debug-buttons-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none; /* Контейнер не перехватывает клики */
+      }
+
+      .debug-button {
+        pointer-events: auto; /* Сами кнопки кликабельны */
+        background: #40a7e3;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 30px;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: opacity 0.2s;
+        border: 2px solid white;
+      }
+
+      .debug-button:hover {
+        opacity: 0.9;
+      }
+
+      .debug-button.green {
+        background: #4caf50;
+      }
+
+      .debug-button.red {
+        background: #ff3b30;
+      }
+
+      /* Убедимся, что кнопки меню не перекрываются */
+      .menu-button {
+        position: relative;
+        z-index: 1;
+      }
+    </style>
   </head>
   <body>
     <div class="container" id="mainContainer">
@@ -43,64 +89,15 @@
     </div>
     <!-- Закрываем mainContainer -->
 
-    <!-- ВРЕМЕННАЯ КНОПКА ДЛЯ ОТЛАДКИ -->
-    <div
-      style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      "
-    >
-      <button
-        onclick="checkTelegramData()"
-        style="
-          background: #40a7e3;
-          color: white;
-          padding: 12px 20px;
-          border: none;
-          border-radius: 30px;
-          font-size: 16px;
-          font-weight: bold;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-          cursor: pointer;
-        "
-      >
+    <!-- ОТЛАДОЧНЫЕ КНОПКИ (исправленная версия) -->
+    <div class="debug-buttons-container">
+      <button class="debug-button" onclick="checkTelegramData()">
         🔍 Проверить Telegram
       </button>
-      <button
-        onclick="checkCloudStorage()"
-        style="
-          background: #4caf50;
-          color: white;
-          padding: 12px 20px;
-          border: none;
-          border-radius: 30px;
-          font-size: 16px;
-          font-weight: bold;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-          cursor: pointer;
-        "
-      >
+      <button class="debug-button green" onclick="checkCloudStorage()">
         💾 Проверить CloudStorage
       </button>
-      <button
-        onclick="clearAllData()"
-        style="
-          background: #ff3b30;
-          color: white;
-          padding: 12px 20px;
-          border: none;
-          border-radius: 30px;
-          font-size: 16px;
-          font-weight: bold;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-          cursor: pointer;
-        "
-      >
+      <button class="debug-button red" onclick="clearAllData()">
         🗑️ Очистить данные
       </button>
     </div>
@@ -108,7 +105,7 @@
     <!-- Eruda console for debugging -->
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>
-      // Включаем Eruda для отладки
+      // Включаем Eruda только для разработки
       eruda.init();
       console.log("✅ Eruda console activated");
     </script>
