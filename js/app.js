@@ -103,12 +103,5 @@ document.addEventListener("DOMContentLoaded", async function () {
     reportDateInput.addEventListener("input", validateDateInput);
   }
 
-  // Загружаем данные пользователя (не блокируя обработчики)
-  setTimeout(async () => {
-    console.log("🔄 Начинаем загрузку данных пользователя...");
-    await loadAllUserData();
-    console.log("✅ Загрузка данных завершена");
-  }, 500);
-
   console.log("✅ Инициализация завершена");
 });
