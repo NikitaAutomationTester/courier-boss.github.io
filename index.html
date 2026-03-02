@@ -4,7 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Курьерская служба</title>
+    <!-- Подключаем Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css" />
+    <!-- Отключаем кэширование -->
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
   </head>
   <body>
     <div class="container" id="mainContainer">
@@ -29,13 +38,229 @@
         <p>© 2026 BBEx. Все права защищены</p>
       </footer>
 
-      <!-- Контейнер для загрузки страниц (БЕЗ закрывающего тега) -->
+      <!-- Контейнер для загрузки страниц -->
       <div id="pageContainer"></div>
+    </div>
+    <!-- Закрываем mainContainer -->
 
-      <!-- Закрываем mainContainer -->
+    <!-- ВРЕМЕННАЯ КНОПКА ДЛЯ ОТЛАДКИ -->
+    <div
+      style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      "
+    >
+      <button
+        onclick="checkTelegramData()"
+        style="
+          background: #40a7e3;
+          color: white;
+          padding: 12px 20px;
+          border: none;
+          border-radius: 30px;
+          font-size: 16px;
+          font-weight: bold;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+          cursor: pointer;
+        "
+      >
+        🔍 Проверить Telegram
+      </button>
+      <button
+        onclick="checkCloudStorage()"
+        style="
+          background: #4caf50;
+          color: white;
+          padding: 12px 20px;
+          border: none;
+          border-radius: 30px;
+          font-size: 16px;
+          font-weight: bold;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+          cursor: pointer;
+        "
+      >
+        💾 Проверить CloudStorage
+      </button>
+      <button
+        onclick="clearAllData()"
+        style="
+          background: #ff3b30;
+          color: white;
+          padding: 12px 20px;
+          border: none;
+          border-radius: 30px;
+          font-size: 16px;
+          font-weight: bold;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+          cursor: pointer;
+        "
+      >
+        🗑️ Очистить данные
+      </button>
     </div>
 
-    <!-- Подключаем JS модуали -->
+    <!-- Eruda console for debugging -->
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+      // Включаем Eruda для отладки
+      eruda.init();
+      console.log("✅ Eruda console activated");
+    </script>
+
+    <script>
+      // Функции для отладки
+      function checkTelegramData() {
+        console.log("🔍 ===== ПРОВЕРКА TELEGRAM DATA =====");
+        console.log("window.Telegram существует:", !!window.Telegram);
+        console.log("tg существует:", !!tg);
+        console.log("tg.initData:", tg?.initData);
+        console.log("tg.initDataUnsafe:", tg?.initDataUnsafe);
+        console.log("tg.initDataUnsafe?.user:", tg?.initDataUnsafe?.user);
+        console.log(
+          "tg.initDataUnsafe?.user?.id:",
+          tg?.initDataUnsafe?.user?.id,
+        );
+        console.log(
+          "getUserId():",
+          typeof getUserId === "function" ? getUserId() : "функция не найдена",
+        );
+        console.log("🔍 ===== КОНЕЦ ПРОВЕРКИ =====");
+
+        alert(
+          "📱 Telegram Data:\n" +
+            "tg существует: " +
+            !!tg +
+            "\n" +
+            "initData: " +
+            (tg?.initData ? "✅ есть" : "❓ нет") +
+            "\n" +
+            "user: " +
+            (tg?.initDataUnsafe?.user ? "✅ есть" : "❓ нет") +
+            "\n" +
+            "user.id: " +
+            (tg?.initDataUnsafe?.user?.id || "не определён"),
+        );
+      }
+
+      function checkCloudStorage() {
+        console.log("💾 ===== ПРОВЕРКА CLOUDSTORAGE =====");
+        console.log("CloudStorage доступен:", !!tg?.CloudStorage);
+
+        if (tg?.CloudStorage) {
+          tg.CloudStorage.getKeys(function (err, keys) {
+            if (err) {
+              console.log("❌ Ошибка получения ключей:", err);
+              alert("❌ Ошибка получения ключей: " + JSON.stringify(err));
+            } else {
+              console.log("📋 Ключи в CloudStorage:", keys);
+
+              if (keys && keys.length > 0) {
+                // Покажем содержимое первого ключа
+                tg.CloudStorage.getItem(keys[0], function (err, val) {
+                  if (err) {
+                    console.log("❌ Ошибка получения значения:", err);
+                  } else {
+                    console.log("📦 Данные по ключу", keys[0], ":", val);
+                    try {
+                      const parsed = JSON.parse(val);
+                      console.log("📊 Распарсенные данные:", parsed);
+                    } catch (e) {
+                      console.log("❌ Ошибка парсинга:", e);
+                    }
+                  }
+                });
+
+                alert(
+                  "💾 CloudStorage:\n" +
+                    "Ключей: " +
+                    keys.length +
+                    "\n" +
+                    "Первый ключ: " +
+                    keys[0],
+                );
+              } else {
+                alert("💾 CloudStorage пуст");
+              }
+            }
+          });
+        } else {
+          console.log("❌ CloudStorage НЕ доступен");
+          alert("❌ CloudStorage НЕ доступен");
+        }
+        console.log("💾 ===== КОНЕЦ ПРОВЕРКИ =====");
+      }
+
+      function clearAllData() {
+        if (
+          !confirm("⚠️ Вы уверены, что хотите удалить ВСЕ сохранённые данные?")
+        ) {
+          return;
+        }
+
+        console.log("🗑️ ===== ОЧИСТКА ДАННЫХ =====");
+
+        // Очищаем память
+        if (typeof financeDB !== "undefined") {
+          Object.keys(financeDB).forEach((key) => {
+            financeDB[key] = { currentDebt: 0, transactions: [] };
+          });
+          console.log("✅ financeDB очищен");
+        }
+
+        if (typeof reportDetailsDB !== "undefined") {
+          Object.keys(reportDetailsDB).forEach((key) => {
+            reportDetailsDB[key] = [];
+          });
+          console.log("✅ reportDetailsDB очищен");
+        }
+
+        // Очищаем CloudStorage
+        if (tg?.CloudStorage) {
+          tg.CloudStorage.getKeys(function (err, keys) {
+            if (err) {
+              console.log("❌ Ошибка получения ключей:", err);
+            } else if (keys && keys.length > 0) {
+              let deleted = 0;
+              keys.forEach((key) => {
+                tg.CloudStorage.removeItem(key, function (err) {
+                  if (!err) {
+                    deleted++;
+                    console.log(`✅ Ключ ${key} удалён`);
+                  }
+                  if (deleted === keys.length) {
+                    console.log(
+                      `✅ Все ${keys.length} ключей удалены из CloudStorage`,
+                    );
+                    alert(`🗑️ Данные очищены. Удалено ${keys.length} ключей.`);
+                    // Обновим интерфейс
+                    if (typeof loadFinanceData === "function")
+                      loadFinanceData();
+                    if (typeof loadReportsListData === "function")
+                      loadReportsListData();
+                  }
+                });
+              });
+            } else {
+              console.log("📭 CloudStorage уже пуст");
+              alert("📭 CloudStorage уже пуст");
+            }
+          });
+        } else {
+          console.log("❌ CloudStorage недоступен");
+          alert("❌ CloudStorage недоступен");
+        }
+
+        console.log("🗑️ ===== КОНЕЦ ОЧИСТКИ =====");
+      }
+    </script>
+
+    <!-- Подключаем JS модули в правильном порядке -->
     <script src="js/telegram.js"></script>
     <script src="js/data.js"></script>
     <script src="js/navigation.js"></script>
@@ -44,18 +269,5 @@
     <script src="js/finance.js"></script>
     <script src="js/reportsList.js"></script>
     <script src="js/app.js"></script>
-
-    <!-- Eruda console for debugging -->
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>
-      // Включаем Eruda только для разработки
-      if (
-        window.location.href.includes("github.io") ||
-        window.location.href.includes("localhost")
-      ) {
-        eruda.init();
-        console.log("✅ Eruda console activated");
-      }
-    </script>
   </body>
 </html>

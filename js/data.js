@@ -259,14 +259,28 @@ const CURRENT_COURIER_ID = 1;
 
 // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С ДАННЫМИ ==========
 
-// Функция для получения ID пользователя
+// Функция для получения ID пользователя (улучшенная версия)
 function getUserId() {
+  // Пробуем получить из Telegram
   try {
-    return tg?.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
+    // Проверяем через initDataUnsafe (доступно в Mini Apps)
+    if (tg?.initDataUnsafe?.user?.id) {
+      const telegramId = tg.initDataUnsafe.user.id;
+      console.log("✅ Получен Telegram ID:", telegramId);
+      return telegramId;
+    }
+
+    // Пробуем через initData (если есть)
+    if (tg?.initData) {
+      console.log("📦 Есть initData, но нет user.id");
+    }
   } catch (e) {
-    console.warn("Ошибка получения ID пользователя:", e);
-    return CURRENT_COURIER_ID;
+    console.warn("⚠️ Ошибка получения Telegram ID:", e);
   }
+
+  // Если нет Telegram данных, используем тестовый ID
+  console.log("⚠️ Telegram данные отсутствуют, используем тестовый ID = 1");
+  return 1;
 }
 
 // Сохранить данные в CloudStorage
@@ -468,22 +482,4 @@ function getCurrentFinance() {
     };
   }
   return financeDB[userId];
-}
-// Функция для получения ID пользователя (улучшенная версия)
-function getUserId() {
-  // Пробуем получить из Telegram
-  try {
-    const telegramId = tg?.initDataUnsafe?.user?.id;
-    if (telegramId) {
-      console.log("✅ Получен Telegram ID:", telegramId);
-      return telegramId;
-    }
-  } catch (e) {
-    console.warn("Ошибка получения Telegram ID:", e);
-  }
-
-  // Если не получилось, пробуем получить из CloudStorage (если там был сохранён)
-  // Или используем тестовый ID
-  console.log("⚠️ Используем тестовый ID = 1");
-  return 1;
 }
