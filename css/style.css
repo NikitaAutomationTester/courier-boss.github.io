@@ -474,77 +474,91 @@ footer {
     margin-top: 8px;
 }
 
-/* Мобильная версия для периода - поля друг под другом */
-@media (max-width: 600px) {
-    .period-mobile-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        width: 100%;
-    }
-    
-    .period-field {
-        width: 100%;
-    }
-    
-    .period-label {
-        font-size: 12px;
-        color: var(--tg-theme-hint-color, #999);
-        margin-bottom: 4px;
-    }
-    
-    .date-input-small {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-        border-radius: 8px;
-        background-color: var(--tg-theme-bg-color, #fff);
-        color: var(--tg-theme-text-color, #000);
-        font-size: 16px;
-        box-sizing: border-box;
-    }
+.period-label {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #999);
 }
 
-/* Десктоп версия - поля рядом */
-@media (min-width: 601px) {
-    .period-mobile-stack {
-        display: flex;
-        gap: 12px;
-        width: 100%;
-    }
-    
-    .period-field {
-        flex: 1;
-    }
-}
-
-/* iOS фикс */
-@supports (-webkit-touch-callout: none) {
-    .date-input-small {
-        font-size: 16px !important;
-    }
-    
-    .date-input-small::-webkit-datetime-edit {
-        padding: 0 !important;
-    }
+.date-input-small {
+    /* Базовые стили, которые будут переопределены инлайн-стилями */
 }
 
 .apply-btn {
-    width: 100%;
-    padding: 12px;
-    margin-top: 16px;
-    background-color: var(--tg-theme-button-color, #40a7e3);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.2s;
+    /* Базовые стили, которые будут переопределены инлайн-стилями */
 }
 
-.apply-btn:hover {
-    opacity: 0.9;
+/* ФИНАЛЬНЫЙ ФИКС ДЛЯ iOS - ПОЛЯ ВВОДА ДАТЫ */
+@supports (-webkit-touch-callout: none) {
+    /* Фикс для полей в фильтре периода */
+    .period-panel .date-input-small,
+    .period-panel input[type="date"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 12px !important;
+        margin: 0 !important;
+        font-size: 16px !important;
+    }
+    
+    /* Убираем все внутренние отступы у date input на iOS */
+    .period-panel .date-input-small::-webkit-datetime-edit,
+    .period-panel input[type="date"]::-webkit-datetime-edit {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .period-panel .date-input-small::-webkit-datetime-edit-fields-wrapper,
+    .period-panel input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .period-panel .date-input-small::-webkit-datetime-edit-text,
+    .period-panel input[type="date"]::-webkit-datetime-edit-text {
+        padding: 0 1px !important;
+        margin: 0 !important;
+    }
+    
+    /* Убираем дефолтные кнопки */
+    .period-panel .date-input-small::-webkit-inner-spin-button,
+    .period-panel .date-input-small::-webkit-clear-button,
+    .period-panel input[type="date"]::-webkit-inner-spin-button,
+    .period-panel input[type="date"]::-webkit-clear-button {
+        display: none !important;
+    }
+    
+    /* Календарь справа */
+    .period-panel .date-input-small::-webkit-calendar-picker-indicator,
+    .period-panel input[type="date"]::-webkit-calendar-picker-indicator {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 20px !important;
+        height: 20px !important;
+        opacity: 0.6;
+    }
+}
+
+/* Дополнительная гарантия для всех мобильных устройств */
+@media (max-width: 600px) {
+    .period-panel {
+        padding: 16px !important;
+    }
+    
+    .period-mobile-stack {
+        gap: 12px !important;
+    }
+    
+    .period-mobile-stack > div {
+        width: 100% !important;
+    }
+    
+    .date-input-small,
+    .period-panel input[type="date"] {
+        width: 100% !important;
+        padding: 12px !important;
+        box-sizing: border-box !important;
+    }
 }
 
 .empty-list-message {
@@ -902,6 +916,10 @@ footer {
     .period-panel {
         background-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
         border-color: #444;
+    }
+    
+    .period-label {
+        color: var(--tg-theme-hint-color, #aaa);
     }
     
     .date-input-small {
