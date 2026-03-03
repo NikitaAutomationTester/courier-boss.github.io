@@ -978,3 +978,51 @@ footer {
         padding: 0 !important;
     }
 }
+/* ФИНАЛЬНЫЕ ФИКСЫ ДЛЯ ФИЛЬТРА ПЕРИОДА */
+.period-panel input[type="date"] {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    padding: 12px !important;
+    font-size: 16px !important;
+    line-height: normal !important;
+}
+
+/* Запрещаем изменение размера при выборе даты */
+.period-panel input[type="date"]:focus,
+.period-panel input[type="date"]:active,
+.period-panel input[type="date"]:valid {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    padding: 12px !important;
+}
+
+/* iOS фикс */
+@supports (-webkit-touch-callout: none) {
+    .period-panel input[type="date"] {
+        height: 48px !important;
+        line-height: normal !important;
+    }
+    
+    .period-panel input[type="date"]::-webkit-datetime-edit {
+        padding: 0 !important;
+        line-height: 48px !important;
+    }
+    
+    .period-panel input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+        padding: 0 !important;
+    }
+    
+    .period-panel input[type="date"]::-webkit-datetime-edit-text {
+        padding: 0 2px !important;
+    }
+}
+
+/* Кнопка тоже фиксированной высоты */
+#applyPeriod {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    line-height: 24px !important;
+}

@@ -14,36 +14,67 @@
     </div>
 
     <!-- Блок выбора периода (скрыт по умолчанию) -->
-    <div class="period-panel" id="periodPanel" style="display: none">
+    <div
+      class="period-panel"
+      id="periodPanel"
+      style="
+        display: none;
+        background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+        border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 8px;
+      "
+    >
       <div style="margin-bottom: 12px">
-        <div style="font-size: 12px; color: #999; margin-bottom: 4px">С</div>
+        <div
+          style="
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999);
+            margin-bottom: 4px;
+          "
+        >
+          С
+        </div>
         <input
           type="date"
           id="dateFrom"
           style="
             width: 100%;
             padding: 12px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
             border-radius: 8px;
-            background: white;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
             font-size: 16px;
             box-sizing: border-box;
+            height: 48px;
           "
         />
       </div>
-      <div style="margin-bottom: 16px">
-        <div style="font-size: 12px; color: #999; margin-bottom: 4px">По</div>
+      <div style="margin-bottom: 20px">
+        <div
+          style="
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999);
+            margin-bottom: 4px;
+          "
+        >
+          По
+        </div>
         <input
           type="date"
           id="dateTo"
           style="
             width: 100%;
             padding: 12px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
             border-radius: 8px;
-            background: white;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
             font-size: 16px;
             box-sizing: border-box;
+            height: 48px;
           "
         />
       </div>
@@ -52,13 +83,14 @@
         style="
           width: 100%;
           padding: 12px;
-          background-color: #40a7e3;
+          background-color: var(--tg-theme-button-color, #40a7e3);
           color: white;
           border: none;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
+          height: 48px;
         "
       >
         Применить
