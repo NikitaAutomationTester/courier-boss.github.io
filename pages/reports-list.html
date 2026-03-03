@@ -15,51 +15,44 @@
 
     <!-- Блок выбора периода (скрыт по умолчанию) -->
     <div class="period-panel" id="periodPanel" style="display: none">
-      <div
-        class="period-mobile-stack"
-        style="display: flex; flex-direction: column; gap: 12px; width: 100%"
-      >
-        <div style="width: 100%">
-          <div class="period-label" style="margin-bottom: 4px">С</div>
-          <input
-            type="date"
-            id="dateFrom"
-            class="date-input-small"
-            style="
-              width: 100%;
-              box-sizing: border-box;
-              padding: 12px;
-              border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-              border-radius: 8px;
-              font-size: 16px;
-            "
-          />
-        </div>
-        <div style="width: 100%">
-          <div class="period-label" style="margin-bottom: 4px">По</div>
-          <input
-            type="date"
-            id="dateTo"
-            class="date-input-small"
-            style="
-              width: 100%;
-              box-sizing: border-box;
-              padding: 12px;
-              border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-              border-radius: 8px;
-              font-size: 16px;
-            "
-          />
-        </div>
+      <div style="margin-bottom: 12px">
+        <div style="font-size: 12px; color: #999; margin-bottom: 4px">С</div>
+        <input
+          type="date"
+          id="dateFrom"
+          style="
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 16px;
+            box-sizing: border-box;
+          "
+        />
+      </div>
+      <div style="margin-bottom: 16px">
+        <div style="font-size: 12px; color: #999; margin-bottom: 4px">По</div>
+        <input
+          type="date"
+          id="dateTo"
+          style="
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 16px;
+            box-sizing: border-box;
+          "
+        />
       </div>
       <button
-        class="apply-btn"
         id="applyPeriod"
         style="
           width: 100%;
           padding: 12px;
-          margin-top: 16px;
-          background-color: var(--tg-theme-button-color, #40a7e3);
+          background-color: #40a7e3;
           color: white;
           border: none;
           border-radius: 8px;
