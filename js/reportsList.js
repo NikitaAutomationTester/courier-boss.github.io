@@ -5,27 +5,26 @@ let sentReports = [];
 let filteredReports = [];
 
 // Переменные для фильтрации
-let currentFilter = "all";
-let dateFrom = null;
-let dateTo = null;
+let currentFilter = "all"; // По умолчанию "Все"
 
 function initFilters() {
   const filterTabs = document.querySelectorAll(".filter-tab[data-filter]");
-  const showPeriodBtn = document.getElementById("showPeriodBtn");
-  const periodPanel = document.getElementById("periodPanel");
-  const applyBtn = document.getElementById("applyPeriod");
-  const dateFromInput = document.getElementById("dateFrom");
-  const dateToInput = document.getElementById("dateTo");
 
   if (!filterTabs.length) return;
 
   // Функция снятия выделения со всех табов
   function deactivateAllTabs() {
     filterTabs.forEach((t) => t.classList.remove("active"));
-    if (showPeriodBtn) showPeriodBtn.classList.remove("active");
   }
 
-  // Обработчики для табов (За неделю, За месяц, Все)
+  // Устанавливаем "Все" как активный по умолчанию
+  filterTabs.forEach((tab) => {
+    if (tab.dataset.filter === "all") {
+      tab.classList.add("active");
+    }
+  });
+
+  // Обработчики для табов
   filterTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       // Снимаем выделение со всех
@@ -34,65 +33,9 @@ function initFilters() {
       tab.classList.add("active");
 
       currentFilter = tab.dataset.filter;
-      dateFrom = null;
-      dateTo = null;
-
-      // Скрываем панель периода и очищаем поля
-      if (periodPanel) periodPanel.style.display = "none";
-      if (dateFromInput) dateFromInput.value = "";
-      if (dateToInput) dateToInput.value = "";
-
       applyFilter();
     });
   });
-
-  // Обработчик для кнопки "За период"
-  if (showPeriodBtn) {
-    showPeriodBtn.addEventListener("click", () => {
-      const isVisible = periodPanel.style.display === "block";
-
-      // Переключаем панель
-      periodPanel.style.display = isVisible ? "none" : "block";
-
-      if (!isVisible) {
-        // Снимаем выделение со всех табов
-        deactivateAllTabs();
-        // Выделяем кнопку "За период"
-        showPeriodBtn.classList.add("active");
-        currentFilter = "period";
-      } else {
-        // Если панель скрыта, снимаем выделение с "За период"
-        showPeriodBtn.classList.remove("active");
-        // Возвращаем фильтр на "Все"
-        currentFilter = "all";
-        filterTabs.forEach((t) => {
-          if (t.dataset.filter === "all") t.classList.add("active");
-        });
-        applyFilter();
-      }
-    });
-  }
-
-  // Применить период
-  if (applyBtn) {
-    applyBtn.addEventListener("click", () => {
-      if (dateFromInput.value && dateToInput.value) {
-        dateFrom = new Date(dateFromInput.value);
-        dateTo = new Date(dateToInput.value);
-        dateTo.setHours(23, 59, 59); // Включаем конечную дату полностью
-
-        // Снимаем выделение со всех табов
-        deactivateAllTabs();
-        // Выделяем кнопку "За период"
-        showPeriodBtn.classList.add("active");
-        currentFilter = "period";
-
-        applyFilter();
-      } else {
-        alert("Выберите начальную и конечную дату");
-      }
-    });
-  }
 }
 
 function applyFilter() {
@@ -121,15 +64,6 @@ function applyFilter() {
       );
       break;
 
-    case "period":
-      if (dateFrom && dateTo) {
-        filtered = sentReports.filter((report) => {
-          const reportDate = new Date(report.date);
-          return reportDate >= dateFrom && reportDate <= dateTo;
-        });
-      }
-      break;
-
     case "all":
     default:
       // все отчёты
@@ -150,10 +84,8 @@ function loadReportsListData() {
     sentReports = [];
   }
 
-  // Сбрасываем фильтры
+  // Сбрасываем фильтр на "Все"
   currentFilter = "all";
-  dateFrom = null;
-  dateTo = null;
 
   // Обновляем UI фильтров
   const filterTabs = document.querySelectorAll(".filter-tab[data-filter]");
@@ -164,17 +96,6 @@ function loadReportsListData() {
       tab.classList.remove("active");
     }
   });
-
-  const showPeriodBtn = document.getElementById("showPeriodBtn");
-  if (showPeriodBtn) showPeriodBtn.classList.remove("active");
-
-  const periodPanel = document.getElementById("periodPanel");
-  if (periodPanel) periodPanel.style.display = "none";
-
-  const dateFromInput = document.getElementById("dateFrom");
-  const dateToInput = document.getElementById("dateTo");
-  if (dateFromInput) dateFromInput.value = "";
-  if (dateToInput) dateToInput.value = "";
 
   applyFilter();
 }
