@@ -75,7 +75,6 @@ function createReportCard(center, orderNumber) {
       <div class="checkbox-wrapper">
         <input type="checkbox" class="point-checkbox" data-id="${center.id}" ${isSelected ? "checked" : ""}>
       </div>
-      <span class="order-number">${orderNumber}</span>
       <div class="name-time-wrapper">
         <span class="center-name" title="${center.name || ""}">${center.name || "Без названия"}</span>
         <span class="center-time">${center.timeWindow || ""}</span>
@@ -83,24 +82,20 @@ function createReportCard(center, orderNumber) {
       <span class="salary-badge">+${center.salary || 0}₽</span>
     </div>
     
-    <div class="center-details report-details">
+    <div class="center-details" style="margin-left: 28px;"> <!-- Уменьшен отступ, так как нет номера -->
       <div class="detail-row">
         <span class="detail-icon">📍</span>
         <span class="detail-text" title="${center.address || ""}">${center.address || "Адрес не указан"}</span>
       </div>
       
       <div class="compact-row">
-        ${
-          center.schedule
-            ? `
+        ${center.schedule ? `
         <span class="compact-item">
           <span class="detail-icon">📅</span>
           <span class="detail-text">${center.schedule}</span>
         </span>
         <span class="separator">•</span>
-        `
-            : ""
-        }
+        ` : ''}
         <span class="compact-item">
           <span class="detail-icon">🔬</span>
           <span class="detail-text">${center.lab || "Не указана"}</span>

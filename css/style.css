@@ -1021,22 +1021,6 @@ footer {
     accent-color: var(--tg-theme-button-color, #40a7e3);
 }
 
-/* Номер точки */
-.report-card .order-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    background-color: var(--tg-theme-button-color, #40a7e3);
-    color: white;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-right: 8px;
-    flex-shrink: 0;
-}
-
 /* Контейнер для названия и времени */
 .report-card .name-time-wrapper {
     display: flex;
@@ -1089,7 +1073,7 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-left: 62px; /* 24px (номер) + 8px (отступ) + 30px (доп. отступ) */
+    margin-left: 28px; /* Уменьшен отступ, так как нет номера */
     font-size: 13px;
 }
 
@@ -1144,9 +1128,4 @@ footer {
 
 .report-card:nth-child(even).selected {
     background-color: rgba(76, 175, 80, 0.15);
-}
-
-/* Убираем возможные конфликты с другими стилями */
-.report-card * {
-    box-sizing: border-box;
 }
