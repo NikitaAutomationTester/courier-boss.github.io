@@ -83,7 +83,7 @@ function createReportCard(center, orderNumber) {
       <span class="salary-badge">+${center.salary || 0}₽</span>
     </div>
     
-    <div class="center-details">
+    <div class="center-details report-details">
       <div class="detail-row">
         <span class="detail-icon">📍</span>
         <span class="detail-text" title="${center.address || ""}">${center.address || "Адрес не указан"}</span>
