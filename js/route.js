@@ -4,18 +4,26 @@ let isEditMode = false;
 let currentRoutePoints = [];
 
 async function loadRouteData() {
+  console.log("🔄 loadRouteData: начало загрузки");
+
   // Сначала пробуем загрузить сохраненный маршрут
   await loadRouteOrder();
 
   // Получаем точки для отображения
   currentRoutePoints = getCurrentRoutePoints();
   console.log("📍 Маршрут загружен, точек:", currentRoutePoints.length);
-  renderCentersList(currentRoutePoints);
 
-  // Добавляем компактный режим по умолчанию
-  document.querySelectorAll(".center-card").forEach((card) => {
-    card.classList.add("compact-mode");
-  });
+  if (currentRoutePoints.length === 0) {
+    console.warn("⚠️ Нет точек для отображения!");
+    // Показываем сообщение об ошибке
+    if (centersList) {
+      centersList.innerHTML =
+        '<div class="empty-list-message">Нет точек маршрута</div>';
+    }
+    return;
+  }
+
+  renderCentersList(currentRoutePoints);
 
   // Сбрасываем режим редактирования
   isEditMode = false;
@@ -23,16 +31,27 @@ async function loadRouteData() {
 }
 
 function renderCentersList(centers) {
-  if (!centersList) return;
+  if (!centersList) {
+    console.error("❌ centersList не найден");
+    return;
+  }
+
   centersList.innerHTML = "";
 
   centers.forEach((center, index) => {
     const card = createCenterCard(center, index + 1);
     centersList.appendChild(card);
   });
+
+  console.log(`✅ Отрендерено ${centers.length} карточек`);
 }
 
 function createCenterCard(center, orderNumber) {
+  if (!center) {
+    console.error("❌ center is undefined");
+    return document.createElement("div");
+  }
+
   const card = document.createElement("div");
   card.className = "center-card";
   card.setAttribute("data-center-id", center.id);
@@ -45,15 +64,15 @@ function createCenterCard(center, orderNumber) {
     <div class="center-header">
       <span class="order-number">${orderNumber}</span>
       <div class="name-time-wrapper">
-        <span class="center-name" title="${center.name}">${center.name}</span>
-        <span class="center-time">${center.timeWindow}</span>
+        <span class="center-name" title="${center.name || ""}">${center.name || "Без названия"}</span>
+        <span class="center-time">${center.timeWindow || ""}</span>
       </div>
     </div>
     
     <div class="center-details">
       <div class="detail-row">
         <span class="detail-icon">📍</span>
-        <span class="detail-text" title="${center.address}">${center.address}</span>
+        <span class="detail-text" title="${center.address || ""}">${center.address || "Адрес не указан"}</span>
       </div>
       
       <div class="compact-row">

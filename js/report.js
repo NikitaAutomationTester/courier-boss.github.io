@@ -18,9 +18,20 @@ function validateDateInput() {
 }
 
 function loadReportData() {
+  console.log("📋 loadReportData: начало загрузки");
+
   // Используем ту же функцию, что и в маршруте - получаем точки с данными
   const points = getCurrentRoutePoints();
   console.log("📋 Отчёт загружен, точек в маршруте:", points.length);
+
+  if (points.length === 0) {
+    console.warn("⚠️ Нет точек для отображения в отчёте!");
+    if (reportCentersList) {
+      reportCentersList.innerHTML =
+        '<div class="empty-list-message">Нет точек маршрута</div>';
+    }
+    return;
+  }
 
   selectedPoints.clear();
   renderReportCentersList(points);
@@ -29,16 +40,27 @@ function loadReportData() {
 }
 
 function renderReportCentersList(centers) {
-  if (!reportCentersList) return;
+  if (!reportCentersList) {
+    console.error("❌ reportCentersList не найден");
+    return;
+  }
+
   reportCentersList.innerHTML = "";
 
   centers.forEach((center, index) => {
     const card = createReportCard(center, index + 1);
     reportCentersList.appendChild(card);
   });
+
+  console.log(`✅ Отрендерено ${centers.length} карточек в отчёте`);
 }
 
 function createReportCard(center, orderNumber) {
+  if (!center) {
+    console.error("❌ center is undefined");
+    return document.createElement("div");
+  }
+
   const card = document.createElement("div");
   card.className = "report-card";
   card.setAttribute("data-center-id", center.id);
@@ -49,43 +71,43 @@ function createReportCard(center, orderNumber) {
   }
 
   card.innerHTML = `
-        <div class="report-header-card">
-            <div class="checkbox-wrapper">
-                <input type="checkbox" class="point-checkbox" data-id="${center.id}" ${isSelected ? "checked" : ""}>
-            </div>
-            <span class="order-number">${orderNumber}</span>
-            <div class="name-time-wrapper">
-                <span class="center-name" title="${center.name}">${center.name}</span>
-                <span class="center-time">${center.timeWindow}</span>
-            </div>
-            <span class="salary-badge">+${center.salary}₽</span>
-        </div>
-        
-        <div class="center-details">
-            <div class="detail-row">
-                <span class="detail-icon">📍</span>
-                <span class="detail-text" title="${center.address}">${center.address}</span>
-            </div>
-            
-            <div class="compact-row">
-                ${
-                  center.schedule
-                    ? `
-                <span class="compact-item">
-                    <span class="detail-icon">📅</span>
-                    <span class="detail-text">${center.schedule}</span>
-                </span>
-                <span class="separator">•</span>
-                `
-                    : ""
-                }
-                <span class="compact-item">
-                    <span class="detail-icon">🔬</span>
-                    <span class="detail-text">${center.lab || "Не указана"}</span>
-                </span>
-            </div>
-        </div>
-    `;
+    <div class="report-header-card">
+      <div class="checkbox-wrapper">
+        <input type="checkbox" class="point-checkbox" data-id="${center.id}" ${isSelected ? "checked" : ""}>
+      </div>
+      <span class="order-number">${orderNumber}</span>
+      <div class="name-time-wrapper">
+        <span class="center-name" title="${center.name || ""}">${center.name || "Без названия"}</span>
+        <span class="center-time">${center.timeWindow || ""}</span>
+      </div>
+      <span class="salary-badge">+${center.salary || 0}₽</span>
+    </div>
+    
+    <div class="center-details">
+      <div class="detail-row">
+        <span class="detail-icon">📍</span>
+        <span class="detail-text" title="${center.address || ""}">${center.address || "Адрес не указан"}</span>
+      </div>
+      
+      <div class="compact-row">
+        ${
+          center.schedule
+            ? `
+        <span class="compact-item">
+          <span class="detail-icon">📅</span>
+          <span class="detail-text">${center.schedule}</span>
+        </span>
+        <span class="separator">•</span>
+        `
+            : ""
+        }
+        <span class="compact-item">
+          <span class="detail-icon">🔬</span>
+          <span class="detail-text">${center.lab || "Не указана"}</span>
+        </span>
+      </div>
+    </div>
+  `;
 
   const checkbox = card.querySelector(".point-checkbox");
 
