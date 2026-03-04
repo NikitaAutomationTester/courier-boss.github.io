@@ -2,11 +2,14 @@
 
 let draggedItem = null;
 let draggedIndex = -1;
-let touchStartY = 0;
 let isDragging = false;
 let dragClone = null;
-let initialY = 0;
-let currentY = 0;
+let scrollInterval = null;
+let lastMoveY = 0;
+let hasChanged = false; // Флаг, был ли перемещен элемент
+
+const SCROLL_ZONE_HEIGHT = 50; // Высота зоны прокрутки в пикселях
+const SCROLL_SPEED = 10; // Скорость прокрутки
 
 async function loadRouteData() {
   // Сначала пробуем загрузить сохраненный маршрут
@@ -44,7 +47,7 @@ function createCenterCard(center, orderNumber) {
         <span class="center-name" title="${center.name}">${center.name}</span>
         <span class="center-time">${center.timeWindow}</span>
       </div>
-      <span class="drag-handle">⋮⋮</span>
+      <span class="drag-handle">≡</span>
     </div>
     
     <div class="center-details">
@@ -80,91 +83,38 @@ function enableDragAndDrop() {
   const cards = document.querySelectorAll(".center-card");
 
   cards.forEach((card) => {
-    // Для десктопа (мышь)
-    card.setAttribute("draggable", "true");
-    card.addEventListener("dragstart", handleDragStart);
-    card.addEventListener("dragend", handleDragEnd);
+    const handle = card.querySelector(".drag-handle");
+
+    // Для десктопа (мышь) - перетаскивание только за handle
+    handle.addEventListener("mousedown", startDrag);
     card.addEventListener("dragover", handleDragOver);
     card.addEventListener("drop", handleDrop);
 
-    // Для мобильных (touch)
-    card.addEventListener("touchstart", handleTouchStart, { passive: false });
-    card.addEventListener("touchmove", handleTouchMove, { passive: false });
-    card.addEventListener("touchend", handleTouchEnd);
-    card.addEventListener("touchcancel", handleTouchCancel);
+    // Для мобильных (touch) - перетаскивание только за handle
+    handle.addEventListener("touchstart", startTouchDrag, { passive: false });
 
-    // Отключаем стандартное поведение
-    card.addEventListener("dragenter", (e) => e.preventDefault());
-    card.addEventListener("dragleave", (e) => e.preventDefault());
+    // Отключаем стандартное перетаскивание всей карточки
+    card.setAttribute("draggable", "false");
   });
 }
 
-// ===== ДЕСКТОП (DRAG & DROP) =====
-function handleDragStart(e) {
-  draggedItem = this;
-  draggedIndex = parseInt(this.getAttribute("data-order"));
-  this.classList.add("dragging");
-  e.dataTransfer.setData("text/plain", this.getAttribute("data-center-id"));
-  e.dataTransfer.effectAllowed = "move";
-  console.log("🚀 Десктоп: начало перетаскивания");
-}
-
-function handleDragEnd(e) {
-  this.classList.remove("dragging");
-
-  if (draggedItem) {
-    updateRouteOrder();
-  }
-
-  draggedItem = null;
-  draggedIndex = -1;
-}
-
-function handleDragOver(e) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = "move";
-}
-
-function handleDrop(e) {
+function startDrag(e) {
   e.preventDefault();
 
-  const targetCard = this;
-  const targetIndex = parseInt(targetCard.getAttribute("data-order"));
+  // Находим карточку
+  draggedItem = e.target.closest(".center-card");
+  if (!draggedItem) return;
 
-  if (draggedIndex === targetIndex) return;
+  draggedIndex = parseInt(draggedItem.getAttribute("data-order"));
+  hasChanged = false;
 
-  const cards = [...document.querySelectorAll(".center-card")];
-
-  if (draggedIndex < targetIndex) {
-    targetCard.parentNode.insertBefore(draggedItem, targetCard.nextSibling);
-  } else {
-    targetCard.parentNode.insertBefore(draggedItem, targetCard);
-  }
-
-  updateOrderNumbers();
-  console.log(
-    `🔄 Десктоп: перемещен с ${draggedIndex + 1} на ${targetIndex + 1}`,
-  );
-}
-
-// ===== МОБИЛЬНЫЕ (TOUCH) =====
-function handleTouchStart(e) {
-  e.preventDefault();
-
-  const touch = e.touches[0];
-  draggedItem = this;
-  draggedIndex = parseInt(this.getAttribute("data-order"));
-  touchStartY = touch.clientY;
-  initialY = touch.clientY;
-  isDragging = true;
-
-  // Создаем клон элемента
-  dragClone = this.cloneNode(true);
+  // Создаем клон
+  dragClone = draggedItem.cloneNode(true);
   dragClone.classList.add("dragging-clone");
   dragClone.style.position = "fixed";
-  dragClone.style.left = touch.clientX + "px";
-  dragClone.style.top = touch.clientY + "px";
-  dragClone.style.width = this.offsetWidth + "px";
+  dragClone.style.left = e.clientX + "px";
+  dragClone.style.top = e.clientY + "px";
+  dragClone.style.width = draggedItem.offsetWidth + "px";
   dragClone.style.transform = "translate(-50%, -50%)";
   dragClone.style.zIndex = "1000";
   dragClone.style.opacity = "0.9";
@@ -172,10 +122,55 @@ function handleTouchStart(e) {
 
   document.body.appendChild(dragClone);
 
-  // Подсвечиваем исходный элемент
-  this.classList.add("dragging-source");
+  draggedItem.classList.add("dragging-source");
+  isDragging = true;
 
-  console.log("📱 Мобильное: начало перетаскивания");
+  // Добавляем обработчики движения мыши
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", endDrag);
+}
+
+function startTouchDrag(e) {
+  e.preventDefault();
+
+  const touch = e.touches[0];
+
+  // Находим карточку
+  draggedItem = e.target.closest(".center-card");
+  if (!draggedItem) return;
+
+  draggedIndex = parseInt(draggedItem.getAttribute("data-order"));
+  hasChanged = false;
+
+  // Создаем клон
+  dragClone = draggedItem.cloneNode(true);
+  dragClone.classList.add("dragging-clone");
+  dragClone.style.position = "fixed";
+  dragClone.style.left = touch.clientX + "px";
+  dragClone.style.top = touch.clientY + "px";
+  dragClone.style.width = draggedItem.offsetWidth + "px";
+  dragClone.style.transform = "translate(-50%, -50%)";
+  dragClone.style.zIndex = "1000";
+  dragClone.style.opacity = "0.9";
+  dragClone.style.pointerEvents = "none";
+
+  document.body.appendChild(dragClone);
+
+  draggedItem.classList.add("dragging-source");
+  isDragging = true;
+
+  // Добавляем обработчики касания
+  document.addEventListener("touchmove", handleTouchMove, { passive: false });
+  document.addEventListener("touchend", endTouchDrag);
+  document.addEventListener("touchcancel", cancelTouchDrag);
+}
+
+function handleMouseMove(e) {
+  if (!isDragging || !dragClone) return;
+  e.preventDefault();
+
+  updateDragPosition(e.clientX, e.clientY);
+  checkAutoScroll(e.clientY);
 }
 
 function handleTouchMove(e) {
@@ -183,18 +178,20 @@ function handleTouchMove(e) {
   e.preventDefault();
 
   const touch = e.touches[0];
-  currentY = touch.clientY;
+  updateDragPosition(touch.clientX, touch.clientY);
+  checkAutoScroll(touch.clientY);
+}
+
+function updateDragPosition(x, y) {
+  if (!dragClone) return;
 
   // Обновляем позицию клона
-  dragClone.style.left = touch.clientX + "px";
-  dragClone.style.top = touch.clientY + "px";
+  dragClone.style.left = x + "px";
+  dragClone.style.top = y + "px";
 
-  // Находим элемент под пальцем
-  const elementsAtTouch = document.elementsFromPoint(
-    touch.clientX,
-    touch.clientY,
-  );
-  const targetCard = elementsAtTouch.find(
+  // Находим элемент под курсором/пальцем
+  const elementsAtPoint = document.elementsFromPoint(x, y);
+  const targetCard = elementsAtPoint.find(
     (el) => el.classList.contains("center-card") && el !== draggedItem,
   );
 
@@ -207,15 +204,69 @@ function handleTouchMove(e) {
   if (targetCard) {
     targetCard.classList.add("drop-target");
   }
+
+  lastMoveY = y;
 }
 
-function handleTouchEnd(e) {
-  if (!isDragging || !dragClone) return;
+function checkAutoScroll(y) {
+  const container = document.querySelector(".medical-centers-list");
+  if (!container) return;
+
+  const containerRect = container.getBoundingClientRect();
+
+  // Проверяем, находится ли курсор в верхней или нижней зоне прокрутки
+  if (y < containerRect.top + SCROLL_ZONE_HEIGHT) {
+    // Прокрутка вверх
+    startScrolling(-SCROLL_SPEED);
+  } else if (y > containerRect.bottom - SCROLL_ZONE_HEIGHT) {
+    // Прокрутка вниз
+    startScrolling(SCROLL_SPEED);
+  } else {
+    stopScrolling();
+  }
+}
+
+function startScrolling(direction) {
+  if (scrollInterval) return;
+
+  scrollInterval = setInterval(() => {
+    const container = document.querySelector(".medical-centers-list");
+    if (!container) return;
+
+    container.scrollTop += direction;
+
+    // Обновляем позицию цели после прокрутки
+    if (dragClone) {
+      const elementsAtPoint = document.elementsFromPoint(
+        parseFloat(dragClone.style.left),
+        parseFloat(dragClone.style.top),
+      );
+      const targetCard = elementsAtPoint.find(
+        (el) => el.classList.contains("center-card") && el !== draggedItem,
+      );
+
+      document.querySelectorAll(".center-card").forEach((card) => {
+        card.classList.remove("drop-target");
+      });
+
+      if (targetCard) {
+        targetCard.classList.add("drop-target");
+      }
+    }
+  }, 16); // ~60fps
+}
+
+function stopScrolling() {
+  if (scrollInterval) {
+    clearInterval(scrollInterval);
+    scrollInterval = null;
+  }
+}
+
+function endDrag(e) {
   e.preventDefault();
 
-  const touch = e.changedTouches[0];
-
-  // Удаляем клон
+  // Убираем клон
   if (dragClone && dragClone.parentNode) {
     dragClone.parentNode.removeChild(dragClone);
     dragClone = null;
@@ -227,19 +278,17 @@ function handleTouchEnd(e) {
   });
 
   // Находим цель
-  const elementsAtTouch = document.elementsFromPoint(
-    touch.clientX,
-    touch.clientY,
-  );
-  const targetCard = elementsAtTouch.find(
+  const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
+  const targetCard = elementsAtPoint.find(
     (el) => el.classList.contains("center-card") && el !== draggedItem,
   );
 
-  if (targetCard && draggedItem) {
+  if (targetCard && draggedItem && hasChanged === false) {
     const targetIndex = parseInt(targetCard.getAttribute("data-order"));
-    const cards = [...document.querySelectorAll(".center-card")];
 
     if (draggedIndex !== targetIndex) {
+      const cards = [...document.querySelectorAll(".center-card")];
+
       if (draggedIndex < targetIndex) {
         targetCard.parentNode.insertBefore(draggedItem, targetCard.nextSibling);
       } else {
@@ -247,34 +296,126 @@ function handleTouchEnd(e) {
       }
 
       updateOrderNumbers();
-      console.log(
-        `📱 Мобильное: перемещен с ${draggedIndex + 1} на ${targetIndex + 1}`,
-      );
+      hasChanged = true;
     }
   }
 
+  // Останавливаем прокрутку
+  stopScrolling();
+
   // Сбрасываем состояние
   isDragging = false;
+
+  // Если были изменения, сохраняем
+  if (hasChanged) {
+    updateRouteOrder(false); // false = не показывать уведомление
+  }
+
+  // Убираем обработчики
+  document.removeEventListener("mousemove", handleMouseMove);
+  document.removeEventListener("mouseup", endDrag);
+
   draggedItem = null;
   draggedIndex = -1;
-
-  // Сохраняем новый порядок
-  updateRouteOrder();
 }
 
-function handleTouchCancel(e) {
+function endTouchDrag(e) {
+  e.preventDefault();
+
+  const touch = e.changedTouches[0];
+
+  // Убираем клон
   if (dragClone && dragClone.parentNode) {
     dragClone.parentNode.removeChild(dragClone);
     dragClone = null;
   }
 
+  // Убираем подсветку
   document.querySelectorAll(".center-card").forEach((card) => {
     card.classList.remove("drop-target", "dragging-source");
   });
 
+  // Находим цель
+  const elementsAtPoint = document.elementsFromPoint(
+    touch.clientX,
+    touch.clientY,
+  );
+  const targetCard = elementsAtPoint.find(
+    (el) => el.classList.contains("center-card") && el !== draggedItem,
+  );
+
+  if (targetCard && draggedItem && hasChanged === false) {
+    const targetIndex = parseInt(targetCard.getAttribute("data-order"));
+
+    if (draggedIndex !== targetIndex) {
+      const cards = [...document.querySelectorAll(".center-card")];
+
+      if (draggedIndex < targetIndex) {
+        targetCard.parentNode.insertBefore(draggedItem, targetCard.nextSibling);
+      } else {
+        targetCard.parentNode.insertBefore(draggedItem, targetCard);
+      }
+
+      updateOrderNumbers();
+      hasChanged = true;
+    }
+  }
+
+  // Останавливаем прокрутку
+  stopScrolling();
+
+  // Сбрасываем состояние
   isDragging = false;
+
+  // Если были изменения, сохраняем
+  if (hasChanged) {
+    updateRouteOrder(false); // false = не показывать уведомление
+  }
+
+  // Убираем обработчики
+  document.removeEventListener("touchmove", handleTouchMove);
+  document.removeEventListener("touchend", endTouchDrag);
+  document.removeEventListener("touchcancel", cancelTouchDrag);
+
   draggedItem = null;
   draggedIndex = -1;
+}
+
+function cancelTouchDrag(e) {
+  e.preventDefault();
+
+  // Убираем клон
+  if (dragClone && dragClone.parentNode) {
+    dragClone.parentNode.removeChild(dragClone);
+    dragClone = null;
+  }
+
+  // Убираем подсветку
+  document.querySelectorAll(".center-card").forEach((card) => {
+    card.classList.remove("drop-target", "dragging-source");
+  });
+
+  // Останавливаем прокрутку
+  stopScrolling();
+
+  // Сбрасываем состояние
+  isDragging = false;
+
+  // Убираем обработчики
+  document.removeEventListener("touchmove", handleTouchMove);
+  document.removeEventListener("touchend", endTouchDrag);
+  document.removeEventListener("touchcancel", cancelTouchDrag);
+
+  draggedItem = null;
+  draggedIndex = -1;
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+}
+
+function handleDrop(e) {
+  e.preventDefault();
 }
 
 function updateOrderNumbers() {
@@ -289,7 +430,7 @@ function updateOrderNumbers() {
   });
 }
 
-async function updateRouteOrder() {
+async function updateRouteOrder(showNotification = false) {
   const cards = document.querySelectorAll(".center-card");
   const newOrder = [];
 
@@ -311,14 +452,12 @@ async function updateRouteOrder() {
   // Сохраняем в CloudStorage
   await saveRouteOrder(newOrder);
 
-  // Показываем уведомление
-  if (tg) {
+  // Показываем уведомление только если нужно
+  if (showNotification && tg) {
     tg.showPopup({
       title: "Маршрут обновлен",
       message: "Новый порядок точек сохранен",
       buttons: [{ type: "ok" }],
     });
-  } else {
-    alert("Маршрут обновлен");
   }
 }

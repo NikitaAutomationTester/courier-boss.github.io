@@ -866,29 +866,13 @@ footer {
     border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0) !important;
 }
 
-/* ===== DRAG-AND-DROP ДЛЯ ВСЕХ УСТРОЙСТВ ===== */
+/*/* ===== DRAG-AND-DROP ===== */
 .center-card {
-    cursor: grab;
     transition: all 0.2s ease;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
     touch-action: pan-y; /* Разрешаем вертикальную прокрутку */
-}
-
-.center-card:active {
-    cursor: grabbing;
-}
-
-.center-card.dragging {
-    opacity: 0.5;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    transform: scale(1.02);
-}
-
-.center-card.dragging-source {
-    opacity: 0.3;
-    transform: scale(0.98);
 }
 
 .drag-handle {
@@ -898,11 +882,22 @@ footer {
     font-size: 20px;
     cursor: grab;
     user-select: none;
-    padding: 0 4px;
+    padding: 8px 4px;
     -webkit-touch-callout: none;
+    touch-action: none; /* Запрещаем прокрутку при перетаскивании за ручку */
+    border-radius: 8px;
 }
 
-/* Клон для мобильных */
+.drag-handle:active {
+    background-color: rgba(64, 167, 227, 0.1);
+    cursor: grabbing;
+}
+
+.center-card.dragging-source {
+    opacity: 0.5;
+    transform: scale(0.98);
+}
+
 .dragging-clone {
     position: fixed;
     background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
@@ -918,25 +913,25 @@ footer {
     opacity: 0.9;
 }
 
-/* Подсветка цели */
 .drop-target {
     border: 2px dashed var(--tg-theme-button-color, #40a7e3);
     background-color: rgba(64, 167, 227, 0.1);
     transform: scale(1.02);
+    margin: 8px 0;
 }
 
-/* Убираем выделение при перетаскивании */
-.center-card * {
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
+/* Контейнер для списка с прокруткой */
+.medical-centers-list {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
 }
 
 /* Адаптация для тёмной темы */
 @media (prefers-color-scheme: dark) {
-    .center-card.dragging {
-        background-color: #3a3a3a;
-        border-color: #40a7e3;
+    .drag-handle:active {
+        background-color: rgba(64, 167, 227, 0.2);
     }
     
     .dragging-clone {
