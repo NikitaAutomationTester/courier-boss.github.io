@@ -931,3 +931,140 @@ footer {
         color: #aaa;
     }
 }
+
+/* ===== РЕЖИМ РЕДАКТИРОВАНИЯ МАРШРУТА ===== */
+.edit-button {
+    background: none;
+    border: none;
+    color: var(--tg-theme-button-color, #40a7e3);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.edit-button:hover {
+    background-color: var(--tg-theme-hint-color, #f0f0f0);
+}
+
+.edit-button.active {
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: white;
+}
+
+/* Карточка точки */
+.center-card {
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.card-content {
+    flex: 1;
+    padding: 8px 10px;
+}
+
+.card-controls {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px;
+    background-color: var(--tg-theme-secondary-bg-color, #f0f2f5);
+    border-left: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 0 10px 10px 0;
+}
+
+.move-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #000);
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.move-btn:active {
+    transform: scale(0.95);
+}
+
+.move-btn.up-btn {
+    color: #4caf50;
+}
+
+.move-btn.down-btn {
+    color: #ff3b30;
+}
+
+.move-btn.up-btn:active {
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+.move-btn.down-btn:active {
+    background-color: rgba(255, 59, 48, 0.1);
+}
+
+/* Подсказка о сохранении */
+.save-hint {
+    background-color: #ffd700;
+    color: #000;
+    padding: 12px 16px;
+    margin: 10px 0;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.save-hint button {
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.save-hint button:active {
+    opacity: 0.8;
+}
+
+/* Адаптация для тёмной темы */
+@media (prefers-color-scheme: dark) {
+    .edit-button:hover {
+        background-color: #3a3a3a;
+    }
+    
+    .card-controls {
+        background-color: #2a2a2a;
+        border-left-color: #444;
+    }
+    
+    .move-btn {
+        background-color: #1a1a1a;
+        color: #fff;
+    }
+    
+    .save-hint {
+        background-color: #665c00;
+        color: #fff;
+    }
+}
