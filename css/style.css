@@ -21,6 +21,9 @@ body {
     margin: 0 auto;
     padding: 20px;
     width: 100%;
+    min-height: 100vh; /* Добавить эту строку */
+    display: flex;
+    flex-direction: column;
 }
 
 header {
@@ -43,12 +46,24 @@ header p {
 
 main {
     margin-top: 10px; /* Добавить небольшой отступ сверху */
+    flex: 1;
 }
 
 main h2 {
     margin-bottom: 15px;
     font-size: 18px;
     color: var(--tg-theme-text-color, #000000);
+}
+
+#routePage,
+#reportPage,
+#financePage,
+#historyPage,
+#reportsListPage,
+#reportDetailPage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .menu {
@@ -560,6 +575,8 @@ footer {
     scroll-behavior: smooth;
     position: relative;
     padding-right: 4px;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .center-card {
@@ -1079,4 +1096,48 @@ footer {
         background-color: #665c00;
         color: #fff;
     }
+}
+/* Контейнер должен растягиваться на всю высоту */
+.container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Главное меню */
+main {
+    flex-shrink: 0; /* Не сжимается */
+}
+
+/* Контейнер страниц занимает всё доступное место */
+#pageContainer {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Важно для вложенных flex-контейнеров */
+}
+
+/* Все страницы должны растягиваться */
+#routePage,
+#reportPage,
+#financePage,
+#historyPage,
+#reportsListPage,
+#reportDetailPage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Список медицинских центров занимает оставшееся место с прокруткой */
+.medical-centers-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Футер всегда внизу */
+footer {
+    flex-shrink: 0;
 }
