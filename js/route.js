@@ -153,8 +153,8 @@ function moveCard(card, direction) {
   // Обновляем номера порядка
   updateOrderNumbers();
 
-  // Показываем подсказку о возможности сохранить
-  showSaveHint();
+  // Здесь БОЛЬШЕ НЕ ПОКАЗЫВАЕМ ПОДСКАЗКУ
+  // showSaveHint(); // ← УДАЛЕНО
 }
 
 function updateOrderNumbers() {
@@ -169,22 +169,7 @@ function updateOrderNumbers() {
   });
 }
 
-function showSaveHint() {
-  // Показываем подсказку, что изменения не сохранены
-  const saveHint = document.getElementById("saveHint");
-  if (!saveHint) {
-    const hint = document.createElement("div");
-    hint.id = "saveHint";
-    hint.className = "save-hint";
-    hint.innerHTML =
-      'Есть несохраненные изменения <button id="saveChangesBtn">Сохранить</button>';
-    document.querySelector(".route-header").after(hint);
-
-    document
-      .getElementById("saveChangesBtn")
-      .addEventListener("click", saveRouteChanges);
-  }
-}
+// Функция showSaveHint ПОЛНОСТЬЮ УДАЛЕНА
 
 async function saveRouteChanges() {
   const cards = document.querySelectorAll(".center-card");
@@ -207,10 +192,6 @@ async function saveRouteChanges() {
 
   // Сохраняем в CloudStorage
   await saveRouteOrder(newOrder);
-
-  // Убираем подсказку
-  const saveHint = document.getElementById("saveHint");
-  if (saveHint) saveHint.remove();
 
   // Показываем уведомление
   if (tg) {
@@ -252,27 +233,20 @@ window.toggleEditMode = function () {
     controls.forEach((control) => {
       control.style.display = "none";
     });
+
+    // Сохраняем изменения при выходе из режима
+    // Порядок точек мог измениться, сохраняем их
+    saveRouteChanges();
+
     editBtn.textContent = "Изменить";
     editBtn.classList.remove("active");
-
-    // Проверяем, есть ли несохраненные изменения
-    const saveHint = document.getElementById("saveHint");
-    if (saveHint) {
-      // Спрашиваем, хочет ли пользователь сохранить
-      if (confirm("У вас есть несохраненные изменения. Сохранить?")) {
-        saveRouteChanges();
-      } else {
-        // Отменяем изменения - перезагружаем маршрут
-        loadRouteData();
-      }
-    }
   }
 };
 
 function updateEditButtonState() {
   const editBtn = document.getElementById("editRouteBtn");
   if (editBtn) {
-    editBtn.textContent = "Править";
+    editBtn.textContent = "Изменить";
     editBtn.classList.remove("active");
   }
 }
@@ -288,9 +262,9 @@ function initRoutePage() {
 
     // Добавляем обработчик на новую кнопку
     newBtn.addEventListener("click", window.toggleEditMode);
-    console.log('✅ Обработчик кнопки "Править" назначен');
+    console.log('✅ Обработчик кнопки "Изменить" назначен');
   } else {
-    console.error('❌ Кнопка "Править" не найдена в DOM');
+    console.error('❌ Кнопка "Изменить" не найдена в DOM');
   }
 }
 
