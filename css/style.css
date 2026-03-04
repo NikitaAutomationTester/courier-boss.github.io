@@ -540,7 +540,7 @@ footer {
     gap: 2px;
 }
 
-/* ===== КАРТОЧКИ ===== */
+/* ===== КАРТОЧКИ ДЛЯ МАРШРУТА ===== */
 .medical-centers-list {
     display: flex;
     flex-direction: column;
@@ -548,6 +548,12 @@ footer {
     margin-bottom: 15px;
     width: 100%;
     box-sizing: border-box;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    position: relative;
+    padding-right: 4px;
 }
 
 .center-card {
@@ -557,8 +563,192 @@ footer {
     padding: 8px 10px;
     user-select: none;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    cursor: grab;
+    transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    position: relative;
 }
 
+.center-card:active {
+    cursor: grabbing;
+}
+
+.center-card.dragging {
+    opacity: 0.5;
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.center-card.dragging-source {
+    opacity: 0.3;
+    transform: scale(0.98);
+}
+
+.drag-handle {
+    display: inline-block;
+    margin-left: 8px;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 20px;
+    cursor: grab;
+    user-select: none;
+    padding: 0 4px;
+    -webkit-touch-callout: none;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Клон для перетаскивания */
+.dragging-clone {
+    position: fixed;
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 2px solid var(--tg-theme-button-color, #40a7e3);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    pointer-events: none;
+    z-index: 1000;
+    width: 300px;
+    max-width: 80vw;
+    transform: translate(-50%, -50%);
+    opacity: 0.9;
+    transition: all 0.05s ease;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+}
+
+/* Цель для вставки */
+.drop-target {
+    transform: scale(1.02);
+    border-color: var(--tg-theme-button-color, #40a7e3);
+    background-color: rgba(64, 167, 227, 0.1);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.drop-target::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--tg-theme-button-color, #40a7e3);
+    border-radius: 3px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* Верхняя строка карточки */
+.center-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.order-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.name-time-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    min-width: 0;
+}
+
+.center-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #000);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.center-time {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tg-theme-button-color, #40a7e3);
+    background-color: rgba(64, 167, 227, 0.1);
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Детали */
+.center-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 32px;
+    font-size: 13px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    color: var(--tg-theme-text-color, #333);
+    line-height: 1.3;
+}
+
+.detail-icon {
+    font-size: 13px;
+    min-width: 18px;
+    opacity: 0.7;
+}
+
+.detail-text {
+    flex: 1;
+    word-break: break-word;
+    color: var(--tg-theme-text-color, #333);
+}
+
+/* Строка с графиком и лабораторией (в одну строку) */
+.compact-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.compact-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+/* Разделитель */
+.separator {
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 12px;
+}
+
+/* ===== КАРТОЧКИ ДЛЯ ОТЧЁТА (с чекбоксом) ===== */
 .report-card {
     background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
     border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
@@ -590,18 +780,11 @@ footer {
     background-color: rgba(76, 175, 80, 0.15);
 }
 
-.center-header, .report-header-card {
-    display: flex;
-    align-items: center;
-    margin-bottom: 4px;
-    pointer-events: none;
-}
-
+/* ===== ЧЕКБОКСЫ ===== */
 .checkbox-wrapper {
     margin-right: 8px;
     display: flex;
     align-items: center;
-    pointer-events: none;
 }
 
 .checkbox-wrapper input[type="checkbox"] {
@@ -609,59 +792,9 @@ footer {
     height: 20px;
     cursor: pointer;
     accent-color: var(--tg-theme-button-color, #40a7e3);
-    pointer-events: none;
 }
 
-.order-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    background-color: var(--tg-theme-button-color, #40a7e3);
-    color: white;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-right: 8px;
-    flex-shrink: 0;
-    pointer-events: none;
-}
-
-.name-time-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex: 1;
-    min-width: 0;
-    pointer-events: none;
-}
-
-.center-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--tg-theme-text-color, #000);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 8px;
-    flex: 1;
-    min-width: 0;
-    pointer-events: none;
-}
-
-.center-time {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--tg-theme-button-color, #40a7e3);
-    background-color: rgba(64, 167, 227, 0.1);
-    padding: 2px 8px;
-    border-radius: 20px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    pointer-events: none;
-}
-
+/* ===== ЗАРПЛАТА В КАРТОЧКЕ ===== */
 .salary-badge {
     font-size: 13px;
     font-weight: 600;
@@ -671,61 +804,6 @@ footer {
     border-radius: 20px;
     white-space: nowrap;
     margin-left: 8px;
-    pointer-events: none;
-}
-
-.center-details {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-left: 32px;
-    font-size: 13px;
-    pointer-events: none;
-}
-
-.detail-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    color: var(--tg-theme-text-color, #333);
-    line-height: 1.3;
-    pointer-events: none;
-}
-
-.detail-icon {
-    font-size: 13px;
-    min-width: 18px;
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.detail-text {
-    flex: 1;
-    word-break: break-word;
-    color: var(--tg-theme-text-color, #333);
-    pointer-events: none;
-}
-
-.compact-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    pointer-events: none;
-}
-
-.compact-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-    pointer-events: none;
-}
-
-.separator {
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 12px;
-    pointer-events: none;
 }
 
 /* ===== ТЁМНАЯ ТЕМА ===== */
@@ -834,92 +912,22 @@ footer {
     .report-point-name {
         color: var(--tg-theme-text-color, #fff);
     }
-}
-
-/* ПРИНУДИТЕЛЬНОЕ ВЫРАВНИВАНИЕ ЗАГОЛОВКОВ */
-.report-header h2,
-.reports-header h2,
-.finance-header h2,
-.route-header h2,
-.history-header h2,
-.report-detail-header h2 {
-    font-size: 19px !important;  /* Чуть увеличим, чтобы было заметно */
-    font-weight: 600 !important;
-    line-height: 1.3 !important;
-    color: var(--tg-theme-text-color, #000000) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Убираем возможные влияния от других стилей */
-.report-header,
-.reports-header,
-.finance-header,
-.route-header,
-.history-header,
-.report-detail-header {
-    display: flex !important;
-    align-items: center !important;
-    gap: 15px !important;
-    margin-bottom: 25px !important;
-    padding-bottom: 15px !important;
-    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0) !important;
-}
-
-/* ===== DRAG-AND-DROP С УЛУЧШЕНИЯМИ ===== */
-.center-card {
-    cursor: grab;
-    transition: all 0.2s ease;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-}
-
-.center-card:active {
-    cursor: grabbing;
-}
-
-.center-card.dragging {
-    opacity: 0.5;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    transform: scale(1.02);
-    transition: all 0.1s ease;
-}
-
-.drag-handle {
-    display: inline-block;
-    margin-left: 8px;
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 20px;
-    cursor: grab;
-    user-select: none;
-    padding: 0 4px;
-}
-
-/* Контейнер с плавной прокруткой */
-.medical-centers-list {
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-}
-
-/* Визуальная обратная связь при перетаскивании */
-.center-card.dragging + .center-card {
-    border-top: 2px solid var(--tg-theme-button-color, #40a7e3);
-}
-
-/* Убираем выделение при перетаскивании */
-.center-card * {
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-}
-
-/* Адаптация для тёмной темы */
-@media (prefers-color-scheme: dark) {
+    
     .center-card.dragging {
         background-color: #3a3a3a;
         border-color: #40a7e3;
+    }
+    
+    .dragging-clone {
+        background-color: #2a2a2a;
+        border-color: #40a7e3;
+    }
+    
+    .drop-target {
+        background-color: rgba(64, 167, 227, 0.2);
+    }
+    
+    .drag-handle {
+        color: #aaa;
     }
 }
