@@ -917,3 +917,72 @@ footer {
         border-color: #40a7e3;
     }
 }
+
+/* ===== DRAG-AND-DROP ДЛЯ МОБИЛЬНЫХ ===== */
+.drag-handle {
+    display: inline-block;
+    margin-left: 8px;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 20px;
+    cursor: grab;
+    user-select: none;
+    padding: 0 4px;
+}
+
+.center-card {
+    cursor: grab;
+    transition: all 0.2s ease;
+    position: relative;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+}
+
+.center-card:active {
+    cursor: grabbing;
+}
+
+.center-card.dragging-source {
+    opacity: 0.3;
+    transform: scale(0.98);
+}
+
+.dragging-clone {
+    position: fixed;
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 2px solid var(--tg-theme-button-color, #40a7e3);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    pointer-events: none;
+    z-index: 1000;
+    width: 300px;
+    max-width: 80vw;
+    transform: translate(-50%, -50%);
+    opacity: 0.9;
+}
+
+.drop-target {
+    border: 2px dashed var(--tg-theme-button-color, #40a7e3);
+    background-color: rgba(64, 167, 227, 0.1);
+    transform: scale(1.02);
+}
+
+/* Убираем выделение при touch */
+.center-card * {
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+}
+
+/* Адаптация для тёмной темы */
+@media (prefers-color-scheme: dark) {
+    .dragging-clone {
+        background-color: #2a2a2a;
+        border-color: #40a7e3;
+    }
+    
+    .drop-target {
+        background-color: rgba(64, 167, 227, 0.2);
+    }
+}

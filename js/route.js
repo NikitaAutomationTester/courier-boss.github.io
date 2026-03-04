@@ -1,7 +1,11 @@
-// ========== УПРАВЛЕНИЕ МАРШРУТОМ С DRAG-AND-DROP ==========
+// ========== УПРАВЛЕНИЕ МАРШРУТОМ С DRAG-AND-DROP (поддержка мобильных) ==========
 
 let draggedItem = null;
 let draggedIndex = -1;
+let touchStartY = 0;
+let touchStartX = 0;
+let isDragging = false;
+let dragImage = null;
 
 async function loadRouteData() {
   // Сначала пробуем загрузить сохраненный маршрут
@@ -22,25 +26,15 @@ function renderCentersList(centers) {
     centersList.appendChild(card);
   });
 
-  // Включаем drag-and-drop
+  // Включаем drag-and-drop для всех устройств
   enableDragAndDrop();
 }
 
 function createCenterCard(center, orderNumber) {
   const card = document.createElement("div");
   card.className = "center-card";
-  card.setAttribute("draggable", "true");
   card.setAttribute("data-center-id", center.id);
   card.setAttribute("data-order", orderNumber - 1);
-
-  // Добавляем иконку для перетаскивания
-  const dragIcon = document.createElement("span");
-  dragIcon.className = "drag-icon";
-  dragIcon.innerHTML = "⋮⋮";
-  dragIcon.style.marginRight = "8px";
-  dragIcon.style.opacity = "0.5";
-  dragIcon.style.fontSize = "18px";
-  dragIcon.style.cursor = "grab";
 
   card.innerHTML = `
     <div class="center-header">
@@ -49,6 +43,7 @@ function createCenterCard(center, orderNumber) {
         <span class="center-name" title="${center.name}">${center.name}</span>
         <span class="center-time">${center.timeWindow}</span>
       </div>
+      <span class="drag-handle">⋮⋮</span>
     </div>
     
     <div class="center-details">
@@ -84,23 +79,31 @@ function enableDragAndDrop() {
   const cards = document.querySelectorAll(".center-card");
 
   cards.forEach((card) => {
+    // Для десктопа (мышь)
     card.addEventListener("dragstart", handleDragStart);
     card.addEventListener("dragend", handleDragEnd);
     card.addEventListener("dragover", handleDragOver);
     card.addEventListener("drop", handleDrop);
+
+    // Для мобильных устройств (touch)
+    card.addEventListener("touchstart", handleTouchStart, { passive: false });
+    card.addEventListener("touchmove", handleTouchMove, { passive: false });
+    card.addEventListener("touchend", handleTouchEnd);
+    card.addEventListener("touchcancel", handleTouchCancel);
+
+    // Предотвращаем стандартное поведение
     card.addEventListener("dragenter", (e) => e.preventDefault());
     card.addEventListener("dragleave", (e) => e.preventDefault());
   });
 }
 
+// ===== ОБРАБОТЧИКИ ДЛЯ МЫШИ (ДЕСКТОП) =====
 function handleDragStart(e) {
   draggedItem = this;
   draggedIndex = parseInt(this.getAttribute("data-order"));
   this.classList.add("dragging");
   e.dataTransfer.setData("text/plain", this.getAttribute("data-center-id"));
   e.dataTransfer.effectAllowed = "move";
-
-  // Добавляем прозрачность при перетаскивании
   this.style.opacity = "0.5";
 }
 
@@ -141,6 +144,134 @@ function handleDrop(e) {
   console.log(
     `🔄 Элемент перемещен с ${draggedIndex + 1} на ${targetIndex + 1}`,
   );
+}
+
+// ===== ОБРАБОТЧИКИ ДЛЯ TOUCH (МОБИЛЬНЫЕ) =====
+function handleTouchStart(e) {
+  e.preventDefault();
+
+  const touch = e.touches[0];
+  touchStartY = touch.clientY;
+  touchStartX = touch.clientX;
+
+  draggedItem = this;
+  draggedIndex = parseInt(this.getAttribute("data-order"));
+
+  // Создаем клон элемента для перетаскивания
+  dragImage = this.cloneNode(true);
+  dragImage.classList.add("dragging-clone");
+  dragImage.style.position = "fixed";
+  dragImage.style.left = touch.clientX + "px";
+  dragImage.style.top = touch.clientY + "px";
+  dragImage.style.width = this.offsetWidth + "px";
+  dragImage.style.opacity = "0.8";
+  dragImage.style.transform = "translate(-50%, -50%)";
+  dragImage.style.pointerEvents = "none";
+  dragImage.style.zIndex = "1000";
+
+  document.body.appendChild(dragImage);
+
+  this.classList.add("dragging-source");
+  isDragging = true;
+}
+
+function handleTouchMove(e) {
+  if (!isDragging || !dragImage || !draggedItem) return;
+
+  e.preventDefault();
+
+  const touch = e.touches[0];
+
+  // Обновляем позицию клона
+  dragImage.style.left = touch.clientX + "px";
+  dragImage.style.top = touch.clientY + "px";
+
+  // Находим элемент, над которым сейчас touch
+  const elementsAtTouch = document.elementsFromPoint(
+    touch.clientX,
+    touch.clientY,
+  );
+  const targetCard = elementsAtTouch.find(
+    (el) => el.classList.contains("center-card") && el !== draggedItem,
+  );
+
+  if (targetCard) {
+    const targetIndex = parseInt(targetCard.getAttribute("data-order"));
+    const cards = [...document.querySelectorAll(".center-card")];
+
+    // Визуально подсвечиваем место вставки
+    cards.forEach((card) => card.classList.remove("drop-target"));
+    targetCard.classList.add("drop-target");
+  }
+}
+
+function handleTouchEnd(e) {
+  if (!isDragging || !draggedItem) return;
+
+  e.preventDefault();
+
+  // Удаляем клон
+  if (dragImage && dragImage.parentNode) {
+    dragImage.parentNode.removeChild(dragImage);
+    dragImage = null;
+  }
+
+  // Находим конечную позицию
+  const touch = e.changedTouches[0];
+  const elementsAtTouch = document.elementsFromPoint(
+    touch.clientX,
+    touch.clientY,
+  );
+  const targetCard = elementsAtTouch.find(
+    (el) => el.classList.contains("center-card") && el !== draggedItem,
+  );
+
+  if (targetCard) {
+    const targetIndex = parseInt(targetCard.getAttribute("data-order"));
+    const cards = [...document.querySelectorAll(".center-card")];
+
+    // Убираем подсветку
+    cards.forEach((card) => card.classList.remove("drop-target"));
+
+    if (draggedIndex !== targetIndex) {
+      if (draggedIndex < targetIndex) {
+        targetCard.parentNode.insertBefore(draggedItem, targetCard.nextSibling);
+      } else {
+        targetCard.parentNode.insertBefore(draggedItem, targetCard);
+      }
+
+      updateOrderNumbers();
+      console.log(
+        `🔄 Элемент перемещен с ${draggedIndex + 1} на ${targetIndex + 1}`,
+      );
+    }
+  }
+
+  draggedItem.classList.remove("dragging-source");
+  isDragging = false;
+  draggedItem = null;
+  draggedIndex = -1;
+
+  // Сохраняем новый порядок
+  updateRouteOrder();
+}
+
+function handleTouchCancel(e) {
+  if (dragImage && dragImage.parentNode) {
+    dragImage.parentNode.removeChild(dragImage);
+    dragImage = null;
+  }
+
+  if (draggedItem) {
+    draggedItem.classList.remove("dragging-source");
+  }
+
+  const cards = [...document.querySelectorAll(".center-card")];
+  cards.forEach((card) => card.classList.remove("drop-target"));
+
+  isDragging = false;
+  draggedItem = null;
+  draggedIndex = -1;
 }
 
 function updateOrderNumbers() {
