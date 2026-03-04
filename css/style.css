@@ -865,3 +865,55 @@ footer {
     padding-bottom: 15px !important;
     border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0) !important;
 }
+
+/* ===== DRAG-AND-DROP СТИЛИ ===== */
+.center-card {
+    cursor: grab;
+    transition: all 0.2s ease;
+    position: relative;
+    user-select: none;
+}
+
+.center-card:active {
+    cursor: grabbing;
+}
+
+.center-card.dragging {
+    opacity: 0.5;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transform: scale(1.02);
+}
+
+/* Иконка перетаскивания */
+.drag-icon {
+    display: inline-block;
+    margin-right: 8px;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 18px;
+    cursor: grab;
+    user-select: none;
+}
+
+/* Анимация при перетаскивании */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.center-card.dragging {
+    animation: pulse 0.3s ease;
+}
+
+/* Убираем выделение текста при перетаскивании */
+.center-card * {
+    user-select: none;
+}
+
+/* Адаптация для тёмной темы */
+@media (prefers-color-scheme: dark) {
+    .center-card.dragging {
+        background-color: #3a3a3a;
+        border-color: #40a7e3;
+    }
+}

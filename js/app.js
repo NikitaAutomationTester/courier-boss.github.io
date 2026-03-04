@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     viewHistoryBtn.addEventListener("click", showHistoryPage);
   }
 
-  // Показываем информацию о пользователе (для отладки)
+  // Показываем информацию о пользователе
   const user = getCurrentTelegramUser();
   if (user) {
     console.log(
@@ -106,22 +106,31 @@ document.addEventListener("DOMContentLoaded", async function () {
     reportDateInput.addEventListener("input", validateDateInput);
   }
 
-  // Загружаем данные пользователя с задержкой
+  // Загружаем все данные пользователя
   setTimeout(async () => {
     console.log("🔄 Начинаем загрузку данных пользователя...");
-    await loadAllUserData();
-    dataLoaded = true;
-    console.log("✅ Загрузка данных завершена");
 
-    // Если сейчас открыта страница финансов, обновим её
+    // Загружаем маршрут
+    await loadRouteOrder();
+
+    // Загружаем финансы и отчёты
+    await loadAllUserData();
+
+    dataLoaded = true;
+    console.log("✅ Загрузка всех данных завершена");
+
+    // Если открыта страница маршрута, обновим её
+    if (routePage && routePage.style.display === "block") {
+      loadRouteData();
+    }
+
+    // Если открыта страница финансов, обновим её
     if (financePage && financePage.style.display === "block") {
-      console.log("💰 Обновляем страницу финансов после загрузки");
       loadFinanceData();
     }
 
-    // Если сейчас открыта страница списка отчётов, обновим её
+    // Если открыта страница списка отчётов, обновим её
     if (reportsListPage && reportsListPage.style.display === "block") {
-      console.log("📊 Обновляем страницу списка отчётов после загрузки");
       loadReportsListData();
     }
   }, 500);
