@@ -33,24 +33,6 @@ function createCenterCard(center, orderNumber) {
   card.setAttribute("data-center-id", center.id);
   card.setAttribute("data-order", orderNumber - 1);
 
-  // Создаем кнопки управления (скрыты по умолчанию)
-  const controls = document.createElement("div");
-  controls.className = "card-controls";
-  controls.style.display = "none";
-
-  const upBtn = document.createElement("button");
-  upBtn.className = "move-btn up-btn";
-  upBtn.innerHTML = "↑";
-  upBtn.setAttribute("aria-label", "Переместить вверх");
-
-  const downBtn = document.createElement("button");
-  downBtn.className = "move-btn down-btn";
-  downBtn.innerHTML = "↓";
-  downBtn.setAttribute("aria-label", "Переместить вниз");
-
-  controls.appendChild(upBtn);
-  controls.appendChild(downBtn);
-
   // Основное содержимое карточки
   const content = document.createElement("div");
   content.className = "card-content";
@@ -88,6 +70,24 @@ function createCenterCard(center, orderNumber) {
       </div>
     </div>
   `;
+
+  // Создаем кнопки управления (скрыты по умолчанию)
+  const controls = document.createElement("div");
+  controls.className = "card-controls";
+  controls.style.display = "none";
+
+  const upBtn = document.createElement("button");
+  upBtn.className = "move-btn up-btn";
+  upBtn.innerHTML = "↑";
+  upBtn.setAttribute("aria-label", "Переместить вверх");
+
+  const downBtn = document.createElement("button");
+  downBtn.className = "move-btn down-btn";
+  downBtn.innerHTML = "↓";
+  downBtn.setAttribute("aria-label", "Переместить вниз");
+
+  controls.appendChild(upBtn);
+  controls.appendChild(downBtn);
 
   card.appendChild(content);
   card.appendChild(controls);
@@ -129,7 +129,7 @@ function moveCard(card, direction) {
   // Обновляем номера порядка
   updateOrderNumbers();
 
-  // Показываем уведомление о возможности сохранить
+  // Показываем подсказку о возможности сохранить
   showSaveHint();
 }
 
@@ -201,13 +201,20 @@ async function saveRouteChanges() {
 }
 
 function toggleEditMode() {
+  console.log("🔄 Переключение режима редактирования");
   isEditMode = !isEditMode;
 
   const cards = document.querySelectorAll(".center-card");
   const controls = document.querySelectorAll(".card-controls");
   const editBtn = document.getElementById("editRouteBtn");
 
+  if (!editBtn) {
+    console.error("❌ Кнопка редактирования не найдена");
+    return;
+  }
+
   if (isEditMode) {
+    console.log("✅ Включаем режим редактирования");
     // Включаем режим редактирования
     controls.forEach((control) => {
       control.style.display = "flex";
@@ -215,6 +222,7 @@ function toggleEditMode() {
     editBtn.textContent = "Готово";
     editBtn.classList.add("active");
   } else {
+    console.log("✅ Выключаем режим редактирования");
     // Выключаем режим редактирования
     controls.forEach((control) => {
       control.style.display = "none";
@@ -244,10 +252,47 @@ function updateEditButtonState() {
   }
 }
 
-// Инициализация
-document.addEventListener("DOMContentLoaded", function () {
+// Инициализация обработчика кнопки
+function initRoutePage() {
+  console.log("🔄 Инициализация страницы маршрута");
   const editBtn = document.getElementById("editRouteBtn");
   if (editBtn) {
+    // Удаляем старый обработчик, если есть
+    editBtn.removeEventListener("click", toggleEditMode);
+    // Добавляем новый
     editBtn.addEventListener("click", toggleEditMode);
+    console.log('✅ Обработчик кнопки "Править" назначен');
+  } else {
+    console.error('❌ Кнопка "Править" не найдена в DOM');
   }
+}
+
+// Вызываем инициализацию после загрузки страницы
+document.addEventListener("DOMContentLoaded", function () {
+  // Ждем немного, чтобы страница точно загрузилась
+  setTimeout(initRoutePage, 500);
 });
+
+// Также инициализируем при открытии страницы маршрута
+function showRoutePage() {
+  console.log("Открываем страницу маршрута");
+
+  // Скрываем главное меню и другие страницы
+  if (mainMenu) mainMenu.style.display = "none";
+  if (reportPage) reportPage.style.display = "none";
+  if (financePage) financePage.style.display = "none";
+  if (historyPage) historyPage.style.display = "none";
+  if (reportsListPage) reportsListPage.style.display = "none";
+  if (reportDetailPage) reportDetailPage.style.display = "none";
+
+  const footer = document.getElementById("mainFooter");
+  if (footer) footer.style.display = "none";
+
+  if (routePage) {
+    routePage.style.display = "block";
+    // Инициализируем кнопку при открытии страницы
+    setTimeout(initRoutePage, 100);
+  }
+
+  loadRouteData();
+}

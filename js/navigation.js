@@ -1,32 +1,60 @@
 // ========== УПРАВЛЕНИЕ СТРАНИЦАМИ ==========
 
 // Глобальные ссылки на элементы страниц
-let mainMenu, routePage, reportPage, financePage, historyPage, reportsListPage, reportDetailPage;
+let mainMenu,
+  routePage,
+  reportPage,
+  financePage,
+  historyPage,
+  reportsListPage,
+  reportDetailPage;
 let pageContainer;
-let backButton, backFromReport, backFromFinance, backFromHistory, backFromReportsList, backFromReportDetail;
-let centersList, reportCentersList, totalSalarySpan, submitReportBtn, reportDateInput;
+let backButton,
+  backFromReport,
+  backFromFinance,
+  backFromHistory,
+  backFromReportsList,
+  backFromReportDetail;
+let centersList,
+  reportCentersList,
+  totalSalarySpan,
+  submitReportBtn,
+  reportDateInput;
 let currentDebtSpan, viewHistoryBtn, historyTransactionsList;
 let reportsList, reportDetailTitle, reportDetailPoints, reportDetailTotal;
 
 // Функция для загрузки HTML страниц
 async function loadPages() {
-  pageContainer = document.getElementById('pageContainer');
-  
+  pageContainer = document.getElementById("pageContainer");
+
   // Загружаем все страницы параллельно
   const pages = [
-    fetch('pages/route.html').then(r => r.text()),
-    fetch('pages/create-report.html').then(r => r.text()),
-    fetch('pages/finance.html').then(r => r.text()),
-    fetch('pages/history.html').then(r => r.text()),
-    fetch('pages/reports-list.html').then(r => r.text()),
-    fetch('pages/report-detail.html').then(r => r.text())
+    fetch("pages/route.html").then((r) => r.text()),
+    fetch("pages/create-report.html").then((r) => r.text()),
+    fetch("pages/finance.html").then((r) => r.text()),
+    fetch("pages/history.html").then((r) => r.text()),
+    fetch("pages/reports-list.html").then((r) => r.text()),
+    fetch("pages/report-detail.html").then((r) => r.text()),
   ];
-  
-  const [routeHtml, reportHtml, financeHtml, historyHtml, reportsListHtml, reportDetailHtml] = await Promise.all(pages);
-  
+
+  const [
+    routeHtml,
+    reportHtml,
+    financeHtml,
+    historyHtml,
+    reportsListHtml,
+    reportDetailHtml,
+  ] = await Promise.all(pages);
+
   // Вставляем все страницы в контейнер
-  pageContainer.innerHTML = routeHtml + reportHtml + financeHtml + historyHtml + reportsListHtml + reportDetailHtml;
-  
+  pageContainer.innerHTML =
+    routeHtml +
+    reportHtml +
+    financeHtml +
+    historyHtml +
+    reportsListHtml +
+    reportDetailHtml;
+
   // После загрузки получаем ссылки на DOM элементы
   getDomElements();
 }
@@ -40,14 +68,14 @@ function getDomElements() {
   historyPage = document.getElementById("historyPage");
   reportsListPage = document.getElementById("reportsListPage");
   reportDetailPage = document.getElementById("reportDetailPage");
-  
+
   backButton = document.getElementById("backFromRoute");
   backFromReport = document.getElementById("backFromReport");
   backFromFinance = document.getElementById("backFromFinance");
   backFromHistory = document.getElementById("backFromHistory");
   backFromReportsList = document.getElementById("backFromReportsList");
   backFromReportDetail = document.getElementById("backFromReportDetail");
-  
+
   centersList = document.getElementById("medicalCentersList");
   reportCentersList = document.getElementById("reportCentersList");
   totalSalarySpan = document.getElementById("totalSalary");
@@ -80,7 +108,14 @@ function showRoutePage() {
   if (footer) footer.style.display = "none";
   if (routePage) routePage.style.display = "block";
 
-  if (typeof loadRouteData === 'function') loadRouteData();
+  // Инициализируем кнопку "Править" после открытия страницы
+  setTimeout(() => {
+    if (typeof initRoutePage === "function") {
+      initRoutePage();
+    }
+  }, 100);
+
+  if (typeof loadRouteData === "function") loadRouteData();
 }
 
 function showReportPage() {
@@ -98,11 +133,11 @@ function showReportPage() {
 
   if (reportDateInput) {
     reportDateInput.value = "";
-    reportDateInput.classList.remove('valid', 'error');
-    reportDateInput.classList.add('error');
+    reportDateInput.classList.remove("valid", "error");
+    reportDateInput.classList.add("error");
   }
 
-  if (typeof loadReportData === 'function') loadReportData();
+  if (typeof loadReportData === "function") loadReportData();
 }
 
 function showFinancePage() {
@@ -118,7 +153,7 @@ function showFinancePage() {
   if (footer) footer.style.display = "none";
   if (financePage) financePage.style.display = "block";
 
-  if (typeof loadFinanceData === 'function') loadFinanceData();
+  if (typeof loadFinanceData === "function") loadFinanceData();
 }
 
 function showHistoryPage() {
@@ -129,7 +164,7 @@ function showHistoryPage() {
   if (reportDetailPage) reportDetailPage.style.display = "none";
   if (historyPage) historyPage.style.display = "block";
 
-  if (typeof loadHistoryData === 'function') loadHistoryData();
+  if (typeof loadHistoryData === "function") loadHistoryData();
 }
 
 function showReportsListPage() {
@@ -145,7 +180,7 @@ function showReportsListPage() {
   if (footer) footer.style.display = "none";
   if (reportsListPage) reportsListPage.style.display = "block";
 
-  if (typeof loadReportsListData === 'function') loadReportsListData();
+  if (typeof loadReportsListData === "function") loadReportsListData();
 }
 
 function showMainMenu() {
