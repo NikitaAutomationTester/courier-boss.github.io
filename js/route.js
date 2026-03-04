@@ -200,7 +200,8 @@ async function saveRouteChanges() {
   }
 }
 
-function toggleEditMode() {
+// Глобальная функция для переключения режима редактирования
+window.toggleEditMode = function () {
   console.log("🔄 Переключение режима редактирования");
   isEditMode = !isEditMode;
 
@@ -242,7 +243,7 @@ function toggleEditMode() {
       }
     }
   }
-}
+};
 
 function updateEditButtonState() {
   const editBtn = document.getElementById("editRouteBtn");
@@ -257,42 +258,30 @@ function initRoutePage() {
   console.log("🔄 Инициализация страницы маршрута");
   const editBtn = document.getElementById("editRouteBtn");
   if (editBtn) {
-    // Удаляем старый обработчик, если есть
-    editBtn.removeEventListener("click", toggleEditMode);
-    // Добавляем новый
-    editBtn.addEventListener("click", toggleEditMode);
+    // Удаляем старый обработчик через replace с новым
+    const newBtn = editBtn.cloneNode(true);
+    editBtn.parentNode.replaceChild(newBtn, editBtn);
+
+    // Добавляем обработчик на новую кнопку
+    newBtn.addEventListener("click", window.toggleEditMode);
     console.log('✅ Обработчик кнопки "Править" назначен');
   } else {
     console.error('❌ Кнопка "Править" не найдена в DOM');
   }
 }
 
+// Делаем функцию глобальной
+window.initRoutePage = initRoutePage;
+
 // Вызываем инициализацию после загрузки страницы
 document.addEventListener("DOMContentLoaded", function () {
   // Ждем немного, чтобы страница точно загрузилась
-  setTimeout(initRoutePage, 500);
+  setTimeout(() => {
+    if (
+      document.getElementById("routePage") &&
+      document.getElementById("routePage").style.display === "block"
+    ) {
+      initRoutePage();
+    }
+  }, 500);
 });
-
-// Также инициализируем при открытии страницы маршрута
-function showRoutePage() {
-  console.log("Открываем страницу маршрута");
-
-  // Скрываем главное меню и другие страницы
-  if (mainMenu) mainMenu.style.display = "none";
-  if (reportPage) reportPage.style.display = "none";
-  if (financePage) financePage.style.display = "none";
-  if (historyPage) historyPage.style.display = "none";
-  if (reportsListPage) reportsListPage.style.display = "none";
-  if (reportDetailPage) reportDetailPage.style.display = "none";
-
-  const footer = document.getElementById("mainFooter");
-  if (footer) footer.style.display = "none";
-
-  if (routePage) {
-    routePage.style.display = "block";
-    // Инициализируем кнопку при открытии страницы
-    setTimeout(initRoutePage, 100);
-  }
-
-  loadRouteData();
-}
