@@ -244,7 +244,7 @@ window.toggleEditMode = function () {
     controls.forEach((control) => {
       control.style.display = "flex";
     });
-    editBtn.textContent = "Готово";
+    editBtn.textContent = "Сохранить";
     editBtn.classList.add("active");
   } else {
     console.log("✅ Выключаем режим редактирования");
@@ -252,7 +252,7 @@ window.toggleEditMode = function () {
     controls.forEach((control) => {
       control.style.display = "none";
     });
-    editBtn.textContent = "Править";
+    editBtn.textContent = "Изменить";
     editBtn.classList.remove("active");
 
     // Проверяем, есть ли несохраненные изменения
