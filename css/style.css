@@ -843,7 +843,7 @@ footer {
 .route-header h2,
 .history-header h2,
 .report-detail-header h2 {
-    font-size: 18px !important;  /* Чуть увеличим, чтобы было заметно */
+    font-size: 19px !important;  /* Чуть увеличим, чтобы было заметно */
     font-weight: 600 !important;
     line-height: 1.3 !important;
     color: var(--tg-theme-text-color, #000000) !important;
