@@ -18,11 +18,12 @@ function validateDateInput() {
 }
 
 function loadReportData() {
-  const route = getCurrentCourierRoute();
-  console.log("Отчёт загружен, точек:", route.length);
+  // Используем ту же функцию, что и в маршруте - получаем точки с данными
+  const points = getCurrentRoutePoints();
+  console.log("📋 Отчёт загружен, точек в маршруте:", points.length);
 
   selectedPoints.clear();
-  renderReportCentersList(route);
+  renderReportCentersList(points);
   updateTotalSalary();
   updateSubmitButtonState();
 }
