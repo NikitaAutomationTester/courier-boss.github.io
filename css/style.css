@@ -541,11 +541,26 @@ footer {
 }
 
 /* ===== КАРТОЧКИ ДЛЯ МАРШРУТА ===== */
+.medical-centers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    position: relative;
+    padding-right: 4px;
+}
+
 .center-card {
     background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
     border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
     border-radius: 10px;
-    padding: 6px 10px; /* Уменьшено с 8px 10px до 6px 10px */
+    padding: 4px 10px;  /* ← изменено с 8px на 4px */
     user-select: none;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     cursor: grab;
@@ -553,58 +568,113 @@ footer {
     -webkit-user-select: none;
     -webkit-touch-callout: none;
     position: relative;
-    margin-bottom: 6px; /* Добавлен небольшой отступ между карточками */
 }
 
-/* Верхняя строка карточки - уменьшен отступ снизу */
+.center-card:active {
+    cursor: grabbing;
+}
+
+.center-card.dragging {
+    opacity: 0.5;
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.center-card.dragging-source {
+    opacity: 0.3;
+    transform: scale(0.98);
+}
+
+.drag-handle {
+    display: inline-block;
+    margin-left: 8px;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 20px;
+    cursor: grab;
+    user-select: none;
+    padding: 0 4px;
+    -webkit-touch-callout: none;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Клон для перетаскивания */
+.dragging-clone {
+    position: fixed;
+    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+    border: 2px solid var(--tg-theme-button-color, #40a7e3);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    pointer-events: none;
+    z-index: 1000;
+    width: 300px;
+    max-width: 80vw;
+    transform: translate(-50%, -50%);
+    opacity: 0.9;
+    transition: all 0.05s ease;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+}
+
+/* Цель для вставки */
+.drop-target {
+    transform: scale(1.02);
+    border-color: var(--tg-theme-button-color, #40a7e3);
+    background-color: rgba(64, 167, 227, 0.1);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.drop-target::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--tg-theme-button-color, #40a7e3);
+    border-radius: 3px;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* Верхняя строка карточки */
 .center-header {
     display: flex;
     align-items: center;
-    margin-bottom: 2px; /* Уменьшено с 4px до 2px */
+    margin-bottom: 4px;
 }
 
-/* Детали - уменьшены отступы */
-.center-details {
-    display: flex;
-    flex-direction: column;
-    gap: 2px; /* Уменьшено с 4px до 2px */
-    margin-left: 32px;
-    font-size: 13px;
-}
-
-/* Строка с графиком и лабораторией - без лишних отступов */
-.compact-row {
+.order-number {
     display: flex;
     align-items: center;
-    gap: 8px; /* Уменьшено с 12px до 8px */
-    flex-wrap: wrap;
-    line-height: 1.2; /* Уменьшена высота строки */
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-right: 8px;
+    flex-shrink: 0;
 }
 
-/* Отдельные элементы в строке */
-.compact-item {
+.name-time-wrapper {
     display: flex;
     align-items: center;
-    gap: 3px; /* Уменьшено с 4px до 3px */
-    white-space: nowrap;
-}
-
-/* Иконки чуть меньше */
-.detail-icon {
-    font-size: 12px; /* Уменьшено с 13px до 12px */
-    min-width: 16px; /* Уменьшено с 18px до 16px */
-    opacity: 0.7;
-}
-
-/* Текст деталей */
-.detail-text {
+    justify-content: space-between;
     flex: 1;
-    word-break: break-word;
-    color: var(--tg-theme-text-color, #333);
-    line-height: 1.2; /* Уменьшена высота строки */
+    min-width: 0;
 }
 
-/* Название клиники */
 .center-name {
     font-size: 15px;
     font-weight: 600;
@@ -615,51 +685,34 @@ footer {
     padding-right: 8px;
     flex: 1;
     min-width: 0;
-    line-height: 1.2; /* Уменьшена высота строки */
 }
 
-/* Время */
 .center-time {
     font-size: 13px;
     font-weight: 500;
     color: var(--tg-theme-button-color, #40a7e3);
     background-color: rgba(64, 167, 227, 0.1);
-    padding: 2px 6px; /* Уменьшено с 2px 8px до 2px 6px */
+    padding: 2px 8px;
     border-radius: 20px;
     white-space: nowrap;
     flex-shrink: 0;
-    line-height: 1.2; /* Уменьшена высота строки */
 }
 
-/* Номер точки */
-.order-number {
+/* Детали */
+.center-details {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px; /* Уменьшено с 24px до 22px */
-    height: 22px; /* Уменьшено с 24px до 22px */
-    background-color: var(--tg-theme-button-color, #40a7e3);
-    color: white;
-    border-radius: 11px; /* Уменьшено пропорционально */
-    font-size: 11px; /* Уменьшено с 12px до 11px */
-    font-weight: bold;
-    margin-right: 8px;
-    flex-shrink: 0;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 32px;
+    font-size: 13px;
 }
 
-/* Разделитель */
-.separator {
-    color: var(--tg-theme-hint-color, #999);
-    font-size: 11px; /* Уменьшено с 12px до 11px */
-}
-
-/* Строка с адресом - более компактно */
 .detail-row {
     display: flex;
     align-items: flex-start;
-    gap: 4px; /* Уменьшено с 6px до 4px */
+    gap: 6px;
     color: var(--tg-theme-text-color, #333);
-    line-height: 1.2; /* Уменьшена высота строки */
+    line-height: 1.3;
 }
 
 .detail-icon {
