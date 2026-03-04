@@ -866,13 +866,24 @@ footer {
     border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0) !important;
 }
 
-/*/* ===== DRAG-AND-DROP ===== */
+/* ===== DRAG-AND-DROP С УЛУЧШЕНИЯМИ ===== */
 .center-card {
+    cursor: grab;
     transition: all 0.2s ease;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
-    touch-action: pan-y; /* Разрешаем вертикальную прокрутку */
+}
+
+.center-card:active {
+    cursor: grabbing;
+}
+
+.center-card.dragging {
+    opacity: 0.5;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transform: scale(1.02);
+    transition: all 0.1s ease;
 }
 
 .drag-handle {
@@ -882,64 +893,33 @@ footer {
     font-size: 20px;
     cursor: grab;
     user-select: none;
-    padding: 8px 4px;
-    -webkit-touch-callout: none;
-    touch-action: none; /* Запрещаем прокрутку при перетаскивании за ручку */
-    border-radius: 8px;
+    padding: 0 4px;
 }
 
-.drag-handle:active {
-    background-color: rgba(64, 167, 227, 0.1);
-    cursor: grabbing;
-}
-
-.center-card.dragging-source {
-    opacity: 0.5;
-    transform: scale(0.98);
-}
-
-.dragging-clone {
-    position: fixed;
-    background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
-    border: 2px solid var(--tg-theme-button-color, #40a7e3);
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    pointer-events: none;
-    z-index: 1000;
-    width: 300px;
-    max-width: 80vw;
-    transform: translate(-50%, -50%);
-    opacity: 0.9;
-}
-
-.drop-target {
-    border: 2px dashed var(--tg-theme-button-color, #40a7e3);
-    background-color: rgba(64, 167, 227, 0.1);
-    transform: scale(1.02);
-    margin: 8px 0;
-}
-
-/* Контейнер для списка с прокруткой */
+/* Контейнер с плавной прокруткой */
 .medical-centers-list {
     max-height: calc(100vh - 200px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding-right: 4px;
+    scroll-behavior: smooth;
+}
+
+/* Визуальная обратная связь при перетаскивании */
+.center-card.dragging + .center-card {
+    border-top: 2px solid var(--tg-theme-button-color, #40a7e3);
+}
+
+/* Убираем выделение при перетаскивании */
+.center-card * {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 /* Адаптация для тёмной темы */
 @media (prefers-color-scheme: dark) {
-    .drag-handle:active {
-        background-color: rgba(64, 167, 227, 0.2);
-    }
-    
-    .dragging-clone {
-        background-color: #2a2a2a;
+    .center-card.dragging {
+        background-color: #3a3a3a;
         border-color: #40a7e3;
-    }
-    
-    .drop-target {
-        background-color: rgba(64, 167, 227, 0.2);
     }
 }
