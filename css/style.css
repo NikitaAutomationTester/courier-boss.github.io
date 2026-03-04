@@ -39,8 +39,12 @@ header p {
     color: var(--tg-theme-hint-color, #666666);
 }
 
+main {
+    margin-top: 10px; /* Добавить небольшой отступ сверху */
+}
+
 main h2 {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-size: 18px;
     color: var(--tg-theme-text-color, #000000);
 }
@@ -73,11 +77,11 @@ main h2 {
 }
 
 footer {
-    margin-top: 25px;
+    margin-top: 20px; /* Уменьшить отступ сверху */
     text-align: center;
-    padding: 15px 0;
+    padding: 10px 0;
     color: #999;
-    font-size: 13px;
+    font-size: 12px;
     border-top: 1px solid #eee;
 }
 

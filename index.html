@@ -6,7 +6,7 @@
     <title>Курьерская служба</title>
     <!-- Подключаем Telegram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="css/style.css?v=2.0" />
+    <link rel="stylesheet" href="css/style.css" />
     <!-- Отключаем кэширование -->
     <meta
       http-equiv="Cache-Control"
@@ -14,66 +14,10 @@
     />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-
-    <!-- Стили только для отладочных кнопок -->
-    <style>
-      .debug-buttons-container {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        z-index: 10000;
-        max-width: 200px;
-      }
-
-      .debug-btn {
-        border: none;
-        border-radius: 20px;
-        padding: 8px 12px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        opacity: 0.9;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        transition: opacity 0.2s;
-        color: white;
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-          Arial, sans-serif;
-      }
-
-      .debug-btn:hover {
-        opacity: 1;
-      }
-
-      .debug-btn-blue {
-        background: #40a7e3;
-      }
-
-      .debug-btn-green {
-        background: #4caf50;
-      }
-
-      .debug-btn-red {
-        background: #ff3b30;
-      }
-
-      /* Убеждаемся, что стили отладки не влияют на основные кнопки */
-      .menu-button {
-        background-color: var(--tg-theme-button-color, #40a7e3) !important;
-      }
-    </style>
   </head>
   <body>
     <div class="container" id="mainContainer">
-      <header>
-        <div class="logo-container">
-          <h1>BBEx</h1>
-        </div>
-        <p class="subtitle">Курьерская служба</p>
-      </header>
+      <!-- ШАПКА УДАЛЕНА -->
 
       <main>
         <h2>Меню</h2>
@@ -94,175 +38,14 @@
     </div>
     <!-- Закрываем mainContainer -->
 
-    <!-- ОТЛАДОЧНЫЕ КНОПКИ с уникальными классами -->
-    <div class="debug-buttons-container">
-      <button class="debug-btn debug-btn-blue" onclick="checkTelegramData()">
-        🔍 Telegram Data
-      </button>
-      <button class="debug-btn debug-btn-green" onclick="checkCloudStorage()">
-        💾 CloudStorage
-      </button>
-      <button class="debug-btn debug-btn-red" onclick="clearAllData()">
-        🗑️ Очистить
-      </button>
-    </div>
-
     <!-- Eruda console for debugging -->
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>
-      // Включаем Eruda только для разработки
       eruda.init();
       console.log("✅ Eruda console activated");
     </script>
 
-    <script>
-      // Функции для отладки
-      function checkTelegramData() {
-        console.log("🔍 ===== ПРОВЕРКА TELEGRAM DATA =====");
-        console.log("window.Telegram существует:", !!window.Telegram);
-        console.log("tg существует:", !!tg);
-        console.log("tg.initData:", tg?.initData);
-        console.log("tg.initDataUnsafe:", tg?.initDataUnsafe);
-        console.log("tg.initDataUnsafe?.user:", tg?.initDataUnsafe?.user);
-        console.log(
-          "tg.initDataUnsafe?.user?.id:",
-          tg?.initDataUnsafe?.user?.id,
-        );
-        console.log(
-          "getUserId():",
-          typeof getUserId === "function" ? getUserId() : "функция не найдена",
-        );
-        console.log("🔍 ===== КОНЕЦ ПРОВЕРКИ =====");
-
-        alert(
-          "📱 Telegram Data:\n" +
-            "tg существует: " +
-            !!tg +
-            "\n" +
-            "initData: " +
-            (tg?.initData ? "✅ есть" : "❓ нет") +
-            "\n" +
-            "user: " +
-            (tg?.initDataUnsafe?.user ? "✅ есть" : "❓ нет") +
-            "\n" +
-            "user.id: " +
-            (tg?.initDataUnsafe?.user?.id || "не определён"),
-        );
-      }
-
-      function checkCloudStorage() {
-        console.log("💾 ===== ПРОВЕРКА CLOUDSTORAGE =====");
-        console.log("CloudStorage доступен:", !!tg?.CloudStorage);
-
-        if (tg?.CloudStorage) {
-          tg.CloudStorage.getKeys(function (err, keys) {
-            if (err) {
-              console.log("❌ Ошибка получения ключей:", err);
-              alert("❌ Ошибка получения ключей: " + JSON.stringify(err));
-            } else {
-              console.log("📋 Ключи в CloudStorage:", keys);
-
-              if (keys && keys.length > 0) {
-                // Покажем содержимое первого ключа
-                tg.CloudStorage.getItem(keys[0], function (err, val) {
-                  if (err) {
-                    console.log("❌ Ошибка получения значения:", err);
-                  } else {
-                    console.log("📦 Данные по ключу", keys[0], ":", val);
-                    try {
-                      const parsed = JSON.parse(val);
-                      console.log("📊 Распарсенные данные:", parsed);
-                    } catch (e) {
-                      console.log("❌ Ошибка парсинга:", e);
-                    }
-                  }
-                });
-
-                alert(
-                  "💾 CloudStorage:\n" +
-                    "Ключей: " +
-                    keys.length +
-                    "\n" +
-                    "Первый ключ: " +
-                    keys[0],
-                );
-              } else {
-                alert("💾 CloudStorage пуст");
-              }
-            }
-          });
-        } else {
-          console.log("❌ CloudStorage НЕ доступен");
-          alert("❌ CloudStorage НЕ доступен");
-        }
-        console.log("💾 ===== КОНЕЦ ПРОВЕРКИ =====");
-      }
-
-      function clearAllData() {
-        if (
-          !confirm("⚠️ Вы уверены, что хотите удалить ВСЕ сохранённые данные?")
-        ) {
-          return;
-        }
-
-        console.log("🗑️ ===== ОЧИСТКА ДАННЫХ =====");
-
-        // Очищаем память
-        if (typeof financeDB !== "undefined") {
-          Object.keys(financeDB).forEach((key) => {
-            financeDB[key] = { currentDebt: 0, transactions: [] };
-          });
-          console.log("✅ financeDB очищен");
-        }
-
-        if (typeof reportDetailsDB !== "undefined") {
-          Object.keys(reportDetailsDB).forEach((key) => {
-            reportDetailsDB[key] = [];
-          });
-          console.log("✅ reportDetailsDB очищен");
-        }
-
-        // Очищаем CloudStorage
-        if (tg?.CloudStorage) {
-          tg.CloudStorage.getKeys(function (err, keys) {
-            if (err) {
-              console.log("❌ Ошибка получения ключей:", err);
-            } else if (keys && keys.length > 0) {
-              let deleted = 0;
-              keys.forEach((key) => {
-                tg.CloudStorage.removeItem(key, function (err) {
-                  if (!err) {
-                    deleted++;
-                    console.log(`✅ Ключ ${key} удалён`);
-                  }
-                  if (deleted === keys.length) {
-                    console.log(
-                      `✅ Все ${keys.length} ключей удалены из CloudStorage`,
-                    );
-                    alert(`🗑️ Данные очищены. Удалено ${keys.length} ключей.`);
-                    // Обновим интерфейс
-                    if (typeof loadFinanceData === "function")
-                      loadFinanceData();
-                    if (typeof loadReportsListData === "function")
-                      loadReportsListData();
-                  }
-                });
-              });
-            } else {
-              console.log("📭 CloudStorage уже пуст");
-              alert("📭 CloudStorage уже пуст");
-            }
-          });
-        } else {
-          console.log("❌ CloudStorage недоступен");
-          alert("❌ CloudStorage недоступен");
-        }
-
-        console.log("🗑️ ===== КОНЕЦ ОЧИСТКИ =====");
-      }
-    </script>
-
-    <!-- Подключаем JS модули в правильном порядке -->
+    <!-- Подключаем JS модули -->
     <script src="js/telegram.js"></script>
     <script src="js/data.js"></script>
     <script src="js/navigation.js"></script>
