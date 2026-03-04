@@ -12,6 +12,11 @@ async function loadRouteData() {
   console.log("📍 Маршрут загружен, точек:", currentRoutePoints.length);
   renderCentersList(currentRoutePoints);
 
+  // Добавляем компактный режим по умолчанию
+  document.querySelectorAll(".center-card").forEach((card) => {
+    card.classList.add("compact-mode");
+  });
+
   // Сбрасываем режим редактирования
   isEditMode = false;
   updateEditButtonState();
