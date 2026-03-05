@@ -325,6 +325,22 @@ async function saveFinanceData() {
 
 // Делаем функцию глобальной
 window.saveFinanceData = saveFinanceData;
+
+// ===== ДОБАВЬТЕ ЭТУ ФУНКЦИЮ =====
+// Сохранить отчёт
+async function saveReport(reportDate, reportData) {
+  const userId = getUserId();
+  const key = `report_${userId}_${reportDate}`;
+  console.log(
+    `💾 Сохраняем отчёт для пользователя ${userId} по ключу: ${key}`,
+    reportData,
+  );
+  await saveToCloud(key, reportData);
+}
+
+// Делаем функцию глобальной
+window.saveReport = saveReport;
+// ==============================
 // ==============================
 
 // Загрузить сохраненный маршрут из CloudStorage
