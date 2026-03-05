@@ -312,6 +312,19 @@ async function saveRouteOrder(newOrder) {
   await saveToCloud(key, newOrder);
 }
 
+// ===== ДОБАВЛЕННАЯ ФУНКЦИЯ =====
+// Сохранить финансы текущего пользователя
+async function saveFinanceData() {
+  const userId = getUserId();
+  const key = `finance_${userId}`;
+  const finance = getCurrentFinance();
+  console.log(
+    `💾 Сохраняем финансы для пользователя ${userId} по ключу ${key}`,
+  );
+  await saveToCloud(key, finance);
+}
+// ==============================
+
 // Загрузить сохраненный маршрут из CloudStorage
 async function loadRouteOrder() {
   const userId = getUserId();
