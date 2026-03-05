@@ -82,20 +82,24 @@ function createReportCard(center, orderNumber) {
       <span class="salary-badge">+${center.salary || 0}₽</span>
     </div>
     
-    <div class="center-details" style="margin-left: 28px;"> <!-- Уменьшен отступ, так как нет номера -->
+    <div class="center-details" style="margin-left: 28px;">
       <div class="detail-row">
         <span class="detail-icon">📍</span>
         <span class="detail-text" title="${center.address || ""}">${center.address || "Адрес не указан"}</span>
       </div>
       
       <div class="compact-row">
-        ${center.schedule ? `
+        ${
+          center.schedule
+            ? `
         <span class="compact-item">
           <span class="detail-icon">📅</span>
           <span class="detail-text">${center.schedule}</span>
         </span>
         <span class="separator">•</span>
-        ` : ''}
+        `
+            : ""
+        }
         <span class="compact-item">
           <span class="detail-icon">🔬</span>
           <span class="detail-text">${center.lab || "Не указана"}</span>
@@ -168,7 +172,10 @@ function updateSubmitButtonState() {
 }
 
 async function submitReport() {
+  console.log("🚀 submitReport: начало отправки отчёта");
+
   if (!reportDateInput || !reportDateInput.value) {
+    console.log("❌ Ошибка: дата не выбрана");
     reportDateInput.classList.remove("valid");
     reportDateInput.classList.add("error");
 
@@ -184,6 +191,7 @@ async function submitReport() {
   reportDateInput.classList.add("valid");
 
   if (selectedPoints.size === 0) {
+    console.log("❌ Ошибка: не выбрано ни одной точки");
     tg.showPopup({
       title: "Ошибка",
       message: "Выберите хотя бы одну точку",
@@ -191,6 +199,8 @@ async function submitReport() {
     });
     return;
   }
+
+  console.log("✅ Валидация пройдена, выбранных точек:", selectedPoints.size);
 
   const dateValue = reportDateInput.value;
   const [year, month, day] = dateValue.split("-");
@@ -216,7 +226,11 @@ async function submitReport() {
     }
   });
 
+  console.log("📊 Собрано данных о точках:", selectedPointsData.length);
+  console.log("💰 Общая сумма отчёта:", reportTotal);
+
   // Обновляем финансы
+  console.log("💾 Обновляем финансы...");
   const finance = getCurrentFinance();
   finance.currentDebt += reportTotal;
   finance.transactions.unshift({
@@ -227,7 +241,9 @@ async function submitReport() {
   });
 
   // Сохраняем финансы в CloudStorage
+  console.log("☁️ Сохраняем финансы в CloudStorage...");
   await saveFinanceData();
+  console.log("✅ Финансы сохранены");
 
   // Создаём объект отчёта
   const reportData = {
@@ -238,7 +254,9 @@ async function submitReport() {
   };
 
   // Сохраняем отчёт в CloudStorage
+  console.log("☁️ Сохраняем отчёт в CloudStorage...");
   await saveReport(dateValue, reportData);
+  console.log("✅ Отчёт сохранён в CloudStorage");
 
   // Добавляем в локальное хранилище
   const userId = tg.initDataUnsafe?.user?.id || CURRENT_COURIER_ID;
@@ -255,7 +273,7 @@ async function submitReport() {
     total: reportTotal,
   };
 
-  console.log("Отправка отчёта:", fullReportData);
+  console.log("📤 Отправка отчёта:", fullReportData);
 
   tg.showPopup({
     title: "Отчёт отправлен",
@@ -263,6 +281,11 @@ async function submitReport() {
     buttons: [{ type: "ok" }],
   });
 
+  console.log("🧹 Очищаем выбранные точки");
   selectedPoints.clear();
+
+  console.log("🔄 Перезагружаем страницу отчёта");
   loadReportData();
+
+  console.log("✅ submitReport завершён");
 }
