@@ -312,7 +312,6 @@ async function saveRouteOrder(newOrder) {
   await saveToCloud(key, newOrder);
 }
 
-// ===== ДОБАВЛЕННАЯ ФУНКЦИЯ =====
 // Сохранить финансы текущего пользователя
 async function saveFinanceData() {
   const userId = getUserId();
@@ -323,6 +322,9 @@ async function saveFinanceData() {
   );
   await saveToCloud(key, finance);
 }
+
+// Делаем функцию глобальной
+window.saveFinanceData = saveFinanceData;
 // ==============================
 
 // Загрузить сохраненный маршрут из CloudStorage
