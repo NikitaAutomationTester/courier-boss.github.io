@@ -15,7 +15,6 @@ async function loadRouteData() {
 
   if (currentRoutePoints.length === 0) {
     console.warn("⚠️ Нет точек для отображения!");
-    // Показываем сообщение об ошибке
     if (centersList) {
       centersList.innerHTML =
         '<div class="empty-list-message">Нет точек маршрута</div>';
@@ -135,22 +134,19 @@ function moveCard(card, direction) {
   const currentIndex = cards.indexOf(card);
 
   if (direction === "up" && currentIndex > 0) {
-    // Меняем местами с предыдущей карточкой
     cards[currentIndex - 1].parentNode.insertBefore(
       card,
       cards[currentIndex - 1],
     );
   } else if (direction === "down" && currentIndex < cards.length - 1) {
-    // Меняем местами со следующей карточкой
     cards[currentIndex + 1].parentNode.insertBefore(
       cards[currentIndex + 1],
       card,
     );
   } else {
-    return; // Нельзя переместить дальше
+    return;
   }
 
-  // Обновляем номера порядка
   updateOrderNumbers();
 }
 
@@ -177,7 +173,6 @@ async function saveRouteChanges() {
 
   console.log("💾 Сохраняем новый порядок маршрута:", newOrder);
 
-  // Сохраняем в памяти
   const userId = getUserId();
   if (!couriersDB[userId]) {
     couriersDB[userId] = { id: userId, routeOrder: newOrder };
@@ -185,10 +180,8 @@ async function saveRouteChanges() {
     couriersDB[userId].routeOrder = newOrder;
   }
 
-  // Сохраняем в CloudStorage
   await saveRouteOrder(newOrder);
 
-  // Показываем уведомление
   if (tg) {
     tg.showPopup({
       title: "Маршрут обновлен",
@@ -200,11 +193,10 @@ async function saveRouteChanges() {
   }
 }
 
-// ===== ФУНКЦИИ ДЛЯ МЕНЮ С ТРЕМЯ ТОЧКАМИ =====
+// ===== ФУНКЦИИ ДЛЯ МЕНЮ С ТРЕМЯ ТОЧКАМИ И КНОПКОЙ ГОТОВО =====
 let menuInitialized = false;
 
 function initRouteMenu() {
-  // Если уже инициализировано, выходим
   if (menuInitialized) return;
 
   const menuBtn = document.getElementById("routeMenuBtn");
@@ -216,11 +208,9 @@ function initRouteMenu() {
 
   console.log("🔄 Инициализация меню маршрута");
 
-  // Убираем все предыдущие обработчики (на всякий случай)
   const newMenuBtn = menuBtn.cloneNode(true);
   menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
 
-  // Получаем новые ссылки
   const newDropdown = document.getElementById("routeDropdown");
   const newEditBtn = document.getElementById("editOrderBtn");
   const newAddBtn = document.getElementById("addMCPointBtn");
@@ -232,8 +222,6 @@ function initRouteMenu() {
 
     const isVisible = newDropdown.style.display === "block";
     console.log("📱 Меню: клик, сейчас видимость:", isVisible);
-
-    // Просто переключаем видимость
     newDropdown.style.display = isVisible ? "none" : "block";
   });
 
@@ -241,7 +229,6 @@ function initRouteMenu() {
   document.addEventListener("click", function closeMenu(e) {
     if (!newMenuBtn.contains(e.target) && !newDropdown.contains(e.target)) {
       if (newDropdown.style.display === "block") {
-        console.log("📱 Меню: закрыто кликом вне");
         newDropdown.style.display = "none";
       }
     }
@@ -255,12 +242,8 @@ function initRouteMenu() {
       console.log("📱 Выбрано: Изменить порядок");
       newDropdown.style.display = "none";
 
-      // Вызываем существующую функцию переключения режима редактирования
-      if (typeof window.toggleEditMode === "function") {
-        window.toggleEditMode();
-      } else {
-        console.error("Функция toggleEditMode не найдена");
-      }
+      // Включаем режим редактирования
+      enableEditMode();
     });
   }
 
@@ -272,7 +255,6 @@ function initRouteMenu() {
       console.log("📱 Выбрано: Добавить МЦ");
       newDropdown.style.display = "none";
 
-      // Пока просто показываем сообщение
       if (tg) {
         tg.showPopup({
           title: "Добавление МЦ",
@@ -290,58 +272,65 @@ function initRouteMenu() {
   console.log("✅ Меню маршрута инициализировано");
 }
 
-// Глобальная функция для переключения режима редактирования
-window.toggleEditMode = function () {
-  console.log("🔄 Переключение режима редактирования");
-  isEditMode = !isEditMode;
+// Функция для включения режима редактирования
+function enableEditMode() {
+  console.log("✅ Включаем режим редактирования");
+  isEditMode = true;
 
-  const cards = document.querySelectorAll(".center-card");
+  // Показываем кнопки управления
   const controls = document.querySelectorAll(".card-controls");
-  const editBtn = document.getElementById("editRouteBtn");
+  controls.forEach((control) => {
+    control.style.display = "flex";
+  });
 
-  // Если есть отдельная кнопка "Изменить", обновляем её
-  if (editBtn) {
-    if (isEditMode) {
-      editBtn.textContent = "Сохранить";
-      editBtn.classList.add("active");
-    } else {
-      editBtn.textContent = "Изменить";
-      editBtn.classList.remove("active");
-    }
-  }
+  // Меняем ⋮ на кнопку "Готово"
+  const menuContainer = document.querySelector(".menu-container");
+  if (menuContainer) {
+    menuContainer.innerHTML =
+      '<button class="done-button" id="doneEditBtn">Готово</button>';
 
-  if (isEditMode) {
-    console.log("✅ Включаем режим редактирования");
-    // Включаем режим редактирования
-    controls.forEach((control) => {
-      control.style.display = "flex";
+    const doneBtn = document.getElementById("doneEditBtn");
+    doneBtn.addEventListener("click", function () {
+      disableEditMode();
     });
-  } else {
-    console.log("✅ Выключаем режим редактирования");
-    // Выключаем режим редактирования
-    controls.forEach((control) => {
-      control.style.display = "none";
-    });
-
-    // Сохраняем изменения при выходе из режима
-    saveRouteChanges();
-  }
-};
-
-function updateEditButtonState() {
-  // Эта функция больше не нужна, но оставим для совместимости
-  const editBtn = document.getElementById("editRouteBtn");
-  if (editBtn) {
-    editBtn.textContent = isEditMode ? "Сохранить" : "Изменить";
-    if (isEditMode) {
-      editBtn.classList.add("active");
-    } else {
-      editBtn.classList.remove("active");
-    }
   }
 }
 
-// ЕДИНСТВЕННАЯ функция initRoutePage (исправлено)
+// Функция для выключения режима редактирования
+function disableEditMode() {
+  console.log("✅ Выключаем режим редактирования");
+  isEditMode = false;
+
+  // Скрываем кнопки управления
+  const controls = document.querySelectorAll(".card-controls");
+  controls.forEach((control) => {
+    control.style.display = "none";
+  });
+
+  // Возвращаем ⋮ с меню
+  const menuContainer = document.querySelector(".menu-container");
+  if (menuContainer) {
+    menuContainer.innerHTML = `
+      <button class="menu-dots" id="routeMenuBtn">⋮</button>
+      <div class="dropdown-menu" id="routeDropdown" style="display: none;">
+        <button class="dropdown-item" id="editOrderBtn">Изменить порядок</button>
+        <button class="dropdown-item" id="addMCPointBtn">Добавить МЦ</button>
+      </div>
+    `;
+
+    // Переинициализируем меню
+    menuInitialized = false;
+    initRouteMenu();
+  }
+
+  // Сохраняем изменения
+  saveRouteChanges();
+}
+
+// Глобальная функция для совместимости
+window.toggleEditMode = enableEditMode;
+
+// Инициализация страницы маршрута
 function initRoutePage() {
   console.log("🔄 Инициализация страницы маршрута");
 
@@ -355,27 +344,12 @@ function initRoutePage() {
     control.style.display = "none";
   });
 
-  const editBtn = document.getElementById("editRouteBtn");
-  if (editBtn) {
-    const newBtn = editBtn.cloneNode(true);
-    editBtn.parentNode.replaceChild(newBtn, editBtn);
-    newBtn.addEventListener("click", window.toggleEditMode);
-    console.log('✅ Обработчик кнопки "Изменить" назначен');
-  } else {
-    console.log(
-      'ℹ️ Кнопка "Изменить" не найдена (используется меню с тремя точками)',
-    );
-  }
-
   console.log("✅ Страница маршрута инициализирована");
 }
 
-// Делаем функцию глобальной
 window.initRoutePage = initRoutePage;
 
-// Вызываем инициализацию после загрузки страницы
 document.addEventListener("DOMContentLoaded", function () {
-  // Ждем немного, чтобы страница точно загрузилась
   setTimeout(() => {
     if (
       document.getElementById("routePage") &&

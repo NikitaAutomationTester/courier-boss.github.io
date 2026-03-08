@@ -1243,3 +1243,31 @@ footer {
         background-color: #4a4a4a;
     }
 }
+
+/* Кнопка "Готово" в режиме редактирования */
+.done-button {
+    background-color: var(--tg-theme-button-color, #40a7e3);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.done-button:hover {
+    opacity: 0.9;
+}
+
+.done-button:active {
+    transform: scale(0.95);
+}
+
+/* Адаптация для тёмной темы */
+@media (prefers-color-scheme: dark) {
+    .done-button {
+        background-color: var(--tg-theme-button-color, #40a7e3);
+    }
+}
