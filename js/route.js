@@ -201,7 +201,12 @@ async function saveRouteChanges() {
 }
 
 // ===== ФУНКЦИИ ДЛЯ МЕНЮ С ТРЕМЯ ТОЧКАМИ =====
+let menuInitialized = false;
+
 function initRouteMenu() {
+  // Если уже инициализировано, выходим
+  if (menuInitialized) return;
+
   const menuBtn = document.getElementById("routeMenuBtn");
   const dropdown = document.getElementById("routeDropdown");
   const editOrderBtn = document.getElementById("editOrderBtn");
@@ -209,24 +214,47 @@ function initRouteMenu() {
 
   if (!menuBtn || !dropdown) return;
 
+  console.log("🔄 Инициализация меню маршрута");
+
+  // Убираем все предыдущие обработчики (на всякий случай)
+  const newMenuBtn = menuBtn.cloneNode(true);
+  menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
+
+  // Получаем новые ссылки
+  const newDropdown = document.getElementById("routeDropdown");
+  const newEditBtn = document.getElementById("editOrderBtn");
+  const newAddBtn = document.getElementById("addMCPointBtn");
+
   // Обработчик для открытия/закрытия меню
-  menuBtn.addEventListener("click", function (e) {
+  newMenuBtn.addEventListener("click", function (e) {
     e.stopPropagation();
-    const isVisible = dropdown.style.display === "block";
-    dropdown.style.display = isVisible ? "none" : "block";
+    e.preventDefault();
+
+    const isVisible = newDropdown.style.display === "block";
+    console.log("📱 Меню: клик, сейчас видимость:", isVisible);
+
+    // Просто переключаем видимость
+    newDropdown.style.display = isVisible ? "none" : "block";
   });
 
   // Закрытие меню при клике вне его
-  document.addEventListener("click", function (e) {
-    if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
-      dropdown.style.display = "none";
+  document.addEventListener("click", function closeMenu(e) {
+    if (!newMenuBtn.contains(e.target) && !newDropdown.contains(e.target)) {
+      if (newDropdown.style.display === "block") {
+        console.log("📱 Меню: закрыто кликом вне");
+        newDropdown.style.display = "none";
+      }
     }
   });
 
   // Обработчик для "Изменить порядок"
-  if (editOrderBtn) {
-    editOrderBtn.addEventListener("click", function () {
-      dropdown.style.display = "none";
+  if (newEditBtn) {
+    newEditBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      console.log("📱 Выбрано: Изменить порядок");
+      newDropdown.style.display = "none";
+
       // Вызываем существующую функцию переключения режима редактирования
       if (typeof window.toggleEditMode === "function") {
         window.toggleEditMode();
@@ -237,9 +265,13 @@ function initRouteMenu() {
   }
 
   // Обработчик для "Добавить МЦ"
-  if (addMCPointBtn) {
-    addMCPointBtn.addEventListener("click", function () {
-      dropdown.style.display = "none";
+  if (newAddBtn) {
+    newAddBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      console.log("📱 Выбрано: Добавить МЦ");
+      newDropdown.style.display = "none";
+
       // Пока просто показываем сообщение
       if (tg) {
         tg.showPopup({
@@ -253,6 +285,9 @@ function initRouteMenu() {
       }
     });
   }
+
+  menuInitialized = true;
+  console.log("✅ Меню маршрута инициализировано");
 }
 
 // Глобальная функция для переключения режима редактирования
@@ -306,12 +341,19 @@ function updateEditButtonState() {
   }
 }
 
-// Инициализация страницы маршрута
+// ЕДИНСТВЕННАЯ функция initRoutePage (исправлено)
 function initRoutePage() {
   console.log("🔄 Инициализация страницы маршрута");
 
   // Инициализируем меню с тремя точками
   initRouteMenu();
+
+  // Сбрасываем режим редактирования при загрузке
+  isEditMode = false;
+  const controls = document.querySelectorAll(".card-controls");
+  controls.forEach((control) => {
+    control.style.display = "none";
+  });
 
   const editBtn = document.getElementById("editRouteBtn");
   if (editBtn) {
@@ -324,6 +366,8 @@ function initRoutePage() {
       'ℹ️ Кнопка "Изменить" не найдена (используется меню с тремя точками)',
     );
   }
+
+  console.log("✅ Страница маршрута инициализирована");
 }
 
 // Делаем функцию глобальной
