@@ -2,7 +2,15 @@
   <div class="route-header">
     <button class="back-button" id="backFromRoute">← Назад</button>
     <h2>Мой маршрут</h2>
-    <button class="edit-button" id="editRouteBtn">Изменить</button>
+    <div class="menu-container">
+      <button class="menu-dots" id="routeMenuBtn">⋮</button>
+      <div class="dropdown-menu" id="routeDropdown" style="display: none">
+        <button class="dropdown-item" id="editOrderBtn">
+          ✎ Изменить порядок
+        </button>
+        <button class="dropdown-item" id="addMCPointBtn">+ Добавить МЦ</button>
+      </div>
+    </div>
   </div>
 
   <!-- Контейнер для списка медцентров -->

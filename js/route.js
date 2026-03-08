@@ -152,9 +152,6 @@ function moveCard(card, direction) {
 
   // Обновляем номера порядка
   updateOrderNumbers();
-
-  // Здесь БОЛЬШЕ НЕ ПОКАЗЫВАЕМ ПОДСКАЗКУ
-  // showSaveHint(); // ← УДАЛЕНО
 }
 
 function updateOrderNumbers() {
@@ -168,8 +165,6 @@ function updateOrderNumbers() {
     }
   });
 }
-
-// Функция showSaveHint ПОЛНОСТЬЮ УДАЛЕНА
 
 async function saveRouteChanges() {
   const cards = document.querySelectorAll(".center-card");
@@ -205,6 +200,61 @@ async function saveRouteChanges() {
   }
 }
 
+// ===== ФУНКЦИИ ДЛЯ МЕНЮ С ТРЕМЯ ТОЧКАМИ =====
+function initRouteMenu() {
+  const menuBtn = document.getElementById("routeMenuBtn");
+  const dropdown = document.getElementById("routeDropdown");
+  const editOrderBtn = document.getElementById("editOrderBtn");
+  const addMCPointBtn = document.getElementById("addMCPointBtn");
+
+  if (!menuBtn || !dropdown) return;
+
+  // Обработчик для открытия/закрытия меню
+  menuBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    const isVisible = dropdown.style.display === "block";
+    dropdown.style.display = isVisible ? "none" : "block";
+  });
+
+  // Закрытие меню при клике вне его
+  document.addEventListener("click", function (e) {
+    if (!menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.style.display = "none";
+    }
+  });
+
+  // Обработчик для "Изменить порядок"
+  if (editOrderBtn) {
+    editOrderBtn.addEventListener("click", function () {
+      dropdown.style.display = "none";
+      // Вызываем существующую функцию переключения режима редактирования
+      if (typeof window.toggleEditMode === "function") {
+        window.toggleEditMode();
+      } else {
+        console.error("Функция toggleEditMode не найдена");
+      }
+    });
+  }
+
+  // Обработчик для "Добавить МЦ"
+  if (addMCPointBtn) {
+    addMCPointBtn.addEventListener("click", function () {
+      dropdown.style.display = "none";
+      // Пока просто показываем сообщение
+      if (tg) {
+        tg.showPopup({
+          title: "Добавление МЦ",
+          message:
+            "Функция добавления медицинского центра будет реализована позже",
+          buttons: [{ type: "ok" }],
+        });
+      } else {
+        alert("Функция добавления МЦ будет реализована позже");
+      }
+    });
+  }
+}
+
 // Глобальная функция для переключения режима редактирования
 window.toggleEditMode = function () {
   console.log("🔄 Переключение режима редактирования");
@@ -214,9 +264,15 @@ window.toggleEditMode = function () {
   const controls = document.querySelectorAll(".card-controls");
   const editBtn = document.getElementById("editRouteBtn");
 
-  if (!editBtn) {
-    console.error("❌ Кнопка редактирования не найдена");
-    return;
+  // Если есть отдельная кнопка "Изменить", обновляем её
+  if (editBtn) {
+    if (isEditMode) {
+      editBtn.textContent = "Сохранить";
+      editBtn.classList.add("active");
+    } else {
+      editBtn.textContent = "Изменить";
+      editBtn.classList.remove("active");
+    }
   }
 
   if (isEditMode) {
@@ -225,8 +281,6 @@ window.toggleEditMode = function () {
     controls.forEach((control) => {
       control.style.display = "flex";
     });
-    editBtn.textContent = "Сохранить";
-    editBtn.classList.add("active");
   } else {
     console.log("✅ Выключаем режим редактирования");
     // Выключаем режим редактирования
@@ -235,36 +289,40 @@ window.toggleEditMode = function () {
     });
 
     // Сохраняем изменения при выходе из режима
-    // Порядок точек мог измениться, сохраняем их
     saveRouteChanges();
-
-    editBtn.textContent = "Изменить";
-    editBtn.classList.remove("active");
   }
 };
 
 function updateEditButtonState() {
+  // Эта функция больше не нужна, но оставим для совместимости
   const editBtn = document.getElementById("editRouteBtn");
   if (editBtn) {
-    editBtn.textContent = "Изменить";
-    editBtn.classList.remove("active");
+    editBtn.textContent = isEditMode ? "Сохранить" : "Изменить";
+    if (isEditMode) {
+      editBtn.classList.add("active");
+    } else {
+      editBtn.classList.remove("active");
+    }
   }
 }
 
-// Инициализация обработчика кнопки
+// Инициализация страницы маршрута
 function initRoutePage() {
   console.log("🔄 Инициализация страницы маршрута");
+
+  // Инициализируем меню с тремя точками
+  initRouteMenu();
+
   const editBtn = document.getElementById("editRouteBtn");
   if (editBtn) {
-    // Удаляем старый обработчик через replace с новым
     const newBtn = editBtn.cloneNode(true);
     editBtn.parentNode.replaceChild(newBtn, editBtn);
-
-    // Добавляем обработчик на новую кнопку
     newBtn.addEventListener("click", window.toggleEditMode);
     console.log('✅ Обработчик кнопки "Изменить" назначен');
   } else {
-    console.error('❌ Кнопка "Изменить" не найдена в DOM');
+    console.log(
+      'ℹ️ Кнопка "Изменить" не найдена (используется меню с тремя точками)',
+    );
   }
 }
 

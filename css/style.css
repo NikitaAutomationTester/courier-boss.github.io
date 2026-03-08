@@ -1129,3 +1129,109 @@ footer {
 .report-card:nth-child(even).selected {
     background-color: rgba(76, 175, 80, 0.15);
 }
+
+
+/* ===== МЕНЮ С ТРЕМЯ ТОЧКАМИ ===== */
+.route-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    position: relative;
+}
+
+.route-header h2 {
+    flex: 1;
+    margin: 0;
+    font-size: 20px;
+}
+
+.menu-container {
+    position: relative;
+}
+
+.menu-dots {
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--tg-theme-text-color, #000);
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+
+.menu-dots:hover {
+    background-color: var(--tg-theme-hint-color, #f0f0f0);
+}
+
+.menu-dots:active {
+    opacity: 0.7;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--tg-theme-bg-color, #ffffff);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 200px;
+    z-index: 1000;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.dropdown-item {
+    width: 100%;
+    padding: 14px 16px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    text-align: left;
+    font-size: 16px;
+    color: var(--tg-theme-text-color, #000);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background-color: var(--tg-theme-hint-color, #f0f0f0);
+}
+
+.dropdown-item:active {
+    opacity: 0.7;
+}
+
+/* Адаптация для тёмной темы */
+@media (prefers-color-scheme: dark) {
+    .menu-dots:hover {
+        background-color: #3a3a3a;
+    }
+    
+    .dropdown-menu {
+        background-color: #2a2a2a;
+        border-color: #444;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .dropdown-item {
+        border-bottom-color: #444;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #3a3a3a;
+    }
+}
