@@ -487,3 +487,199 @@ async function loadAllUserData() {
 function getCurrentTelegramUser() {
   return tg?.initDataUnsafe?.user;
 }
+
+// ========== ПОЛЬЗОВАТЕЛЬСКИЕ МЕДИЦИНСКИЕ ЦЕНТРЫ ==========
+
+// Хранилище пользовательских МЦ (в памяти)
+const userCustomCentersDB = {};
+
+// Генерация уникального ID для пользовательского МЦ (начинаем с 1000)
+let nextCustomId = 1000;
+
+function generateCustomId() {
+  nextCustomId++;
+  return nextCustomId;
+}
+
+// Сохранить пользовательский МЦ
+async function saveCustomCenter(centerData) {
+  const userId = getUserId();
+  const newId = generateCustomId();
+
+  // Создаём объект точки
+  const newCenter = {
+    id: newId,
+    name: centerData.name,
+    address: centerData.address,
+    timeWindow: centerData.timeWindow,
+    schedule: centerData.schedule,
+    lab: centerData.lab,
+    salary: centerData.salary,
+    createdBy: userId,
+    createdAt: new Date().toISOString().split("T")[0],
+    isCustom: true,
+  };
+
+  // Сохраняем в память
+  if (!userCustomCentersDB[userId]) {
+    userCustomCentersDB[userId] = {};
+  }
+  userCustomCentersDB[userId][newId] = newCenter;
+
+  // Сохраняем в CloudStorage
+  const key = `custom_center_${userId}_${newId}`;
+  await saveToCloud(key, newCenter);
+
+  // Сохраняем список пользовательских ID
+  await saveCustomCentersList(userId);
+
+  console.log(`✅ Создан новый пользовательский МЦ с ID: ${newId}`, newCenter);
+  return newId;
+}
+
+// Сохранить список ID пользовательских МЦ
+async function saveCustomCentersList(userId) {
+  const customIds = Object.keys(userCustomCentersDB[userId] || {}).map(Number);
+  const key = `custom_centers_list_${userId}`;
+  await saveToCloud(key, customIds);
+  console.log(
+    `💾 Сохранён список пользовательских МЦ для ${userId}:`,
+    customIds,
+  );
+}
+
+// Загрузить пользовательские МЦ из CloudStorage
+async function loadUserCustomCenters(userId) {
+  const key = `custom_centers_list_${userId}`;
+  const customIds = (await loadFromCloud(key)) || [];
+
+  if (!userCustomCentersDB[userId]) {
+    userCustomCentersDB[userId] = {};
+  }
+
+  // Загружаем каждый пользовательский МЦ
+  for (const id of customIds) {
+    const centerKey = `custom_center_${userId}_${id}`;
+    const center = await loadFromCloud(centerKey);
+    if (center) {
+      userCustomCentersDB[userId][id] = center;
+    }
+  }
+
+  console.log(
+    `📦 Загружено ${Object.keys(userCustomCentersDB[userId]).length} пользовательских МЦ`,
+  );
+}
+
+// Получить точку (основную или пользовательскую)
+function getCenterById(centerId) {
+  // Сначала ищем в основной базе
+  if (medicalCentersDB[centerId]) {
+    return medicalCentersDB[centerId];
+  }
+
+  // Потом в пользовательской
+  const userId = getUserId();
+  if (userCustomCentersDB[userId] && userCustomCentersDB[userId][centerId]) {
+    return userCustomCentersDB[userId][centerId];
+  }
+
+  return null;
+}
+
+// Обновляем функцию getCurrentRoutePoints для поддержки пользовательских МЦ
+function getCurrentRoutePoints() {
+  const routeOrder = getCurrentCourierRoute();
+  const userId = getUserId();
+
+  const points = routeOrder
+    .map((centerId) => {
+      // Сначала ищем в основной базе
+      if (medicalCentersDB[centerId]) {
+        return medicalCentersDB[centerId];
+      }
+      // Потом в пользовательской
+      if (
+        userCustomCentersDB[userId] &&
+        userCustomCentersDB[userId][centerId]
+      ) {
+        return userCustomCentersDB[userId][centerId];
+      }
+      return undefined;
+    })
+    .filter((center) => center !== undefined);
+
+  console.log(
+    `📍 Загружено ${points.length} точек маршрута (включая пользовательские)`,
+  );
+  return points;
+}
+
+// Добавить МЦ в начало маршрута
+async function addCenterToRouteStart(centerId) {
+  const userId = getUserId();
+  const currentRoute = getCurrentCourierRoute();
+
+  // Добавляем новый ID в начало
+  const newRoute = [centerId, ...currentRoute];
+
+  // Сохраняем новый порядок
+  if (!couriersDB[userId]) {
+    couriersDB[userId] = { id: userId, routeOrder: newRoute };
+  } else {
+    couriersDB[userId].routeOrder = newRoute;
+  }
+
+  await saveRouteOrder(newRoute);
+  console.log(`➕ МЦ ${centerId} добавлен в начало маршрута`);
+  return newRoute;
+}
+
+// Обновляем функцию loadAllUserData для загрузки пользовательских МЦ
+async function loadAllUserData() {
+  const userId = getUserId();
+  console.log(`🔄 Загрузка всех данных для пользователя ${userId}`);
+
+  // Загружаем финансы
+  const financeKey = `finance_${userId}`;
+  const financeData = await loadFromCloud(financeKey);
+  if (financeData) {
+    financeDB[userId] = financeData;
+  } else {
+    financeDB[userId] = {
+      currentDebt: 0,
+      transactions: [],
+    };
+  }
+
+  // Загружаем отчёты
+  const reports = [];
+  const cloud = tg?.CloudStorage;
+
+  if (cloud) {
+    const keys = await new Promise((resolve) => {
+      cloud.getKeys((err, keys) => resolve(keys || []));
+    });
+
+    const reportKeys = keys.filter((key) =>
+      key.startsWith(`report_${userId}_`),
+    );
+
+    for (const key of reportKeys) {
+      const data = await loadFromCloud(key);
+      if (data) {
+        reports.push(data);
+      }
+    }
+
+    reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+    reportDetailsDB[userId] = reports;
+  }
+
+  // Загружаем пользовательские МЦ
+  await loadUserCustomCenters(userId);
+
+  console.log(
+    `✅ Загружено ${reports.length} отчётов для пользователя ${userId}`,
+  );
+}

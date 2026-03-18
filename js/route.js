@@ -193,7 +193,7 @@ async function saveRouteChanges() {
   }
 }
 
-// ===== ФУНКЦИИ ДЛЯ МЕНЮ С ТРЕМЯ ТОЧКАМИ И КНОПКОЙ ГОТОВО =====
+// ===== ФУНКЦИИ ДЛЯ МЕНЮ С ТРЕМЯ ТОЧКАМИ =====
 let menuInitialized = false;
 
 function initRouteMenu() {
@@ -255,16 +255,8 @@ function initRouteMenu() {
       console.log("📱 Выбрано: Добавить МЦ");
       newDropdown.style.display = "none";
 
-      if (tg) {
-        tg.showPopup({
-          title: "Добавление МЦ",
-          message:
-            "Функция добавления медицинского центра будет реализована позже",
-          buttons: [{ type: "ok" }],
-        });
-      } else {
-        alert("Функция добавления МЦ будет реализована позже");
-      }
+      // Запускаем процесс добавления нового МЦ
+      startAddCenterWizard();
     });
   }
 
@@ -327,6 +319,198 @@ function disableEditMode() {
   saveRouteChanges();
 }
 
+// ===== ФУНКЦИИ ДЛЯ ДОБАВЛЕНИЯ НОВОГО МЦ =====
+let newCenterData = {};
+
+function startAddCenterWizard() {
+  console.log("🔄 Начало добавления нового МЦ");
+  newCenterData = {};
+  askCenterName();
+}
+
+function askCenterName() {
+  tg.showPopup(
+    {
+      title: "Добавление МЦ (1/6)",
+      message: "Введите название клиники:",
+      buttons: [
+        { type: "ok", text: "Далее" },
+        { type: "cancel", text: "Отмена" },
+      ],
+    },
+    (buttonId) => {
+      if (buttonId === "ok") {
+        // Используем стандартный prompt как временное решение
+        const name = prompt("Введите название клиники:");
+        if (name && name.trim()) {
+          newCenterData.name = name.trim();
+          askCenterAddress();
+        } else {
+          tg.showPopup(
+            {
+              title: "Ошибка",
+              message: "Название не может быть пустым",
+              buttons: [{ type: "ok", text: "Повторить" }],
+            },
+            () => askCenterName(),
+          );
+        }
+      }
+    },
+  );
+}
+
+function askCenterAddress() {
+  const address = prompt("Введите адрес клиники:");
+  if (address && address.trim()) {
+    newCenterData.address = address.trim();
+    askCenterTimeWindow();
+  } else {
+    tg.showPopup(
+      {
+        title: "Ошибка",
+        message: "Адрес не может быть пустым",
+        buttons: [{ type: "ok", text: "Повторить" }],
+      },
+      () => askCenterAddress(),
+    );
+  }
+}
+
+function askCenterTimeWindow() {
+  const time = prompt("Введите время забора (например, 15:30-16:00):");
+  if (time && time.trim()) {
+    newCenterData.timeWindow = time.trim();
+    askCenterSchedule();
+  } else {
+    tg.showPopup(
+      {
+        title: "Ошибка",
+        message: "Время не может быть пустым",
+        buttons: [{ type: "ok", text: "Повторить" }],
+      },
+      () => askCenterTimeWindow(),
+    );
+  }
+}
+
+function askCenterSchedule() {
+  const schedule = prompt("Введите график работы (например, пн-сб):");
+  if (schedule && schedule.trim()) {
+    newCenterData.schedule = schedule.trim();
+    askCenterLab();
+  } else {
+    tg.showPopup(
+      {
+        title: "Ошибка",
+        message: "График не может быть пустым",
+        buttons: [{ type: "ok", text: "Повторить" }],
+      },
+      () => askCenterSchedule(),
+    );
+  }
+}
+
+function askCenterLab() {
+  const lab = prompt("Введите лабораторию:");
+  if (lab && lab.trim()) {
+    newCenterData.lab = lab.trim();
+    askCenterSalary();
+  } else {
+    tg.showPopup(
+      {
+        title: "Ошибка",
+        message: "Лаборатория не может быть пустой",
+        buttons: [{ type: "ok", text: "Повторить" }],
+      },
+      () => askCenterLab(),
+    );
+  }
+}
+
+function askCenterSalary() {
+  const salary = prompt("Введите зарплату за точку (только число):");
+  if (salary && salary.trim() && !isNaN(salary) && Number(salary) > 0) {
+    newCenterData.salary = Number(salary);
+    confirmAddCenter();
+  } else {
+    tg.showPopup(
+      {
+        title: "Ошибка",
+        message: "Введите корректное число (больше 0)",
+        buttons: [{ type: "ok", text: "Повторить" }],
+      },
+      () => askCenterSalary(),
+    );
+  }
+}
+
+async function confirmAddCenter() {
+  // Показываем сводку
+  const summary = `
+📋 **Проверьте данные:**
+
+🏥 Название: ${newCenterData.name}
+📍 Адрес: ${newCenterData.address}
+⏰ Время: ${newCenterData.timeWindow}
+📅 График: ${newCenterData.schedule}
+🔬 Лаборатория: ${newCenterData.lab}
+💰 Зарплата: ${newCenterData.salary}₽
+
+Всё верно?
+  `;
+
+  tg.showPopup(
+    {
+      title: "Подтверждение",
+      message: summary,
+      buttons: [
+        { type: "ok", text: "✅ Добавить" },
+        { type: "cancel", text: "❌ Отмена" },
+      ],
+    },
+    async (buttonId) => {
+      if (buttonId === "ok") {
+        await saveNewCenter();
+      }
+    },
+  );
+}
+
+async function saveNewCenter() {
+  try {
+    // Показываем загрузку
+    tg.showPopup({
+      title: "Сохранение",
+      message: "Добавляем медицинский центр...",
+      buttons: [],
+    });
+
+    // Сохраняем новый МЦ
+    const newId = await saveCustomCenter(newCenterData);
+
+    // Добавляем в начало маршрута
+    await addCenterToRouteStart(newId);
+
+    // Обновляем интерфейс
+    await loadRouteData();
+
+    // Показываем успех
+    tg.showPopup({
+      title: "Готово!",
+      message: `Медицинский центр добавлен в начало маршрута`,
+      buttons: [{ type: "ok", text: "OK" }],
+    });
+  } catch (error) {
+    console.error("❌ Ошибка при добавлении МЦ:", error);
+    tg.showPopup({
+      title: "Ошибка",
+      message: "Не удалось добавить медицинский центр",
+      buttons: [{ type: "ok", text: "OK" }],
+    });
+  }
+}
+
 // Глобальная функция для совместимости
 window.toggleEditMode = enableEditMode;
 
@@ -349,6 +533,7 @@ function initRoutePage() {
 
 window.initRoutePage = initRoutePage;
 
+// Вызываем инициализацию после загрузки страницы
 document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     if (
