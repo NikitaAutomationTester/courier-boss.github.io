@@ -30,8 +30,14 @@ label {
     font-weight: 500;
 }
 
-/* Стили для кастомного поля даты */
-#report-date {
+/* Обёртка для поля даты — контролируем ширину */
+.date-field-wrapper {
+    width: 100%;
+    display: block;
+}
+
+/* Кастомный стиль для поля даты — без иконки и с правильными отступами */
+.date-input-custom {
     width: 100%;
     padding: 12px;
     border: 1px solid var(--max-border-color, #e0e0e0);
@@ -40,7 +46,32 @@ label {
     box-sizing: border-box;
     background-color: var(--max-input-bg, #ffffff);
     color: var(--max-text-color, #000000);
+    font-family: inherit;
+    margin: 0;
+    display: block;
+}
+
+/* Скрываем стандартную иконку календаря в WebKit-браузерах (Chrome, Safari, Edge) */
+.date-input-custom::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
     cursor: pointer;
+}
+
+/* Делаем так, чтобы поле оставалось кликабельным по всей площади */
+.date-input-custom {
+    position: relative;
+}
+
+/* Для Firefox — скрываем иконку */
+.date-input-custom {
+    -moz-appearance: textfield;
 }
 
 .clinics-grid {

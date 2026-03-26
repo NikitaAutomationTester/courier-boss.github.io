@@ -173,6 +173,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedDate = dateInput.value;
     if (!selectedDate) return alert("Пожалуйста, выберите дату");
 
+    // Преобразуем YYYY-MM-DD в формат ДД.ММ.ГГГГ для отображения
+    const [year, month, day] = selectedDate.split("-");
+    const formattedDate = `${day}.${month}.${year}`;
+
     const selectedClinics = [];
     const clinicItems = document.querySelectorAll(".clinic-item");
     let totalSalary = 0;
@@ -201,13 +205,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const report = {
       userId: currentUserId,
       date: selectedDate,
+      formattedDate: formattedDate,
       clinics: selectedClinics,
       totalSalary,
       timestamp: new Date().toISOString(),
     };
     console.log("Отправлен отчет:", report);
 
-    let message = `Отчёт за ${selectedDate}\nИтого: ${totalSalary.toLocaleString("ru-RU")} ₽\n\nПосещено клиник: ${selectedClinics.length}\n\nСписок:\n`;
+    let message = `Отчёт за ${formattedDate}\nИтого: ${totalSalary.toLocaleString("ru-RU")} ₽\n\nПосещено клиник: ${selectedClinics.length}\n\nСписок:\n`;
     selectedClinics.forEach((clinic) => {
       message += `• ${clinic.name}\n  ${clinic.address}\n  ${clinic.salary.toLocaleString("ru-RU")} ₽\n\n`;
     });
@@ -220,33 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveButton = document.getElementById("save-report-btn");
   if (saveButton) saveButton.addEventListener("click", saveReport);
 
-  // Кастомный выбор даты через нативный календарь телефона
   const dateInput = document.getElementById("report-date");
   if (dateInput) {
     dateInput.value = "";
-    dateInput.addEventListener("click", () => {
-      // Создаём временное поле type="date" для вызова нативного календаря
-      const tempInput = document.createElement("input");
-      tempInput.type = "date";
-      tempInput.style.position = "absolute";
-      tempInput.style.opacity = "0";
-      tempInput.style.pointerEvents = "none";
-      document.body.appendChild(tempInput);
-
-      tempInput.addEventListener("change", (e) => {
-        if (e.target.value) {
-          // Преобразуем YYYY-MM-DD в ДД.ММ.ГГГГ
-          const [year, month, day] = e.target.value.split("-");
-          dateInput.value = `${day}.${month}.${year}`;
-        }
-        document.body.removeChild(tempInput);
-        checkFormValidity();
-      });
-
-      tempInput.showPicker();
-    });
-
-    dateInput.addEventListener("input", () => {
+    dateInput.addEventListener("change", () => {
       checkFormValidity();
     });
   }
