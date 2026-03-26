@@ -45,6 +45,17 @@ label {
 /* Явно задаём стили для поля даты, чтобы оно точно было таким же */
 #report-date {
     display: block;
+    /* В WebView "МАКС" часто иконка календаря перекрывает правую часть поля.
+       Делаем явный запас справа и выравниваем текст по левому краю. */
+    text-align: left;
+    padding-left: 12px !important;
+    padding-right: 44px !important;
+}
+
+/* WebKit/Safari: календарь — внутри input, иногда требуется сместить indicator */
+#report-date::-webkit-calendar-picker-indicator {
+    /* Сдвигаем индикатор чуть внутрь, чтобы он не "съедал" правый padding */
+    margin-right: 8px;
 }
 
 .clinics-grid {
