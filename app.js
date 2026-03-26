@@ -79,7 +79,36 @@ document.addEventListener("DOMContentLoaded", () => {
     return mockClinics[userId] || [];
   }
 
-  // 4. Функция для пересчёта общей зарплаты
+  // 4. Функция для проверки, можно ли активировать кнопку
+  function checkFormValidity() {
+    const dateInput = document.getElementById("report-date");
+    const saveButton = document.getElementById("save-report-btn");
+    const selectedDate = dateInput ? dateInput.value : "";
+
+    // Проверяем, выбрана ли дата
+    const isDateSelected = selectedDate !== "";
+
+    // Проверяем, выбрана ли хотя бы одна клиника
+    const clinicItems = document.querySelectorAll(".clinic-item");
+    let isAnyClinicSelected = false;
+    clinicItems.forEach((item) => {
+      const checkbox = item.querySelector(".clinic-checkbox");
+      if (checkbox && checkbox.checked) {
+        isAnyClinicSelected = true;
+      }
+    });
+
+    // Кнопка активна только если выбрана дата И хотя бы одна клиника
+    const isValid = isDateSelected && isAnyClinicSelected;
+
+    if (saveButton) {
+      saveButton.disabled = !isValid;
+    }
+
+    return isValid;
+  }
+
+  // 5. Функция для пересчёта общей зарплаты
   function updateTotalSalary() {
     const clinicItems = document.querySelectorAll(".clinic-item");
     let total = 0;
@@ -100,10 +129,13 @@ document.addEventListener("DOMContentLoaded", () => {
       totalSalaryElement.textContent = total.toLocaleString("ru-RU") + " ₽";
     }
 
+    // После пересчёта зарплаты проверяем валидность формы
+    checkFormValidity();
+
     return total;
   }
 
-  // 5. Отображаем список клиник на странице
+  // 6. Отображаем список клиник на странице
   function displayClinics(clinics) {
     const clinicsContainer = document.getElementById("clinics-list");
     if (!clinicsContainer) return;
@@ -180,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTotalSalary();
   }
 
-  // 6. Функция для отправки отчета
+  // 7. Функция для отправки отчета
   async function saveReport() {
     const dateInput = document.getElementById("report-date");
     const selectedDate = dateInput.value;
@@ -241,23 +273,28 @@ document.addEventListener("DOMContentLoaded", () => {
     alert(message);
   }
 
-  // 7. Загружаем данные для текущего пользователя и отображаем их
+  // 8. Загружаем данные для текущего пользователя и отображаем их
   const userClinics = loadClinicsForUser(currentUserId);
   displayClinics(userClinics);
 
-  // 8. Назначаем обработчик на кнопку отправки
+  // 9. Назначаем обработчики
   const saveButton = document.getElementById("save-report-btn");
   if (saveButton) {
     saveButton.addEventListener("click", saveReport);
   }
 
-  // 9. Устанавливаем сегодняшнюю дату
+  // 10. Обработчик изменения даты
   const dateInput = document.getElementById("report-date");
   if (dateInput) {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    dateInput.value = `${yyyy}-${mm}-${dd}`;
+    // НЕ устанавливаем дату по умолчанию — оставляем пустым
+    dateInput.value = "";
+
+    // При изменении даты проверяем валидность формы
+    dateInput.addEventListener("change", () => {
+      checkFormValidity();
+    });
   }
+
+  // 11. Инициализируем состояние кнопки (изначально неактивна)
+  checkFormValidity();
 });

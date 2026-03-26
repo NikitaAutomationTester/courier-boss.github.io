@@ -1,4 +1,4 @@
-body {
+ёbody {
     margin: 0;
     padding: 0;
     background-color: var(--max-bg-color, #ffffff);
@@ -38,6 +38,12 @@ label {
     box-sizing: border-box;
     background-color: var(--max-input-bg, #ffffff);
     color: var(--max-text-color, #000000);
+}
+
+/* Убедимся, что input с датой занимает всю ширину и центрирован */
+#report-date {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .clinics-grid {
@@ -154,4 +160,10 @@ label {
 
 .max-button--primary:active {
     opacity: 0.7;
+}
+
+/* Стиль для неактивной кнопки */
+.max-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
