@@ -30,20 +30,68 @@
           ></div>
         </div>
         <div class="date-quick-actions" aria-label="Быстрый выбор даты">
-          <button
-            type="button"
-            class="date-quick-btn"
-            data-offset="0"
-          >
+          <button type="button" class="date-quick-btn" data-offset="0">
             Сегодня
           </button>
-          <button
-            type="button"
-            class="date-quick-btn"
-            data-offset="-1"
-          >
+          <button type="button" class="date-quick-btn" data-offset="-1">
             Вчера
           </button>
+        </div>
+      </div>
+
+      <!-- Дополнительная доставка (не связана с клиниками) -->
+      <div class="form-group">
+        <label class="toggle-row">
+          <input
+            type="checkbox"
+            id="extra-delivery-toggle"
+            aria-controls="extra-delivery-form"
+          />
+          Есть дополнительная доставка
+        </label>
+
+        <div class="extra-delivery-form" id="extra-delivery-form" hidden>
+          <div class="form-group form-group--inner">
+            <label for="extra-delivery-receive">Адрес получения груза</label>
+            <input
+              id="extra-delivery-receive"
+              class="max-input"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group form-group--inner">
+            <label for="extra-delivery-deliver">Адрес доставки груза</label>
+            <input
+              id="extra-delivery-deliver"
+              class="max-input"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group form-group--inner">
+            <label for="extra-delivery-comment">Комментарии</label>
+            <textarea
+              id="extra-delivery-comment"
+              class="max-input"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-group form-group--inner">
+            <label for="extra-delivery-salary">Зарплата</label>
+            <input
+              id="extra-delivery-salary"
+              class="max-input"
+              type="number"
+              step="1"
+              inputmode="numeric"
+            />
+          </div>
         </div>
       </div>
 
