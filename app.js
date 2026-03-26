@@ -12,10 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.WebApp.initDataUnsafe.user
   ) {
     currentUserId = window.WebApp.initDataUnsafe.user.id;
-    console.log("ID пользователя:", currentUserId);
   } else {
     currentUserId = "test_courier_123";
-    console.log("Тестовый режим. ID пользователя:", currentUserId);
   }
 
   function loadClinicsForUser(userId) {
@@ -161,7 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target !== checkbox) checkbox.checked = !checkbox.checked;
         updateSelection();
       });
-      checkbox.addEventListener("change", updateSelection);
 
       clinicsContainer.appendChild(clinicDiv);
     });
@@ -209,7 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
       totalSalary,
       timestamp: new Date().toISOString(),
     };
-    console.log("Отправлен отчет:", report);
 
     let message = `Отчёт за ${formattedDate}\nИтого: ${totalSalary.toLocaleString("ru-RU")} ₽\n\nПосещено клиник: ${selectedClinics.length}\n\nСписок:\n`;
     selectedClinics.forEach((clinic) => {
@@ -250,6 +246,29 @@ document.addEventListener("DOMContentLoaded", () => {
     dateInput.addEventListener("input", () => {
       syncDateDisplay();
       checkFormValidity();
+    });
+
+    const dateQuickButtons = document.querySelectorAll(".date-quick-btn");
+    const setDateByOffsetDays = (offsetDays) => {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + offsetDays);
+
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+
+      // Формат для native <input type="date">
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+      syncDateDisplay();
+      checkFormValidity();
+    };
+
+    dateQuickButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const offset = parseInt(btn.dataset.offset || "0", 10);
+        setDateByOffsetDays(offset);
+      });
     });
   }
 

@@ -29,6 +29,22 @@
             aria-hidden="true"
           ></div>
         </div>
+        <div class="date-quick-actions" aria-label="Быстрый выбор даты">
+          <button
+            type="button"
+            class="date-quick-btn"
+            data-offset="0"
+          >
+            Сегодня
+          </button>
+          <button
+            type="button"
+            class="date-quick-btn"
+            data-offset="-1"
+          >
+            Вчера
+          </button>
+        </div>
       </div>
 
       <div class="form-group">
@@ -38,18 +54,20 @@
         </div>
       </div>
 
-      <div class="salary-row" id="salary-row">
-        <span class="salary-label">Зарплата за день:</span>
-        <span class="salary-amount-inline" id="total-salary">0 ₽</span>
-      </div>
+      <div class="bottom-actions" id="bottom-actions">
+        <div class="salary-row" id="salary-row">
+          <span class="salary-label">Зарплата за день:</span>
+          <span class="salary-amount-inline" id="total-salary">0 ₽</span>
+        </div>
 
-      <button
-        id="save-report-btn"
-        class="max-button max-button--primary"
-        disabled
-      >
-        Отправить отчёт
-      </button>
+        <button
+          id="save-report-btn"
+          class="max-button max-button--primary"
+          disabled
+        >
+          Отправить отчёт
+        </button>
+      </div>
     </div>
 
     <script src="app.js"></script>
