@@ -225,9 +225,30 @@ document.addEventListener("DOMContentLoaded", () => {
   if (saveButton) saveButton.addEventListener("click", saveReport);
 
   const dateInput = document.getElementById("report-date");
+  const dateDisplay = document.getElementById("report-date-display");
   if (dateInput) {
+    const formatIsoDateToRu = (isoDate) => {
+      if (!isoDate) return "";
+      const [year, month, day] = isoDate.split("-");
+      if (!year || !month || !day) return "";
+      return `${day}.${month}.${year}`;
+    };
+
+    const syncDateDisplay = () => {
+      if (!dateDisplay) return;
+      dateDisplay.textContent = formatIsoDateToRu(dateInput.value);
+    };
+
     dateInput.value = "";
+    syncDateDisplay();
     dateInput.addEventListener("change", () => {
+      syncDateDisplay();
+      checkFormValidity();
+    });
+
+    // iOS иногда обновляет значение без "change" в момент тапа
+    dateInput.addEventListener("input", () => {
+      syncDateDisplay();
       checkFormValidity();
     });
   }
