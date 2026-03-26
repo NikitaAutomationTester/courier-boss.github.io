@@ -49,6 +49,7 @@ label {
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    margin-left: 0 !important;
     margin-right: 0 !important;
     /* В WebView "МАКС" часто иконка календаря перекрывает правую часть поля.
        Делаем явный запас справа и выравниваем текст по левому краю. */
