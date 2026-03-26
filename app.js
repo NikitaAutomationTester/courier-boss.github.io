@@ -313,6 +313,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const extraModalCommentEl = document.getElementById("extra-modal-comment");
   const extraModalSalaryEl = document.getElementById("extra-modal-salary");
 
+  function updateExtraModalAddButtonState() {
+    if (!modalAddBtn) return;
+    const deliveryAddress = extraModalDeliverEl
+      ? extraModalDeliverEl.value.trim()
+      : "";
+    const salaryText = extraModalSalaryEl
+      ? extraModalSalaryEl.value.trim()
+      : "";
+
+    const isSalaryValid = /^\d+$/.test(salaryText);
+    const canAdd = !!deliveryAddress && isSalaryValid;
+    modalAddBtn.disabled = !canAdd;
+  }
+
   function openExtraDeliveryModal() {
     if (!modalBackdrop) return;
     setModalValues({
@@ -321,6 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
       comment: "",
       salary: null,
     });
+    updateExtraModalAddButtonState();
     modalBackdrop.hidden = false;
   }
 
@@ -338,6 +353,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (extraModalSalaryEl)
       extraModalSalaryEl.value =
         values.salary != null ? String(values.salary) : "";
+
+    updateExtraModalAddButtonState();
   }
 
   function addExtraDeliveryFromModal() {
@@ -397,6 +414,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (modalAddBtn) {
     modalAddBtn.addEventListener("click", addExtraDeliveryFromModal);
+  }
+
+  if (extraModalDeliverEl) {
+    extraModalDeliverEl.addEventListener("input", () => {
+      updateExtraModalAddButtonState();
+    });
+    extraModalDeliverEl.addEventListener("change", () => {
+      updateExtraModalAddButtonState();
+    });
+  }
+
+  if (extraModalSalaryEl) {
+    extraModalSalaryEl.addEventListener("input", () => {
+      updateExtraModalAddButtonState();
+    });
+    extraModalSalaryEl.addEventListener("change", () => {
+      updateExtraModalAddButtonState();
+    });
   }
 
   if (modalBackdrop) {
