@@ -299,10 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Дополнительные доставки: добавляем через modal и показываем список
-  const extraDeliveriesListEl = document.getElementById(
-    "extra-deliveries-list",
-  );
   const addExtraDeliveryBtn = document.getElementById("add-extra-delivery-btn");
 
   const modalBackdrop = document.getElementById(
@@ -317,66 +313,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const extraModalCommentEl = document.getElementById("extra-modal-comment");
   const extraModalSalaryEl = document.getElementById("extra-modal-salary");
 
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (ch) => {
-      switch (ch) {
-        case "&":
-          return "&amp;";
-        case "<":
-          return "&lt;";
-        case ">":
-          return "&gt;";
-        case '"':
-          return "&quot;";
-        case "'":
-          return "&#039;";
-        default:
-          return ch;
-      }
-    });
-  }
-
-  function renderExtraDeliveriesList() {
-    if (!extraDeliveriesListEl) return;
-
-    if (extraDeliveries.length === 0) {
-      extraDeliveriesListEl.innerHTML =
-        '<div class="loading">Нет дополнительных доставок</div>';
-      return;
-    }
-
-    extraDeliveriesListEl.innerHTML = "";
-
-    extraDeliveries.forEach((d, idx) => {
-      const card = document.createElement("div");
-      card.className = "extra-delivery-card";
-
-      const commentPart = d.comment
-        ? `<div><b>Комментарий:</b> ${escapeHtml(d.comment)}</div>`
-        : "";
-
-      card.innerHTML = `
-        <div class="extra-delivery-head">
-          <div class="extra-delivery-head-title">Доставка #${idx + 1}</div>
-          <button
-            type="button"
-            class="extra-delivery-remove"
-            data-remove-index="${idx}"
-            aria-label="Удалить доставку"
-          >
-            ×
-          </button>
-        </div>
-        <div><b>Получение груза:</b> ${escapeHtml(d.receiveAddress || "-")}</div>
-        <div><b>Доставка груза:</b> ${escapeHtml(d.deliveryAddress)}</div>
-        ${commentPart}
-        <div><b>Зарплата:</b> ${escapeHtml(d.salary)} ₽</div>
-      `;
-
-      extraDeliveriesListEl.appendChild(card);
-    });
-  }
-
   function openExtraDeliveryModal() {
     if (!modalBackdrop) return;
     setModalValues({
@@ -386,8 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
       salary: null,
     });
     modalBackdrop.hidden = false;
-    // iOS: фокус на поле обычно открывает клавиатуру — это ожидаемо
-    if (extraModalDeliverEl) extraModalDeliverEl.focus();
   }
 
   function closeExtraDeliveryModal() {
@@ -447,7 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     closeExtraDeliveryModal();
 
-    renderExtraDeliveriesList();
     updateTotalSalary();
     checkFormValidity();
   }
@@ -471,23 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.target === modalBackdrop) closeExtraDeliveryModal();
     });
   }
-
-  if (extraDeliveriesListEl) {
-    extraDeliveriesListEl.addEventListener("click", (e) => {
-      const btn = e.target.closest(".extra-delivery-remove");
-      if (!btn) return;
-      const idx = parseInt(btn.dataset.removeIndex, 10);
-      if (!Number.isFinite(idx)) return;
-
-      extraDeliveries.splice(idx, 1);
-      renderExtraDeliveriesList();
-      updateTotalSalary();
-      checkFormValidity();
-    });
-  }
-
-  // Первичная отрисовка списка
-  renderExtraDeliveriesList();
 
   checkFormValidity();
 });

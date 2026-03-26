@@ -39,26 +39,6 @@
         </div>
       </div>
 
-      <!-- Дополнительные доставки (может быть много) -->
-      <div class="form-group">
-        <div class="extra-deliveries-header">
-          <div class="extra-deliveries-title">Дополнительные доставки</div>
-          <button
-            type="button"
-            id="add-extra-delivery-btn"
-            class="add-extra-delivery-btn"
-          >
-            Добавить доставку
-          </button>
-        </div>
-
-        <div
-          id="extra-deliveries-list"
-          class="extra-deliveries-list"
-          aria-label="Список дополнительных доставок"
-        ></div>
-      </div>
-
       <div class="form-group">
         <label>Клиники, которые я посетил(а):</label>
         <div id="clinics-list" class="clinics-grid">
@@ -71,6 +51,14 @@
           <span class="salary-label">Зарплата за день:</span>
           <span class="salary-amount-inline" id="total-salary">0 ₽</span>
         </div>
+
+        <button
+          type="button"
+          id="add-extra-delivery-btn"
+          class="max-button add-extra-delivery-cta"
+        >
+          Добавить доставку
+        </button>
 
         <button
           id="save-report-btn"
