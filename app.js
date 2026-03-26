@@ -1,14 +1,10 @@
-// Функция, которая будет вызвана, когда приложение полностью загрузится
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Инициализация интерфейса MAX
   if (window.WebApp) {
     window.WebApp.ready();
     window.WebApp.expand();
   }
 
-  // 2. Получаем данные о пользователе (курьере)
   let currentUserId = null;
-  let currentUserClinics = [];
 
   if (
     window.WebApp &&
@@ -22,11 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Тестовый режим. ID пользователя:", currentUserId);
   }
 
-  // 3. Функция для загрузки списка клиник, привязанных к курьеру
   function loadClinicsForUser(userId) {
-    console.log(`Загружаем клиники для курьера: ${userId}`);
-
-    // --- ЗАГЛУШКА С ТЕСТОВЫМИ ДАННЫМИ ---
     const mockClinics = {
       test_courier_123: [
         {
@@ -75,79 +67,53 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       ],
     };
-
     return mockClinics[userId] || [];
   }
 
-  // 4. Функция для проверки, можно ли активировать кнопку
   function checkFormValidity() {
     const dateInput = document.getElementById("report-date");
     const saveButton = document.getElementById("save-report-btn");
     const selectedDate = dateInput ? dateInput.value : "";
-
-    // Проверяем, выбрана ли дата
     const isDateSelected = selectedDate !== "";
 
-    // Проверяем, выбрана ли хотя бы одна клиника
     const clinicItems = document.querySelectorAll(".clinic-item");
     let isAnyClinicSelected = false;
     clinicItems.forEach((item) => {
       const checkbox = item.querySelector(".clinic-checkbox");
-      if (checkbox && checkbox.checked) {
-        isAnyClinicSelected = true;
-      }
+      if (checkbox && checkbox.checked) isAnyClinicSelected = true;
     });
 
-    // Кнопка активна только если выбрана дата И хотя бы одна клиника
     const isValid = isDateSelected && isAnyClinicSelected;
-
-    if (saveButton) {
-      saveButton.disabled = !isValid;
-    }
-
+    if (saveButton) saveButton.disabled = !isValid;
     return isValid;
   }
 
-  // 5. Функция для пересчёта общей зарплаты
   function updateTotalSalary() {
     const clinicItems = document.querySelectorAll(".clinic-item");
     let total = 0;
-
     clinicItems.forEach((item) => {
       const checkbox = item.querySelector(".clinic-checkbox");
       if (checkbox && checkbox.checked) {
         const salarySpan = item.querySelector(".clinic-salary-value");
-        if (salarySpan) {
-          const salary = parseInt(salarySpan.dataset.salary) || 0;
-          total += salary;
-        }
+        if (salarySpan) total += parseInt(salarySpan.dataset.salary) || 0;
       }
     });
-
     const totalSalaryElement = document.getElementById("total-salary");
-    if (totalSalaryElement) {
+    if (totalSalaryElement)
       totalSalaryElement.textContent = total.toLocaleString("ru-RU") + " ₽";
-    }
-
-    // После пересчёта зарплаты проверяем валидность формы
     checkFormValidity();
-
     return total;
   }
 
-  // 6. Отображаем список клиник на странице
   function displayClinics(clinics) {
     const clinicsContainer = document.getElementById("clinics-list");
     if (!clinicsContainer) return;
-
     if (clinics.length === 0) {
       clinicsContainer.innerHTML =
         '<div class="loading">Нет привязанных клиник</div>';
       return;
     }
-
     clinicsContainer.innerHTML = "";
-
     clinics.forEach((clinic) => {
       const clinicDiv = document.createElement("div");
       clinicDiv.className = "clinic-item";
@@ -157,7 +123,6 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.type = "checkbox";
       checkbox.className = "clinic-checkbox";
       checkbox.value = clinic.id;
-      checkbox.id = `clinic_${clinic.id}`;
 
       const infoDiv = document.createElement("div");
       infoDiv.className = "clinic-info";
@@ -187,114 +152,104 @@ document.addEventListener("DOMContentLoaded", () => {
       clinicDiv.appendChild(infoDiv);
 
       const updateSelection = () => {
-        if (checkbox.checked) {
-          clinicDiv.classList.add("selected");
-        } else {
-          clinicDiv.classList.remove("selected");
-        }
+        if (checkbox.checked) clinicDiv.classList.add("selected");
+        else clinicDiv.classList.remove("selected");
         updateTotalSalary();
       };
 
       clinicDiv.addEventListener("click", (e) => {
-        if (e.target !== checkbox) {
-          checkbox.checked = !checkbox.checked;
-        }
+        if (e.target !== checkbox) checkbox.checked = !checkbox.checked;
         updateSelection();
       });
-
-      checkbox.addEventListener("change", () => {
-        updateSelection();
-      });
+      checkbox.addEventListener("change", updateSelection);
 
       clinicsContainer.appendChild(clinicDiv);
     });
-
     updateTotalSalary();
   }
 
-  // 7. Функция для отправки отчета
   async function saveReport() {
     const dateInput = document.getElementById("report-date");
     const selectedDate = dateInput.value;
-
-    if (!selectedDate) {
-      alert("Пожалуйста, выберите дату");
-      return;
-    }
+    if (!selectedDate) return alert("Пожалуйста, выберите дату");
 
     const selectedClinics = [];
     const clinicItems = document.querySelectorAll(".clinic-item");
     let totalSalary = 0;
-
     clinicItems.forEach((item) => {
       const checkbox = item.querySelector(".clinic-checkbox");
       if (checkbox && checkbox.checked) {
         const nameSpan = item.querySelector(".clinic-name");
         const addressSpan = item.querySelector(".clinic-address");
         const salaryValueSpan = item.querySelector(".clinic-salary-value");
-        const clinicId = item.dataset.id;
         const salary = salaryValueSpan
           ? parseInt(salaryValueSpan.dataset.salary)
           : 0;
-
         selectedClinics.push({
-          id: clinicId,
-          name: nameSpan ? nameSpan.textContent : "",
-          address: addressSpan ? addressSpan.textContent : "",
+          id: item.dataset.id,
+          name: nameSpan.textContent,
+          address: addressSpan.textContent,
           salary: salary,
         });
-
         totalSalary += salary;
       }
     });
 
-    if (selectedClinics.length === 0) {
-      alert("Пожалуйста, выберите хотя бы одну клинику");
-      return;
-    }
+    if (selectedClinics.length === 0)
+      return alert("Выберите хотя бы одну клинику");
 
     const report = {
       userId: currentUserId,
       date: selectedDate,
       clinics: selectedClinics,
-      totalSalary: totalSalary,
+      totalSalary,
       timestamp: new Date().toISOString(),
     };
-
     console.log("Отправлен отчет:", report);
 
-    let message = `Отчёт за ${selectedDate}\n`;
-    message += `Итого: ${totalSalary.toLocaleString("ru-RU")} ₽\n\n`;
-    message += `Посещено клиник: ${selectedClinics.length}\n\n`;
-    message += `Список:\n`;
+    let message = `Отчёт за ${selectedDate}\nИтого: ${totalSalary.toLocaleString("ru-RU")} ₽\n\nПосещено клиник: ${selectedClinics.length}\n\nСписок:\n`;
     selectedClinics.forEach((clinic) => {
       message += `• ${clinic.name}\n  ${clinic.address}\n  ${clinic.salary.toLocaleString("ru-RU")} ₽\n\n`;
     });
     alert(message);
   }
 
-  // 8. Загружаем данные для текущего пользователя и отображаем их
   const userClinics = loadClinicsForUser(currentUserId);
   displayClinics(userClinics);
 
-  // 9. Назначаем обработчики
   const saveButton = document.getElementById("save-report-btn");
-  if (saveButton) {
-    saveButton.addEventListener("click", saveReport);
-  }
+  if (saveButton) saveButton.addEventListener("click", saveReport);
 
-  // 10. Обработчик изменения даты
+  // Кастомный выбор даты через нативный календарь телефона
   const dateInput = document.getElementById("report-date");
   if (dateInput) {
-    // НЕ устанавливаем дату по умолчанию — оставляем пустым
     dateInput.value = "";
+    dateInput.addEventListener("click", () => {
+      // Создаём временное поле type="date" для вызова нативного календаря
+      const tempInput = document.createElement("input");
+      tempInput.type = "date";
+      tempInput.style.position = "absolute";
+      tempInput.style.opacity = "0";
+      tempInput.style.pointerEvents = "none";
+      document.body.appendChild(tempInput);
 
-    // При изменении даты проверяем валидность формы
-    dateInput.addEventListener("change", () => {
+      tempInput.addEventListener("change", (e) => {
+        if (e.target.value) {
+          // Преобразуем YYYY-MM-DD в ДД.ММ.ГГГГ
+          const [year, month, day] = e.target.value.split("-");
+          dateInput.value = `${day}.${month}.${year}`;
+        }
+        document.body.removeChild(tempInput);
+        checkFormValidity();
+      });
+
+      tempInput.showPicker();
+    });
+
+    dateInput.addEventListener("input", () => {
       checkFormValidity();
     });
   }
 
-  // 11. Инициализируем состояние кнопки (изначально неактивна)
   checkFormValidity();
 });

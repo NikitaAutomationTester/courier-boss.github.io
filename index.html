@@ -7,26 +7,29 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>Отчёт курьера</title>
-    <!-- Подключаем библиотеки MAX UI и MAX Bridge -->
     <script src="https://unpkg.com/@max.me/telegram-web-app@1.0.0/dist/web-app.js"></script>
     <link
       rel="stylesheet"
       href="https://unpkg.com/@max.me/max-ui@latest/dist/max-ui.css"
     />
-    <!-- Подключаем наш собственный файл со стилями -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="container">
       <h1>Отчёт за день</h1>
 
-      <!-- Поле для выбора даты -->
+      <!-- Поле для выбора даты (кастомное) -->
       <div class="form-group">
         <label for="report-date">Выберите дату</label>
-        <input type="date" id="report-date" class="max-input" />
+        <input
+          type="text"
+          id="report-date"
+          class="max-input"
+          placeholder="ДД.ММ.ГГГГ"
+          readonly
+        />
       </div>
 
-      <!-- Список клиник -->
       <div class="form-group">
         <label>Клиники, которые я посетил(а):</label>
         <div id="clinics-list" class="clinics-grid">
@@ -34,13 +37,11 @@
         </div>
       </div>
 
-      <!-- Блок с зарплатой за день (компактная версия) -->
       <div class="salary-row" id="salary-row">
         <span class="salary-label">Зарплата за день:</span>
         <span class="salary-amount-inline" id="total-salary">0 ₽</span>
       </div>
 
-      <!-- Кнопка для отправки отчета -->
       <button
         id="save-report-btn"
         class="max-button max-button--primary"
@@ -50,7 +51,6 @@
       </button>
     </div>
 
-    <!-- Подключаем наш собственный файл с логикой -->
     <script src="app.js"></script>
   </body>
 </html>

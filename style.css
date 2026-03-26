@@ -22,7 +22,6 @@ h1 {
 .form-group {
     margin-bottom: 20px;
     width: 100%;
-    box-sizing: border-box;
 }
 
 label {
@@ -31,10 +30,8 @@ label {
     font-weight: 500;
 }
 
-/* Исправляем поле ввода даты — делаем его полноценным блочным элементом */
-.max-input,
-#report-date,
-input[type="date"] {
+/* Стили для кастомного поля даты */
+#report-date {
     width: 100%;
     padding: 12px;
     border: 1px solid var(--max-border-color, #e0e0e0);
@@ -43,13 +40,6 @@ input[type="date"] {
     box-sizing: border-box;
     background-color: var(--max-input-bg, #ffffff);
     color: var(--max-text-color, #000000);
-    display: block;
-    margin: 0;
-}
-
-/* Убираем стандартные стрелки и календарь, оставляя только функционал */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    padding: 4px;
     cursor: pointer;
 }
 
@@ -130,7 +120,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     color: var(--max-hint-color, #8e8e93);
 }
 
-/* Компактная строка с зарплатой */
 .salary-row {
     display: flex;
     justify-content: space-between;
@@ -176,7 +165,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     opacity: 0.7;
 }
 
-/* Стиль для неактивной кнопки */
 .max-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
