@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let currentUserId = null;
+  // Дополнительные доставки (может быть много)
+  let extraDeliveries = [];
 
   if (
     window.WebApp &&
@@ -81,39 +83,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (checkbox && checkbox.checked) isAnyClinicSelected = true;
     });
 
-    const extraToggle = document.getElementById("extra-delivery-toggle");
-    const isExtraDeliveryEnabled = extraToggle ? extraToggle.checked : false;
-
-    const getExtraFields = () => {
-      const receiveAddress = document
-        .getElementById("extra-delivery-receive")
-        ?.value.trim();
-      const deliveryAddress = document
-        .getElementById("extra-delivery-deliver")
-        ?.value.trim();
-      const comment = document
-        .getElementById("extra-delivery-comment")
-        ?.value.trim();
-      const salaryRaw = document.getElementById("extra-delivery-salary")?.value;
-
-      const salaryText = salaryRaw ? String(salaryRaw).trim() : "";
-      const isSalaryValid = /^\d+$/.test(salaryText); // только целые числа (включая 0)
-      const salaryParsed = isSalaryValid ? parseInt(salaryText, 10) : null;
-
-      // Обязательные поля доп. доставки:
-      // - адрес доставки груза
-      // - целая зарплата
-      // Остальные поля (получение груза, комментарии) не обязательны.
-      const isExtraReady = !!deliveryAddress && isSalaryValid;
-
-      return { isExtraReady, salaryParsed };
-    };
-
-    const extra = isExtraDeliveryEnabled ? getExtraFields() : null;
     const isValid =
-      isDateSelected &&
-      (isAnyClinicSelected || isExtraDeliveryEnabled) &&
-      (!isExtraDeliveryEnabled || (extra && extra.isExtraReady));
+      isDateSelected && (isAnyClinicSelected || extraDeliveries.length > 0);
     if (saveButton) saveButton.disabled = !isValid;
     return isValid;
   }
@@ -129,23 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    const extraToggle = document.getElementById("extra-delivery-toggle");
-    const isExtraDeliveryEnabled = extraToggle ? extraToggle.checked : false;
-    if (isExtraDeliveryEnabled) {
-      const deliveryAddress = document
-        .getElementById("extra-delivery-deliver")
-        ?.value.trim();
-      const salaryRaw = document.getElementById("extra-delivery-salary")
-        ? document.getElementById("extra-delivery-salary").value
-        : "";
-
-      const salaryText = salaryRaw ? String(salaryRaw).trim() : "";
-      const isSalaryValid = /^\d+$/.test(salaryText);
-      const salaryParsed = isSalaryValid ? parseInt(salaryText, 10) : null;
-      const isExtraReady = !!deliveryAddress && salaryParsed !== null;
-
-      if (isExtraReady) total += salaryParsed;
-    }
+    total += extraDeliveries.reduce((sum, d) => sum + (d.salary || 0), 0);
 
     const totalSalaryElement = document.getElementById("total-salary");
     if (totalSalaryElement)
@@ -246,56 +201,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    const extraToggle = document.getElementById("extra-delivery-toggle");
-    const isExtraDeliveryEnabled = extraToggle ? extraToggle.checked : false;
+    const hasExtraDeliveries = extraDeliveries.length > 0;
 
-    const getExtraPayload = () => {
-      const receiveAddress = document
-        .getElementById("extra-delivery-receive")
-        ?.value.trim();
-      const deliveryAddress = document
-        .getElementById("extra-delivery-deliver")
-        ?.value.trim();
-      const comment = document
-        .getElementById("extra-delivery-comment")
-        ?.value.trim();
-      const salaryRaw = document.getElementById("extra-delivery-salary")?.value;
-      const salaryText = salaryRaw ? String(salaryRaw).trim() : "";
-      const isSalaryValid = /^\d+$/.test(salaryText);
-      const salaryParsed = isSalaryValid ? parseInt(salaryText, 10) : null;
-
-      return { receiveAddress, deliveryAddress, comment, salaryParsed };
-    };
-
-    const extraPayload = isExtraDeliveryEnabled ? getExtraPayload() : null;
-
-    if (selectedClinics.length === 0 && !isExtraDeliveryEnabled) {
-      return alert("Выберите хотя бы одну клинику");
+    if (selectedClinics.length === 0 && !hasExtraDeliveries) {
+      return alert("Выберите клиники или добавьте доставку");
     }
 
-    if (isExtraDeliveryEnabled) {
-      const ok =
-        extraPayload &&
-        !!extraPayload.deliveryAddress &&
-        extraPayload.salaryParsed !== null &&
-        Number.isFinite(extraPayload.salaryParsed);
-      if (!ok) {
-        return alert(
-          "Заполните адрес доставки груза и целую зарплату для дополнительной доставки",
-        );
-      }
-      totalSalary += extraPayload.salaryParsed;
-    }
-
-    const extraDelivery =
-      isExtraDeliveryEnabled && extraPayload
-        ? {
-            receiveAddress: extraPayload.receiveAddress,
-            deliveryAddress: extraPayload.deliveryAddress,
-            comment: extraPayload.comment,
-            salary: extraPayload.salaryParsed,
-          }
-        : null;
+    totalSalary += extraDeliveries.reduce((sum, d) => sum + (d.salary || 0), 0);
 
     const report = {
       userId: currentUserId,
@@ -303,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
       formattedDate: formattedDate,
       clinics: selectedClinics,
       totalSalary,
-      extraDelivery,
+      extraDeliveries,
       timestamp: new Date().toISOString(),
     };
 
@@ -316,12 +228,15 @@ document.addEventListener("DOMContentLoaded", () => {
       message += `• ${clinic.name}\n  ${clinic.address}\n  ${clinic.salary.toLocaleString("ru-RU")} ₽\n\n`;
     });
 
-    if (isExtraDeliveryEnabled && report.extraDelivery) {
-      message += `Дополнительная доставка:\n`;
-      message += `Получение груза: ${report.extraDelivery.receiveAddress}\n`;
-      message += `Доставка груза: ${report.extraDelivery.deliveryAddress}\n`;
-      message += `Комментарий: ${report.extraDelivery.comment}\n`;
-      message += `Зарплата: ${report.extraDelivery.salary.toLocaleString("ru-RU")} ₽\n\n`;
+    if (extraDeliveries.length > 0) {
+      message += `\nДополнительные доставки:\n`;
+      extraDeliveries.forEach((d, idx) => {
+        message += `#${idx + 1}\n`;
+        message += `Получение груза: ${d.receiveAddress || "-"}\n`;
+        message += `Доставка груза: ${d.deliveryAddress}\n`;
+        if (d.comment) message += `Комментарий: ${d.comment}\n`;
+        message += `Зарплата: ${d.salary.toLocaleString("ru-RU")} ₽\n\n`;
+      });
     }
     alert(message);
   }
@@ -384,31 +299,195 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Дополнительная доставка
-  const extraToggle = document.getElementById("extra-delivery-toggle");
-  const extraForm = document.getElementById("extra-delivery-form");
-  if (extraToggle && extraForm) {
-    const toggleExtraForm = () => {
-      extraForm.hidden = !extraToggle.checked;
-      updateTotalSalary();
-      checkFormValidity();
-    };
+  // Дополнительные доставки: добавляем через modal и показываем список
+  const extraDeliveriesListEl = document.getElementById(
+    "extra-deliveries-list",
+  );
+  const addExtraDeliveryBtn = document.getElementById("add-extra-delivery-btn");
 
-    extraToggle.addEventListener("change", toggleExtraForm);
+  const modalBackdrop = document.getElementById(
+    "extra-delivery-modal-backdrop",
+  );
+  const modalCloseBtn = document.getElementById("extra-delivery-modal-close");
+  const modalCancelBtn = document.getElementById("extra-delivery-modal-cancel");
+  const modalAddBtn = document.getElementById("extra-delivery-modal-add");
 
-    // На любой ввод обновляем и сумму, и доступность кнопки отправки
-    const extraInputs = extraForm.querySelectorAll("input, textarea");
-    extraInputs.forEach((el) => {
-      el.addEventListener("input", () => {
-        updateTotalSalary();
-        checkFormValidity();
-      });
-      el.addEventListener("change", () => {
-        updateTotalSalary();
-        checkFormValidity();
-      });
+  const extraModalReceiveEl = document.getElementById("extra-modal-receive");
+  const extraModalDeliverEl = document.getElementById("extra-modal-deliver");
+  const extraModalCommentEl = document.getElementById("extra-modal-comment");
+  const extraModalSalaryEl = document.getElementById("extra-modal-salary");
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (ch) => {
+      switch (ch) {
+        case "&":
+          return "&amp;";
+        case "<":
+          return "&lt;";
+        case ">":
+          return "&gt;";
+        case '"':
+          return "&quot;";
+        case "'":
+          return "&#039;";
+        default:
+          return ch;
+      }
     });
   }
+
+  function renderExtraDeliveriesList() {
+    if (!extraDeliveriesListEl) return;
+
+    if (extraDeliveries.length === 0) {
+      extraDeliveriesListEl.innerHTML =
+        '<div class="loading">Нет дополнительных доставок</div>';
+      return;
+    }
+
+    extraDeliveriesListEl.innerHTML = "";
+
+    extraDeliveries.forEach((d, idx) => {
+      const card = document.createElement("div");
+      card.className = "extra-delivery-card";
+
+      const commentPart = d.comment
+        ? `<div><b>Комментарий:</b> ${escapeHtml(d.comment)}</div>`
+        : "";
+
+      card.innerHTML = `
+        <div class="extra-delivery-head">
+          <div class="extra-delivery-head-title">Доставка #${idx + 1}</div>
+          <button
+            type="button"
+            class="extra-delivery-remove"
+            data-remove-index="${idx}"
+            aria-label="Удалить доставку"
+          >
+            ×
+          </button>
+        </div>
+        <div><b>Получение груза:</b> ${escapeHtml(d.receiveAddress || "-")}</div>
+        <div><b>Доставка груза:</b> ${escapeHtml(d.deliveryAddress)}</div>
+        ${commentPart}
+        <div><b>Зарплата:</b> ${escapeHtml(d.salary)} ₽</div>
+      `;
+
+      extraDeliveriesListEl.appendChild(card);
+    });
+  }
+
+  function openExtraDeliveryModal() {
+    if (!modalBackdrop) return;
+    setModalValues({
+      receiveAddress: "",
+      deliveryAddress: "",
+      comment: "",
+      salary: null,
+    });
+    modalBackdrop.hidden = false;
+    // iOS: фокус на поле обычно открывает клавиатуру — это ожидаемо
+    if (extraModalDeliverEl) extraModalDeliverEl.focus();
+  }
+
+  function closeExtraDeliveryModal() {
+    if (!modalBackdrop) return;
+    modalBackdrop.hidden = true;
+  }
+
+  function setModalValues(values) {
+    if (extraModalReceiveEl)
+      extraModalReceiveEl.value = values.receiveAddress || "";
+    if (extraModalDeliverEl)
+      extraModalDeliverEl.value = values.deliveryAddress || "";
+    if (extraModalCommentEl) extraModalCommentEl.value = values.comment || "";
+    if (extraModalSalaryEl)
+      extraModalSalaryEl.value =
+        values.salary != null ? String(values.salary) : "";
+  }
+
+  function addExtraDeliveryFromModal() {
+    const receiveAddress = extraModalReceiveEl
+      ? extraModalReceiveEl.value.trim()
+      : "";
+    const deliveryAddress = extraModalDeliverEl
+      ? extraModalDeliverEl.value.trim()
+      : "";
+    const comment = extraModalCommentEl ? extraModalCommentEl.value.trim() : "";
+    const salaryText = extraModalSalaryEl
+      ? extraModalSalaryEl.value.trim()
+      : "";
+
+    const isSalaryValid = /^\d+$/.test(salaryText);
+
+    if (!deliveryAddress) {
+      alert("Укажите адрес доставки груза");
+      return;
+    }
+    if (!isSalaryValid) {
+      alert("Укажите зарплату целым числом");
+      return;
+    }
+
+    const salary = parseInt(salaryText, 10);
+
+    extraDeliveries.push({
+      receiveAddress,
+      deliveryAddress,
+      comment,
+      salary,
+    });
+
+    // Сброс и закрытие modal
+    setModalValues({
+      receiveAddress: "",
+      deliveryAddress: "",
+      comment: "",
+      salary: null,
+    });
+    closeExtraDeliveryModal();
+
+    renderExtraDeliveriesList();
+    updateTotalSalary();
+    checkFormValidity();
+  }
+
+  if (addExtraDeliveryBtn) {
+    addExtraDeliveryBtn.addEventListener("click", openExtraDeliveryModal);
+  }
+
+  if (modalCloseBtn) {
+    modalCloseBtn.addEventListener("click", closeExtraDeliveryModal);
+  }
+  if (modalCancelBtn) {
+    modalCancelBtn.addEventListener("click", closeExtraDeliveryModal);
+  }
+  if (modalAddBtn) {
+    modalAddBtn.addEventListener("click", addExtraDeliveryFromModal);
+  }
+
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) closeExtraDeliveryModal();
+    });
+  }
+
+  if (extraDeliveriesListEl) {
+    extraDeliveriesListEl.addEventListener("click", (e) => {
+      const btn = e.target.closest(".extra-delivery-remove");
+      if (!btn) return;
+      const idx = parseInt(btn.dataset.removeIndex, 10);
+      if (!Number.isFinite(idx)) return;
+
+      extraDeliveries.splice(idx, 1);
+      renderExtraDeliveriesList();
+      updateTotalSalary();
+      checkFormValidity();
+    });
+  }
+
+  // Первичная отрисовка списка
+  renderExtraDeliveriesList();
 
   checkFormValidity();
 });

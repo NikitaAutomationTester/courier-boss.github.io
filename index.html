@@ -39,60 +39,24 @@
         </div>
       </div>
 
-      <!-- Дополнительная доставка (не связана с клиниками) -->
+      <!-- Дополнительные доставки (может быть много) -->
       <div class="form-group">
-        <label class="toggle-row">
-          <input
-            type="checkbox"
-            id="extra-delivery-toggle"
-            aria-controls="extra-delivery-form"
-          />
-          Есть дополнительная доставка
-        </label>
-
-        <div class="extra-delivery-form" id="extra-delivery-form" hidden>
-          <div class="form-group form-group--inner">
-            <label for="extra-delivery-receive">Адрес получения груза</label>
-            <input
-              id="extra-delivery-receive"
-              class="max-input"
-              type="text"
-              inputmode="text"
-              autocomplete="off"
-            />
-          </div>
-
-          <div class="form-group form-group--inner">
-            <label for="extra-delivery-deliver">Адрес доставки груза</label>
-            <input
-              id="extra-delivery-deliver"
-              class="max-input"
-              type="text"
-              inputmode="text"
-              autocomplete="off"
-            />
-          </div>
-
-          <div class="form-group form-group--inner">
-            <label for="extra-delivery-comment">Комментарии</label>
-            <textarea
-              id="extra-delivery-comment"
-              class="max-input"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="form-group form-group--inner">
-            <label for="extra-delivery-salary">Зарплата</label>
-            <input
-              id="extra-delivery-salary"
-              class="max-input"
-              type="number"
-              step="1"
-              inputmode="numeric"
-            />
-          </div>
+        <div class="extra-deliveries-header">
+          <div class="extra-deliveries-title">Дополнительные доставки</div>
+          <button
+            type="button"
+            id="add-extra-delivery-btn"
+            class="add-extra-delivery-btn"
+          >
+            Добавить доставку
+          </button>
         </div>
+
+        <div
+          id="extra-deliveries-list"
+          class="extra-deliveries-list"
+          aria-label="Список дополнительных доставок"
+        ></div>
       </div>
 
       <div class="form-group">
@@ -115,6 +79,95 @@
         >
           Отправить отчёт
         </button>
+      </div>
+    </div>
+
+    <!-- Модальное окно добавления доставки (bottom-sheet для мобильных) -->
+    <div class="modal-backdrop" id="extra-delivery-modal-backdrop" hidden>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="extra-delivery-modal-title"
+      >
+        <div class="modal-header">
+          <div class="modal-title" id="extra-delivery-modal-title">
+            Добавить доставку
+          </div>
+          <button
+            type="button"
+            class="modal-close"
+            id="extra-delivery-modal-close"
+            aria-label="Закрыть"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group form-group--inner">
+            <label for="extra-modal-receive">Адрес получения груза</label>
+            <input
+              id="extra-modal-receive"
+              class="max-input"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group form-group--inner">
+            <label for="extra-modal-deliver"
+              >Адрес доставки груза (обязательно)</label
+            >
+            <input
+              id="extra-modal-deliver"
+              class="max-input"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group form-group--inner">
+            <label for="extra-modal-comment">Комментарии</label>
+            <textarea
+              id="extra-modal-comment"
+              class="max-input"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-group form-group--inner">
+            <label for="extra-modal-salary"
+              >Зарплата (обязательно, целое число)</label
+            >
+            <input
+              id="extra-modal-salary"
+              class="max-input"
+              type="number"
+              step="1"
+              inputmode="numeric"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="max-button"
+            id="extra-delivery-modal-cancel"
+          >
+            Отмена
+          </button>
+          <button
+            type="button"
+            class="max-button max-button--primary"
+            id="extra-delivery-modal-add"
+          >
+            Добавить
+          </button>
+        </div>
       </div>
     </div>
 
