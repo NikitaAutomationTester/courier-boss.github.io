@@ -45,6 +45,11 @@ label {
 /* Явно задаём стили для поля даты, чтобы оно точно было таким же */
 #report-date {
     display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-right: 0 !important;
     /* В WebView "МАКС" часто иконка календаря перекрывает правую часть поля.
        Делаем явный запас справа и выравниваем текст по левому краю. */
     text-align: left;
