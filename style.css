@@ -21,7 +21,6 @@ h1 {
 
 .form-group {
     margin-bottom: 20px;
-    width: 100%;
 }
 
 label {
@@ -30,14 +29,9 @@ label {
     font-weight: 500;
 }
 
-/* Обёртка для поля даты — контролируем ширину */
-.date-field-wrapper {
-    width: 100%;
-    display: block;
-}
-
-/* Кастомный стиль для поля даты — без иконки и с правильными отступами */
-.date-input-custom {
+/* Универсальный стиль для всех полей ввода */
+.max-input,
+#report-date {
     width: 100%;
     padding: 12px;
     border: 1px solid var(--max-border-color, #e0e0e0);
@@ -46,32 +40,11 @@ label {
     box-sizing: border-box;
     background-color: var(--max-input-bg, #ffffff);
     color: var(--max-text-color, #000000);
-    font-family: inherit;
-    margin: 0;
+}
+
+/* Явно задаём стили для поля даты, чтобы оно точно было таким же */
+#report-date {
     display: block;
-}
-
-/* Скрываем стандартную иконку календаря в WebKit-браузерах (Chrome, Safari, Edge) */
-.date-input-custom::-webkit-calendar-picker-indicator {
-    opacity: 0;
-    position: absolute;
-    right: 0;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: auto;
-    height: auto;
-    cursor: pointer;
-}
-
-/* Делаем так, чтобы поле оставалось кликабельным по всей площади */
-.date-input-custom {
-    position: relative;
-}
-
-/* Для Firefox — скрываем иконку */
-.date-input-custom {
-    -moz-appearance: textfield;
 }
 
 .clinics-grid {

@@ -173,7 +173,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedDate = dateInput.value;
     if (!selectedDate) return alert("Пожалуйста, выберите дату");
 
-    // Преобразуем YYYY-MM-DD в формат ДД.ММ.ГГГГ для отображения
     const [year, month, day] = selectedDate.split("-");
     const formattedDate = `${day}.${month}.${year}`;
 
