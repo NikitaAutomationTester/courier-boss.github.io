@@ -17,27 +17,29 @@
   <body>
     <!-- ЭКРАН АВТОРИЗАЦИИ -->
     <div id="auth-screen">
-      <h1>Авторизация</h1>
+      <div class="auth-form-container">
+        <h1>Авторизация</h1>
 
-      <div class="form-group">
-        <label for="auth-phone">Номер телефона</label>
-        <div class="phone-input-wrapper">
-          <span class="phone-prefix">+7</span>
-          <input
-            type="tel"
-            id="auth-phone"
-            class="max-input phone-input"
-            placeholder="900 123-45-67"
-            inputmode="numeric"
-          />
+        <div class="form-group">
+          <label for="auth-phone">Номер телефона</label>
+          <div class="phone-input-wrapper">
+            <span class="phone-prefix">+7</span>
+            <input
+              type="tel"
+              id="auth-phone"
+              class="max-input phone-input"
+              placeholder="900 123-45-67"
+              inputmode="numeric"
+            />
+          </div>
         </div>
+
+        <button id="auth-login-btn" class="max-button max-button--primary">
+          Авторизоваться
+        </button>
+
+        <div id="auth-error" class="auth-error" style="display: none"></div>
       </div>
-
-      <button id="auth-login-btn" class="max-button max-button--primary">
-        Авторизоваться
-      </button>
-
-      <div id="auth-error" class="auth-error" style="display: none"></div>
     </div>
 
     <!-- ЭКРАН ЗАГРУЗКИ -->

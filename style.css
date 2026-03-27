@@ -809,3 +809,66 @@ textarea.max-input {
     width: 100% !important;
     text-align: center !important;
 }
+
+/* ===== ЦЕНТРИРОВАНИЕ ЭКРАНА АВТОРИЗАЦИИ ===== */
+#auth-screen {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: var(--max-bg-color, #ffffff) !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    overflow-y: auto !important;
+    z-index: 100 !important;
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+#auth-screen h1 {
+    margin-bottom: 32px !important;
+    text-align: center !important;
+    font-size: 24px !important;
+    width: 100% !important;
+}
+
+#auth-screen .form-group {
+    margin-bottom: 20px !important;
+    width: 100% !important;
+}
+
+#auth-screen .phone-input-wrapper {
+    width: 100% !important;
+}
+
+#auth-screen .max-button {
+    margin-top: 8px !important;
+    width: 100% !important;
+}
+
+/* Блок ошибки — фиксированной высоты, чтобы не "прыгал" контент */
+#auth-screen .auth-error {
+    margin-top: 16px !important;
+    width: 100% !important;
+    text-align: center !important;
+    min-height: 50px !important;
+    visibility: visible !important;
+}
+
+/* Когда ошибка скрыта — сохраняем место */
+#auth-screen .auth-error[style*="display: none"] {
+    visibility: hidden !important;
+    display: block !important;
+}
