@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let extraDeliveries = [];
   let currentScreen = "main";
   let currentUser = null;
+  let currentUserRole = null;
   let isAuthorized = false;
 
   // Элементы DOM
@@ -16,6 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const accessDeniedScreen = document.getElementById("access-denied-screen");
   const loadingScreen = document.getElementById("loading-screen");
   const authScreen = document.getElementById("auth-screen");
+  const adminScreen = document.getElementById("admin-screen");
+  const adminReportsBtn = document.getElementById("admin-reports-btn");
   const authPhone = document.getElementById("auth-phone");
   const authLoginBtn = document.getElementById("auth-login-btn");
   const authError = document.getElementById("auth-error");
@@ -23,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("=== ИНИЦИАЛИЗАЦИЯ ===");
   console.log("mainScreen найден:", !!mainScreen);
   console.log("authScreen найден:", !!authScreen);
+  console.log("adminScreen найден:", !!adminScreen);
   console.log("deliveriesScreen найден:", !!deliveriesScreen);
 
   // Показываем экран загрузки
@@ -33,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
     if (authScreen) authScreen.style.display = "none";
+    if (adminScreen) adminScreen.style.display = "none";
   }
 
   // Скрываем экран загрузки
@@ -64,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
+    if (adminScreen) adminScreen.style.display = "none";
     if (authError) authError.style.display = "none";
   }
 
@@ -79,11 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "block";
+    if (adminScreen) adminScreen.style.display = "none";
   }
 
-  // Показываем основной интерфейс
+  // Показываем основной интерфейс (в зависимости от роли)
   function showMainInterface() {
     console.log("=== showMainInterface START ===");
+    console.log("currentUserRole:", currentUserRole);
 
     hideLoading();
 
@@ -102,16 +110,33 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("authScreen принудительно скрыт");
     }
 
-    // ПРИНУДИТЕЛЬНО показываем главный экран
-    if (mainScreen) {
-      mainScreen.style.cssText = `
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        position: relative !important;
-        z-index: 1 !important;
-      `;
-      console.log("mainScreen принудительно показан");
+    // Показываем нужный экран в зависимости от роли
+    if (currentUserRole === "admin") {
+      // Администратор — показываем админ-панель
+      if (adminScreen) {
+        adminScreen.style.cssText = `
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          position: relative !important;
+          z-index: 1 !important;
+        `;
+        console.log("adminScreen показан");
+      }
+      if (mainScreen) mainScreen.style.display = "none";
+    } else {
+      // Курьер — показываем главный экран
+      if (mainScreen) {
+        mainScreen.style.cssText = `
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          position: relative !important;
+          z-index: 1 !important;
+        `;
+        console.log("mainScreen показан");
+      }
+      if (adminScreen) adminScreen.style.display = "none";
     }
 
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
@@ -154,13 +179,15 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("3. Пользователь получен:", user);
         currentUser = user;
         currentUserId = user.id;
+        currentUserRole = user.role;
         isAuthorized = true;
 
         sessionStorage.setItem("authorizedUserId", user.id);
         sessionStorage.setItem("authorizedUserPhone", fullPhone);
         sessionStorage.setItem("authorizedUserName", user.name);
+        sessionStorage.setItem("authorizedUserRole", user.role);
 
-        console.log("4. Сохранили в sessionStorage");
+        console.log("4. Сохранили в sessionStorage, роль:", user.role);
         console.log("5. Вызываем initMainApp()");
         initMainApp();
         console.log("6. Вызываем showMainInterface()");
@@ -186,8 +213,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedUserId = sessionStorage.getItem("authorizedUserId");
     const savedUserPhone = sessionStorage.getItem("authorizedUserPhone");
     const savedUserName = sessionStorage.getItem("authorizedUserName");
+    const savedUserRole = sessionStorage.getItem("authorizedUserRole");
     console.log("savedUserId:", savedUserId);
     console.log("savedUserPhone:", savedUserPhone);
+    console.log("savedUserRole:", savedUserRole);
 
     if (savedUserId && savedUserPhone && savedUserName) {
       console.log("Сохранённые данные найдены");
@@ -196,8 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
           id: savedUserId,
           phone: savedUserPhone,
           name: savedUserName,
+          role: savedUserRole,
         };
         currentUserId = savedUserId;
+        currentUserRole = savedUserRole;
         isAuthorized = true;
 
         console.log("Восстановлена сессия для:", currentUser);
@@ -211,6 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.removeItem("authorizedUserId");
         sessionStorage.removeItem("authorizedUserPhone");
         sessionStorage.removeItem("authorizedUserName");
+        sessionStorage.removeItem("authorizedUserRole");
       }
     } else {
       console.log("Сохранённых данных нет");
@@ -459,6 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
     totalSalary += extraDeliveries.reduce((sum, d) => sum + (d.salary || 0), 0);
 
     const report = {
+      id: Date.now().toString(),
       userId: currentUserId,
       userName: currentUser ? currentUser.name : null,
       userPhone: currentUser ? currentUser.phone : null,
@@ -471,6 +504,16 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     console.log("Отправлен отчет:", report);
+
+    // Сохраняем отчёт в localStorage
+    const savedReports = JSON.parse(localStorage.getItem("reports") || "[]");
+    savedReports.push(report);
+    localStorage.setItem("reports", JSON.stringify(savedReports));
+    console.log(
+      "Отчёт сохранён в localStorage, всего отчётов:",
+      savedReports.length,
+    );
+
     showSuccess("Отчёт успешно отправлен");
   }
 
@@ -544,12 +587,15 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("=== initMainApp START ===");
     console.log("currentUserId:", currentUserId);
     console.log("currentUser:", currentUser);
+    console.log("currentUserRole:", currentUserRole);
 
-    const userClinics = loadClinicsForUser(currentUserId);
-    console.log("Клиники загружены, количество:", userClinics.length);
-
-    displayClinics(userClinics);
-    console.log("displayClinics выполнен");
+    // Для курьеров загружаем клиники
+    if (currentUserRole !== "admin") {
+      const userClinics = loadClinicsForUser(currentUserId);
+      console.log("Клиники загружены, количество:", userClinics.length);
+      displayClinics(userClinics);
+      console.log("displayClinics выполнен");
+    }
 
     const saveButton = document.getElementById("save-report-btn");
     if (saveButton) {
@@ -780,5 +826,22 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("authPhone обработчик Enter добавлен");
   } else {
     console.log("authPhone не найден!");
+  }
+
+  // Обработчик кнопки "Отчёты курьеров" (для администратора)
+  if (adminReportsBtn) {
+    adminReportsBtn.addEventListener("click", () => {
+      console.log("Кнопка 'Отчёты курьеров' нажата");
+      const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+      console.log("Всего отчётов в localStorage:", reports.length);
+      if (reports.length === 0) {
+        showError("Нет сохранённых отчётов");
+      } else {
+        showSuccess(
+          `Найдено ${reports.length} отчётов. Раздел в разработке — скоро здесь будет список.`,
+        );
+      }
+    });
+    console.log("adminReportsBtn обработчик добавлен");
   }
 });

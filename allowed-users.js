@@ -4,29 +4,24 @@ const USERS_DB = [
     id: "courier_001",
     phone: "+79054963954",
     name: "Никита Шматко",
+    role: "courier",
   },
   {
     id: "courier_002",
-    phone: "+79123456789",
+    phone: "+79614624066",
     name: "Иван Петров",
-  },
-  {
-    id: "courier_003",
-    phone: "+79201234567",
-    name: "Дмитрий Сидоров",
+    role: "admin",
   },
 ];
 
-// Проверка пользователя по номеру телефона
+// Проверка пользователя по номеру телефона (возвращает объект или null)
 function checkAuthByPhone(phone) {
-  // Очищаем номер от лишних символов для сравнения
   const cleanPhone = phone.replace(/[^\d+]/g, "");
-  return (
-    USERS_DB.find((user) => {
-      const cleanUserPhone = user.phone.replace(/[^\d+]/g, "");
-      return cleanUserPhone === cleanPhone;
-    }) || null
-  );
+  const user = USERS_DB.find((user) => {
+    const cleanUserPhone = user.phone.replace(/[^\d+]/g, "");
+    return cleanUserPhone === cleanPhone;
+  });
+  return user || null;
 }
 
 // Функция для получения пользователя по номеру
