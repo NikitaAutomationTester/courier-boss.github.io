@@ -298,33 +298,30 @@ document.addEventListener("DOMContentLoaded", () => {
       extraDeliveries.forEach((delivery, index) => {
         const card = document.createElement("div");
         card.className = "delivery-card";
-        card.innerHTML = `
-          <div class="delivery-card-header">Доставка #${index + 1}</div>
-          ${
-            delivery.receiveAddress
-              ? `
-          <div class="delivery-card-row">
+
+        let cardHTML = `<div class="delivery-card-header">Доставка #${index + 1}</div>`;
+
+        if (delivery.receiveAddress) {
+          cardHTML += `<div class="delivery-card-row">
             <span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}
-          </div>
-          `
-              : ""
-          }
-          <div class="delivery-card-row">
-            <span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}
-          </div>
-          ${
-            delivery.comment
-              ? `
-          <div class="delivery-card-row">
+          </div>`;
+        }
+
+        cardHTML += `<div class="delivery-card-row">
+          <span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}
+        </div>`;
+
+        if (delivery.comment) {
+          cardHTML += `<div class="delivery-card-row">
             <span class="delivery-card-label">Комментарий:</span> ${delivery.comment}
-          </div>
-          `
-              : ""
-          }
-          <div class="delivery-card-salary">
-            ${delivery.salary.toLocaleString("ru-RU")} ₽
-          </div>
-        `;
+          </div>`;
+        }
+
+        cardHTML += `<div class="delivery-card-salary">
+          ${delivery.salary.toLocaleString("ru-RU")} ₽
+        </div>`;
+
+        card.innerHTML = cardHTML;
         container.appendChild(card);
       });
     }
