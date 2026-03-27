@@ -726,7 +726,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("report-detail-container");
     if (!container) return;
 
-    // Формируем HTML для клиник
+    // Формируем HTML для клиник (такой же как на главном экране курьера)
     let clinicsHTML = "";
     if (report.clinics && report.clinics.length > 0) {
       clinicsHTML =
@@ -746,31 +746,28 @@ document.addEventListener("DOMContentLoaded", () => {
         '<div class="detail-section"><div class="detail-section-title">Посещённые клиники</div><div class="empty-deliveries">Нет посещённых клиник</div></div>';
     }
 
-    // Формируем HTML для дополнительных доставок
+    // Формируем HTML для дополнительных доставок (один в один как у курьера)
     let extraDeliveriesHTML = "";
     if (report.extraDeliveries && report.extraDeliveries.length > 0) {
       extraDeliveriesHTML =
         '<div class="detail-section"><div class="detail-section-title">Дополнительные доставки</div>';
       report.extraDeliveries.forEach((delivery, idx) => {
         extraDeliveriesHTML += `
-          <div class="detail-delivery-item">
-            <div class="detail-delivery-header">Доставка #${idx + 1}</div>
-            ${delivery.receiveAddress ? `<div class="detail-delivery-row"><strong>Откуда:</strong> ${delivery.receiveAddress}</div>` : ""}
-            <div class="detail-delivery-row"><strong>Куда:</strong> ${delivery.deliveryAddress}</div>
-            ${delivery.comment ? `<div class="detail-delivery-row"><strong>Комментарий:</strong> ${delivery.comment}</div>` : ""}
-            <div class="detail-delivery-row"><strong>Зарплата:</strong> ${delivery.salary.toLocaleString("ru-RU")} ₽</div>
+          <div class="delivery-card" style="margin-bottom: 8px;">
+            <div style="display: flex; align-items: flex-start; width: 100%;">
+              <div class="delivery-number">${idx + 1}</div>
+              <div class="delivery-info">
+                ${delivery.receiveAddress ? `<div class="delivery-card-row"><span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}</div>` : ""}
+                <div class="delivery-card-row"><span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}</div>
+                ${delivery.comment ? `<div class="delivery-card-row"><span class="delivery-card-label">Комментарий:</span> ${delivery.comment}</div>` : ""}
+                <div class="delivery-card-salary">${delivery.salary.toLocaleString("ru-RU")} ₽</div>
+              </div>
+            </div>
           </div>
         `;
       });
       extraDeliveriesHTML += "</div>";
     }
-
-    const totalClinicsSalary = report.clinics
-      ? report.clinics.reduce((sum, c) => sum + c.salary, 0)
-      : 0;
-    const totalExtraSalary = report.extraDeliveries
-      ? report.extraDeliveries.reduce((sum, d) => sum + d.salary, 0)
-      : 0;
 
     container.innerHTML = `
       <div class="detail-section">
@@ -783,10 +780,6 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="detail-info-label">Курьер</div>
           <div class="detail-info-value">${report.userName || report.userPhone || "Курьер"}</div>
         </div>
-        <div class="detail-info-row">
-          <div class="detail-info-label">ID курьера</div>
-          <div class="detail-info-value">${report.userId || "—"}</div>
-        </div>
       </div>
       
       ${clinicsHTML}
@@ -796,14 +789,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="detail-section-title">Итого</div>
         <div class="detail-total-salary">
           Всего: ${report.totalSalary.toLocaleString("ru-RU")} ₽
-        </div>
-        <div class="detail-info-row" style="margin-top: 8px;">
-          <div class="detail-info-label">Клиники:</div>
-          <div class="detail-info-value">${totalClinicsSalary.toLocaleString("ru-RU")} ₽</div>
-        </div>
-        <div class="detail-info-row">
-          <div class="detail-info-label">Доп. доставки:</div>
-          <div class="detail-info-value">${totalExtraSalary.toLocaleString("ru-RU")} ₽</div>
         </div>
       </div>
     `;
