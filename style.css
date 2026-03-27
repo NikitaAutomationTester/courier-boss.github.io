@@ -684,3 +684,36 @@ textarea.max-input {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* Стили для поля ввода телефона с префиксом +7 */
+.phone-input-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.phone-prefix {
+    position: absolute;
+    left: 12px;
+    font-size: 16px;
+    color: var(--max-text-color, #000000);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.phone-input {
+    padding-left: 40px !important;
+}
+
+/* Убираем стрелки в number input для телефона */
+.phone-input::-webkit-outer-spin-button,
+.phone-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.phone-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}

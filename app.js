@@ -77,28 +77,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Функция авторизации
   function login() {
-    const phone = authPhone ? authPhone.value.trim() : "";
+    // Получаем номер без +7 (только цифры)
+    const rawPhone = authPhone ? authPhone.value.trim() : "";
 
-    if (!phone) {
+    if (!rawPhone) {
       showAuthError("Введите номер телефона");
       return;
     }
 
-    showLoading();
+    // Формируем полный номер с +7
+    const fullPhone = "+7" + rawPhone.replace(/[^\d]/g, "");
+
+    console.log("Проверка номера:", fullPhone);
 
     // Проверяем номер в базе
-    if (window.isUserAllowed && window.isUserAllowed(phone)) {
-      const user = window.getUserByPhone(phone);
+    if (window.isUserAllowed && window.isUserAllowed(fullPhone)) {
+      const user = window.getUserByPhone(fullPhone);
       if (user) {
         currentUser = user;
         currentUserId = user.id;
         isAuthorized = true;
 
-        // Сохраняем сессию
         sessionStorage.setItem("authorizedUserId", user.id);
-        sessionStorage.setItem("authorizedUserPhone", phone);
+        sessionStorage.setItem("authorizedUserPhone", fullPhone);
         sessionStorage.setItem("authorizedUserName", user.name);
 
         console.log("Авторизация успешна:", user);
@@ -109,38 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Если пользователь не найден
-    hideLoading();
-    showAuthError("Неверный номер телефона. Обратитесь к администратору.");
-  }
-
-  // Проверяем сохранённую сессию
-  function checkSavedSession() {
-    const savedUserId = sessionStorage.getItem("authorizedUserId");
-    const savedUserPhone = sessionStorage.getItem("authorizedUserPhone");
-    const savedUserName = sessionStorage.getItem("authorizedUserName");
-
-    if (savedUserId && savedUserPhone && savedUserName) {
-      if (window.isUserAllowed && window.isUserAllowed(savedUserPhone)) {
-        currentUser = {
-          id: savedUserId,
-          phone: savedUserPhone,
-          name: savedUserName,
-        };
-        currentUserId = savedUserId;
-        isAuthorized = true;
-
-        console.log("Восстановлена сессия для:", currentUser);
-        initMainApp();
-        showMainInterface();
-        return true;
-      } else {
-        // Сессия невалидна, очищаем
-        sessionStorage.removeItem("authorizedUserId");
-        sessionStorage.removeItem("authorizedUserPhone");
-        sessionStorage.removeItem("authorizedUserName");
-      }
-    }
-    return false;
+    showAuthError("Номер телефона не верный");
   }
 
   // ========== УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДЛЯ СООБЩЕНИЙ ==========

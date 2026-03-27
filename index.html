@@ -21,12 +21,16 @@
 
       <div class="form-group">
         <label for="auth-phone">Номер телефона</label>
-        <input
-          type="tel"
-          id="auth-phone"
-          class="max-input"
-          placeholder="+7 900 123-45-67"
-        />
+        <div class="phone-input-wrapper">
+          <span class="phone-prefix">+7</span>
+          <input
+            type="tel"
+            id="auth-phone"
+            class="max-input phone-input"
+            placeholder="900 123-45-67"
+            inputmode="numeric"
+          />
+        </div>
       </div>
 
       <button id="auth-login-btn" class="max-button max-button--primary">
