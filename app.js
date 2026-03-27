@@ -45,7 +45,22 @@ document.addEventListener("DOMContentLoaded", () => {
   function showAuthScreen() {
     console.log("showAuthScreen вызван");
     hideLoading();
-    if (authScreen) authScreen.style.display = "block";
+
+    if (authScreen) {
+      authScreen.style.cssText = `
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 100 !important;
+        background-color: var(--max-bg-color, #ffffff) !important;
+      `;
+      console.log("authScreen принудительно показан");
+    }
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
@@ -69,26 +84,36 @@ document.addEventListener("DOMContentLoaded", () => {
   // Показываем основной интерфейс
   function showMainInterface() {
     console.log("=== showMainInterface START ===");
-    console.log("authScreen элемент:", authScreen);
-    console.log("mainScreen элемент:", mainScreen);
-    console.log(
-      "mainScreen до изменения display:",
-      mainScreen ? mainScreen.style.display : "null",
-    );
 
     hideLoading();
 
+    // ПРИНУДИТЕЛЬНО скрываем экран авторизации
     if (authScreen) {
-      authScreen.style.display = "none";
-      console.log("authScreen скрыт");
+      authScreen.style.cssText = `
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        z-index: -1 !important;
+        pointer-events: none !important;
+      `;
+      console.log("authScreen принудительно скрыт");
     }
+
+    // ПРИНУДИТЕЛЬНО показываем главный экран
     if (mainScreen) {
-      mainScreen.style.display = "block";
-      mainScreen.style.visibility = "visible";
-      mainScreen.style.opacity = "1";
-      console.log("mainScreen показан, display:", mainScreen.style.display);
-      console.log("mainScreen className:", mainScreen.className);
+      mainScreen.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      `;
+      console.log("mainScreen принудительно показан");
     }
+
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
 
