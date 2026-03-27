@@ -5,8 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let currentUserId = null;
-  // Дополнительные доставки (может быть много)
   let extraDeliveries = [];
+  let currentScreen = "main"; // 'main' или 'deliveries'
 
   if (
     window.WebApp &&
@@ -195,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target !== checkbox) checkbox.checked = !checkbox.checked;
         updateSelection();
       });
+      checkbox.addEventListener("change", updateSelection);
 
       clinicsContainer.appendChild(clinicDiv);
     });
@@ -245,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
       formattedDate: formattedDate,
       clinics: selectedClinics,
       totalSalary,
-      extraDeliveries,
+      extraDeliveries: [...extraDeliveries],
       timestamp: new Date().toISOString(),
     };
 
@@ -262,7 +263,8 @@ document.addEventListener("DOMContentLoaded", () => {
       message += `\nДополнительные доставки:\n`;
       extraDeliveries.forEach((d, idx) => {
         message += `#${idx + 1}\n`;
-        message += `Получение груза: ${d.receiveAddress || "-"}\n`;
+        if (d.receiveAddress)
+          message += `Получение груза: ${d.receiveAddress}\n`;
         message += `Доставка груза: ${d.deliveryAddress}\n`;
         if (d.comment) message += `Комментарий: ${d.comment}\n`;
         message += `Зарплата: ${d.salary.toLocaleString("ru-RU")} ₽\n\n`;
@@ -271,71 +273,90 @@ document.addEventListener("DOMContentLoaded", () => {
     alert(message);
   }
 
-  const userClinics = loadClinicsForUser(currentUserId);
-  displayClinics(userClinics);
+  // Функции для работы с экраном дополнительных доставок
+  function updateDeliveriesList() {
+    const container = document.getElementById("deliveries-list-container");
+    const emptyDiv = document.getElementById("empty-deliveries");
+    const extraCountSpan = document.getElementById("extra-count");
 
-  const saveButton = document.getElementById("save-report-btn");
-  if (saveButton) saveButton.addEventListener("click", saveReport);
+    if (extraCountSpan) {
+      extraCountSpan.textContent = extraDeliveries.length;
+    }
 
-  const dateInput = document.getElementById("report-date");
-  const dateDisplay = document.getElementById("report-date-display");
-  if (dateInput) {
-    const formatIsoDateToRu = (isoDate) => {
-      if (!isoDate) return "";
-      const [year, month, day] = isoDate.split("-");
-      if (!year || !month || !day) return "";
-      return `${day}.${month}.${year}`;
-    };
+    if (!container) return;
 
-    const syncDateDisplay = () => {
-      if (!dateDisplay) return;
-      dateDisplay.textContent = formatIsoDateToRu(dateInput.value);
-    };
+    if (extraDeliveries.length === 0) {
+      if (emptyDiv) emptyDiv.style.display = "block";
+      const cards = container.querySelectorAll(".delivery-card");
+      cards.forEach((card) => card.remove());
+    } else {
+      if (emptyDiv) emptyDiv.style.display = "none";
 
-    dateInput.value = "";
-    syncDateDisplay();
-    dateInput.addEventListener("change", () => {
-      syncDateDisplay();
-      checkFormValidity();
-    });
+      const cards = container.querySelectorAll(".delivery-card");
+      cards.forEach((card) => card.remove());
 
-    // iOS иногда обновляет значение без "change" в момент тапа
-    dateInput.addEventListener("input", () => {
-      syncDateDisplay();
-      checkFormValidity();
-    });
-
-    const dateQuickButtons = document.querySelectorAll(".date-quick-btn");
-    const setDateByOffsetDays = (offsetDays) => {
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
-      d.setDate(d.getDate() + offsetDays);
-
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-
-      // Формат для native <input type="date">
-      dateInput.value = `${yyyy}-${mm}-${dd}`;
-      syncDateDisplay();
-      checkFormValidity();
-    };
-
-    dateQuickButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const offset = parseInt(btn.dataset.offset || "0", 10);
-        setDateByOffsetDays(offset);
+      extraDeliveries.forEach((delivery, index) => {
+        const card = document.createElement("div");
+        card.className = "delivery-card";
+        card.innerHTML = `
+          <div class="delivery-card-header">Доставка #${index + 1}</div>
+          ${
+            delivery.receiveAddress
+              ? `
+          <div class="delivery-card-row">
+            <span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}
+          </div>
+          `
+              : ""
+          }
+          <div class="delivery-card-row">
+            <span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}
+          </div>
+          ${
+            delivery.comment
+              ? `
+          <div class="delivery-card-row">
+            <span class="delivery-card-label">Комментарий:</span> ${delivery.comment}
+          </div>
+          `
+              : ""
+          }
+          <div class="delivery-card-salary">
+            ${delivery.salary.toLocaleString("ru-RU")} ₽
+          </div>
+        `;
+        container.appendChild(card);
       });
-    });
+    }
   }
 
-  const addExtraDeliveryBtn = document.getElementById("add-extra-delivery-btn");
+  function showDeliveriesScreen() {
+    const mainScreen = document.getElementById("main-screen");
+    const deliveriesScreen = document.getElementById("deliveries-screen");
 
+    if (mainScreen) mainScreen.style.display = "none";
+    if (deliveriesScreen) deliveriesScreen.style.display = "block";
+
+    currentScreen = "deliveries";
+    updateDeliveriesList();
+  }
+
+  function showMainScreen() {
+    const mainScreen = document.getElementById("main-screen");
+    const deliveriesScreen = document.getElementById("deliveries-screen");
+
+    if (mainScreen) mainScreen.style.display = "block";
+    if (deliveriesScreen) deliveriesScreen.style.display = "none";
+
+    currentScreen = "main";
+    updateTotalSalary();
+  }
+
+  // Модальное окно
   const modalBackdrop = document.getElementById(
     "extra-delivery-modal-backdrop",
   );
   const modalCloseBtn = document.getElementById("extra-delivery-modal-close");
-  const modalCancelBtn = document.getElementById("extra-delivery-modal-cancel");
   const modalAddBtn = document.getElementById("extra-delivery-modal-add");
 
   const extraModalReceiveEl = document.getElementById("extra-modal-receive");
@@ -419,7 +440,6 @@ document.addEventListener("DOMContentLoaded", () => {
       salary,
     });
 
-    // Сброс и закрытие modal
     setModalValues({
       receiveAddress: "",
       deliveryAddress: "",
@@ -428,19 +448,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     closeExtraDeliveryModal();
 
+    updateDeliveriesList();
     updateTotalSalary();
     checkFormValidity();
   }
 
-  if (addExtraDeliveryBtn) {
-    addExtraDeliveryBtn.addEventListener("click", openExtraDeliveryModal);
-  }
-
+  // Обработчики модального окна
   if (modalCloseBtn) {
     modalCloseBtn.addEventListener("click", closeExtraDeliveryModal);
-  }
-  if (modalCancelBtn) {
-    modalCancelBtn.addEventListener("click", closeExtraDeliveryModal);
   }
   if (modalAddBtn) {
     modalAddBtn.addEventListener("click", addExtraDeliveryFromModal);
@@ -467,6 +482,83 @@ document.addEventListener("DOMContentLoaded", () => {
   if (modalBackdrop) {
     modalBackdrop.addEventListener("click", (e) => {
       if (e.target === modalBackdrop) closeExtraDeliveryModal();
+    });
+  }
+
+  // Инициализация главного экрана
+  const userClinics = loadClinicsForUser(currentUserId);
+  displayClinics(userClinics);
+
+  const saveButton = document.getElementById("save-report-btn");
+  if (saveButton) saveButton.addEventListener("click", saveReport);
+
+  const dateInput = document.getElementById("report-date");
+  const dateDisplay = document.getElementById("report-date-display");
+  if (dateInput) {
+    const formatIsoDateToRu = (isoDate) => {
+      if (!isoDate) return "";
+      const [year, month, day] = isoDate.split("-");
+      if (!year || !month || !day) return "";
+      return `${day}.${month}.${year}`;
+    };
+
+    const syncDateDisplay = () => {
+      if (!dateDisplay) return;
+      dateDisplay.textContent = formatIsoDateToRu(dateInput.value);
+    };
+
+    dateInput.value = "";
+    syncDateDisplay();
+    dateInput.addEventListener("change", () => {
+      syncDateDisplay();
+      checkFormValidity();
+    });
+
+    dateInput.addEventListener("input", () => {
+      syncDateDisplay();
+      checkFormValidity();
+    });
+
+    const dateQuickButtons = document.querySelectorAll(".date-quick-btn");
+    const setDateByOffsetDays = (offsetDays) => {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + offsetDays);
+
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+      syncDateDisplay();
+      checkFormValidity();
+    };
+
+    dateQuickButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const offset = parseInt(btn.dataset.offset || "0", 10);
+        setDateByOffsetDays(offset);
+      });
+    });
+  }
+
+  // Кнопки переключения экранов
+  const extraDeliveriesBtn = document.getElementById("extra-deliveries-btn");
+  if (extraDeliveriesBtn) {
+    extraDeliveriesBtn.addEventListener("click", showDeliveriesScreen);
+  }
+
+  const backToMainBtn = document.getElementById("back-to-main-btn");
+  if (backToMainBtn) {
+    backToMainBtn.addEventListener("click", showMainScreen);
+  }
+
+  const addDeliveryFromListBtn = document.getElementById(
+    "add-delivery-from-list-btn",
+  );
+  if (addDeliveryFromListBtn) {
+    addDeliveryFromListBtn.addEventListener("click", () => {
+      openExtraDeliveryModal();
     });
   }
 

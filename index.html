@@ -15,7 +15,8 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="container">
+    <!-- ОСНОВНОЙ ЭКРАН -->
+    <div class="container" id="main-screen">
       <h1>Отчёт за день</h1>
 
       <!-- Поле для выбора даты -->
@@ -54,10 +55,10 @@
 
         <button
           type="button"
-          id="add-extra-delivery-btn"
+          id="extra-deliveries-btn"
           class="max-button add-extra-delivery-cta"
         >
-          Добавить доставку
+          Дополнительные доставки (<span id="extra-count">0</span>)
         </button>
 
         <button
@@ -70,7 +71,34 @@
       </div>
     </div>
 
-    <!-- Модальное окно добавления доставки (обновлённое) -->
+    <!-- ЭКРАН СПИСКА ДОПОЛНИТЕЛЬНЫХ ДОСТАВОК (скрыт по умолчанию) -->
+    <div class="container" id="deliveries-screen" style="display: none">
+      <div class="screen-header">
+        <button type="button" id="back-to-main-btn" class="back-button">
+          ← Назад
+        </button>
+        <h1 class="screen-title">Дополнительные доставки</h1>
+        <div class="placeholder"></div>
+      </div>
+
+      <div id="deliveries-list-container" class="deliveries-list">
+        <div class="empty-deliveries" id="empty-deliveries">
+          Нет добавленных доставок
+        </div>
+      </div>
+
+      <div class="bottom-actions">
+        <button
+          type="button"
+          id="add-delivery-from-list-btn"
+          class="max-button max-button--primary"
+        >
+          + Добавить доставку
+        </button>
+      </div>
+    </div>
+
+    <!-- Модальное окно добавления доставки (без изменений) -->
     <div class="modal-backdrop" id="extra-delivery-modal-backdrop" hidden>
       <div
         class="modal"
