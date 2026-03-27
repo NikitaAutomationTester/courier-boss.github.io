@@ -666,7 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadReportsList();
   }
 
-  // Загружаем и отображаем список отчётов
+  /// Загружаем и отображаем список отчётов
   function loadReportsList() {
     const container = document.getElementById("reports-list-container");
     if (!container) return;
@@ -691,11 +691,11 @@ document.addEventListener("DOMContentLoaded", () => {
       reportDiv.dataset.index = index;
       reportDiv.dataset.id = report.id;
 
+      // Убрали иконку 💰 и сумму зарплаты
       reportDiv.innerHTML = `
-        <div class="report-item-date">${report.formattedDate || report.date}</div>
-        <div class="report-item-courier">${report.userName || report.userPhone || "Курьер"}</div>
-        <div class="report-item-salary">💰 ${report.totalSalary.toLocaleString("ru-RU")} ₽</div>
-      `;
+      <div class="report-item-date">${report.formattedDate || report.date}</div>
+      <div class="report-item-courier">${report.userName || report.userPhone || "Курьер"}</div>
+    `;
 
       reportDiv.addEventListener("click", () => {
         showReportDetail(report);
@@ -703,22 +703,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       container.appendChild(reportDiv);
     });
-  }
-
-  // Показываем детальный просмотр отчёта
-  function showReportDetail(report) {
-    console.log("showReportDetail вызван для отчёта:", report.id);
-
-    // Скрываем список отчётов
-    const reportsListScreen = document.getElementById("reports-list-screen");
-    if (reportsListScreen) reportsListScreen.style.display = "none";
-
-    // Показываем экран деталей
-    const reportDetailScreen = document.getElementById("report-detail-screen");
-    if (reportDetailScreen) reportDetailScreen.style.display = "block";
-
-    // Отображаем детали
-    displayReportDetail(report);
   }
 
   // Отображаем детали отчёта (обновлённая версия с одной строкой зарплаты)
