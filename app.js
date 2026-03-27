@@ -20,8 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const authLoginBtn = document.getElementById("auth-login-btn");
   const authError = document.getElementById("auth-error");
 
+  console.log("=== ИНИЦИАЛИЗАЦИЯ ===");
+  console.log("mainScreen найден:", !!mainScreen);
+  console.log("authScreen найден:", !!authScreen);
+  console.log("deliveriesScreen найден:", !!deliveriesScreen);
+
   // Показываем экран загрузки
   function showLoading() {
+    console.log("showLoading вызван");
     if (loadingScreen) loadingScreen.style.display = "flex";
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
@@ -31,11 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Скрываем экран загрузки
   function hideLoading() {
+    console.log("hideLoading вызван");
     if (loadingScreen) loadingScreen.style.display = "none";
   }
 
   // Показываем экран авторизации
   function showAuthScreen() {
+    console.log("showAuthScreen вызван");
     hideLoading();
     if (authScreen) authScreen.style.display = "block";
     if (mainScreen) mainScreen.style.display = "none";
@@ -48,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showAccessDenied(
     message = "У вас нет прав для использования этого приложения",
   ) {
+    console.log("showAccessDenied вызван:", message);
     hideLoading();
     const deniedMessage = document.getElementById("access-denied-message");
     if (deniedMessage) deniedMessage.textContent = message;
@@ -59,20 +68,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Показываем основной интерфейс
   function showMainInterface() {
-    console.log("showMainInterface вызван");
+    console.log("=== showMainInterface START ===");
     console.log("authScreen элемент:", authScreen);
     console.log("mainScreen элемент:", mainScreen);
-    console.log("deliveriesScreen элемент:", deliveriesScreen);
-    console.log("accessDeniedScreen элемент:", accessDeniedScreen);
+    console.log(
+      "mainScreen до изменения display:",
+      mainScreen ? mainScreen.style.display : "null",
+    );
+
     hideLoading();
-    if (authScreen) authScreen.style.display = "none";
-    if (mainScreen) mainScreen.style.display = "block";
+
+    if (authScreen) {
+      authScreen.style.display = "none";
+      console.log("authScreen скрыт");
+    }
+    if (mainScreen) {
+      mainScreen.style.display = "block";
+      mainScreen.style.visibility = "visible";
+      mainScreen.style.opacity = "1";
+      console.log("mainScreen показан, display:", mainScreen.style.display);
+      console.log("mainScreen className:", mainScreen.className);
+    }
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
+
+    console.log("=== showMainInterface END ===");
   }
 
   // Показываем ошибку на экране авторизации
   function showAuthError(message) {
+    console.log("showAuthError вызван:", message);
     if (authError) {
       authError.textContent = message;
       authError.style.display = "block";
@@ -82,24 +107,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Функция авторизации
   function login() {
+    console.log("=== login START ===");
     const rawPhone = authPhone ? authPhone.value.trim() : "";
+    console.log("rawPhone:", rawPhone);
 
     if (!rawPhone) {
+      console.log("Номер пустой");
       showAuthError("Введите номер телефона");
       return;
     }
 
-    // Формируем полный номер с +7
     const fullPhone = "+7" + rawPhone.replace(/[^\d]/g, "");
+    console.log("1. Проверка номера:", fullPhone);
 
-    console.log("Проверка номера:", fullPhone);
-
-    // Проверяем номер в базе
     if (window.isUserAllowed && window.isUserAllowed(fullPhone)) {
+      console.log("2. Номер найден в базе");
       const user = window.getUserByPhone(fullPhone);
+      console.log("user из getUserByPhone:", user);
       if (user) {
+        console.log("3. Пользователь получен:", user);
         currentUser = user;
         currentUserId = user.id;
         isAuthorized = true;
@@ -108,24 +135,37 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem("authorizedUserPhone", fullPhone);
         sessionStorage.setItem("authorizedUserName", user.name);
 
-        console.log("Авторизация успешна:", user);
+        console.log("4. Сохранили в sessionStorage");
+        console.log("5. Вызываем initMainApp()");
         initMainApp();
+        console.log("6. Вызываем showMainInterface()");
         showMainInterface();
+        console.log("7. После showMainInterface");
+        console.log("=== login SUCCESS END ===");
         return;
+      } else {
+        console.log("3.5. getUserByPhone вернул null");
       }
+    } else {
+      console.log("2. Номер НЕ найден в базе");
     }
 
-    // Если пользователь не найден
+    console.log("8. Показываем ошибку");
     showAuthError("Номер телефона не верный");
+    console.log("=== login FAIL END ===");
   }
 
   // Проверяем сохранённую сессию
   function checkSavedSession() {
+    console.log("checkSavedSession вызван");
     const savedUserId = sessionStorage.getItem("authorizedUserId");
     const savedUserPhone = sessionStorage.getItem("authorizedUserPhone");
     const savedUserName = sessionStorage.getItem("authorizedUserName");
+    console.log("savedUserId:", savedUserId);
+    console.log("savedUserPhone:", savedUserPhone);
 
     if (savedUserId && savedUserPhone && savedUserName) {
+      console.log("Сохранённые данные найдены");
       if (window.isUserAllowed && window.isUserAllowed(savedUserPhone)) {
         currentUser = {
           id: savedUserId,
@@ -136,15 +176,19 @@ document.addEventListener("DOMContentLoaded", () => {
         isAuthorized = true;
 
         console.log("Восстановлена сессия для:", currentUser);
+        console.log("Вызываем initMainApp из checkSavedSession");
         initMainApp();
+        console.log("Вызываем showMainInterface из checkSavedSession");
         showMainInterface();
         return true;
       } else {
-        // Сессия невалидна, очищаем
+        console.log("Сохранённая сессия невалидна, очищаем");
         sessionStorage.removeItem("authorizedUserId");
         sessionStorage.removeItem("authorizedUserPhone");
         sessionStorage.removeItem("authorizedUserName");
       }
+    } else {
+      console.log("Сохранённых данных нет");
     }
     return false;
   }
@@ -173,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========== ОСНОВНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ==========
 
   function loadClinicsForUser(userId) {
+    console.log("loadClinicsForUser вызван, userId:", userId);
     const mockClinics = [
       {
         id: 1,
@@ -235,6 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         salary: 890,
       },
     ];
+    console.log("loadClinicsForUser вернул", mockClinics.length, "клиник");
     return mockClinics;
   }
 
@@ -278,8 +324,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayClinics(clinics) {
+    console.log("displayClinics вызван, клиник:", clinics.length);
     const clinicsContainer = document.getElementById("clinics-list");
-    if (!clinicsContainer) return;
+    if (!clinicsContainer) {
+      console.log("clinics-container не найден");
+      return;
+    }
     if (clinics.length === 0) {
       clinicsContainer.innerHTML =
         '<div class="loading">Нет привязанных клиник</div>';
@@ -338,6 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
       clinicsContainer.appendChild(clinicDiv);
     });
     updateTotalSalary();
+    console.log("displayClinics завершён");
   }
 
   async function saveReport() {
@@ -465,18 +516,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initMainApp() {
+    console.log("=== initMainApp START ===");
+    console.log("currentUserId:", currentUserId);
+    console.log("currentUser:", currentUser);
+
     const userClinics = loadClinicsForUser(currentUserId);
+    console.log("Клиники загружены, количество:", userClinics.length);
+
     displayClinics(userClinics);
+    console.log("displayClinics выполнен");
 
     const saveButton = document.getElementById("save-report-btn");
     if (saveButton) {
       saveButton.removeEventListener("click", saveReport);
       saveButton.addEventListener("click", saveReport);
+      console.log("saveButton обработчик добавлен");
+    } else {
+      console.log("saveButton не найден!");
     }
 
     const extraDeliveriesBtn = document.getElementById("extra-deliveries-btn");
-    if (extraDeliveriesBtn)
+    if (extraDeliveriesBtn) {
       extraDeliveriesBtn.addEventListener("click", showDeliveriesScreen);
+      console.log("extraDeliveriesBtn обработчик добавлен");
+    }
 
     const backToMainBtn = document.getElementById("back-to-main-btn");
     if (backToMainBtn) backToMainBtn.addEventListener("click", showMainScreen);
@@ -490,9 +553,11 @@ document.addEventListener("DOMContentLoaded", () => {
         openExtraDeliveryModal,
       );
       addDeliveryFromListBtn.addEventListener("click", openExtraDeliveryModal);
+      console.log("addDeliveryFromListBtn обработчик добавлен");
     }
 
     checkFormValidity();
+    console.log("=== initMainApp END ===");
   }
 
   // Модальное окно
@@ -660,18 +725,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ========== ЗАПУСК ПРИЛОЖЕНИЯ ==========
 
+  console.log("=== ЗАПУСК ПРИЛОЖЕНИЯ ===");
+  console.log("Проверяем сохранённую сессию...");
+
   // Проверяем сохранённую сессию
   if (checkSavedSession()) {
-    // Сессия есть — главный экран уже показан внутри checkSavedSession
-    // Ничего дополнительно не делаем
+    console.log("Сессия восстановлена, главный экран должен быть показан");
   } else {
-    // Сессии нет — показываем экран авторизации
+    console.log("Сессии нет, показываем экран авторизации");
     showAuthScreen();
   }
 
   // Обработчик кнопки авторизации
   if (authLoginBtn) {
     authLoginBtn.addEventListener("click", login);
+    console.log("authLoginBtn обработчик добавлен");
+  } else {
+    console.log("authLoginBtn не найден!");
   }
 
   // Обработка нажатия Enter в поле телефона
@@ -682,5 +752,8 @@ document.addEventListener("DOMContentLoaded", () => {
         login();
       }
     });
+    console.log("authPhone обработчик Enter добавлен");
+  } else {
+    console.log("authPhone не найден!");
   }
 });
