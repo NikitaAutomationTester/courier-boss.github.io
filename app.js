@@ -704,7 +704,21 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(reportDiv);
     });
   }
+  // Показываем детальный просмотр отчёта
+  function showReportDetail(report) {
+    console.log("showReportDetail вызван для отчёта:", report.id);
 
+    // Скрываем список отчётов
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+
+    // Показываем экран деталей
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportDetailScreen) reportDetailScreen.style.display = "block";
+
+    // Отображаем детали
+    displayReportDetail(report);
+  }
   // Отображаем детали отчёта (обновлённая версия с одной строкой зарплаты)
   function displayReportDetail(report) {
     const container = document.getElementById("report-detail-container");
