@@ -667,71 +667,96 @@ textarea.max-input {
 
 /* ========== СТИЛИ ДЛЯ ЭКРАНА АВТОРИЗАЦИИ ========== */
 #auth-screen {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background-color: var(--max-bg-color, #ffffff) !important;
-    padding: 20px !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    overflow-y: auto !important;
-    z-index: 100 !important;
-}
-
-.auth-form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
     width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
+    max-width: 100%;
+    padding: 20px;
+    margin: 0;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--max-bg-color, #ffffff);
+    overflow-y: auto;
 }
 
 #auth-screen h1 {
-    margin-bottom: 32px !important;
-    text-align: center !important;
-    font-size: 24px !important;
-    width: 100% !important;
+    margin-bottom: 32px;
+    text-align: center;
+    font-size: 24px;
 }
 
 #auth-screen .form-group {
-    margin-bottom: 20px !important;
-    width: 100% !important;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #auth-screen .phone-input-wrapper {
-    width: 100% !important;
+    width: 100%;
 }
 
 #auth-screen .max-button {
-    margin-top: 8px !important;
-    width: 100% !important;
+    margin-top: 8px;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 
-/* Блок ошибки — фиксированной высоты, чтобы не "прыгал" контент */
 #auth-screen .auth-error {
-    margin-top: 16px !important;
-    width: 100% !important;
-    text-align: center !important;
-    min-height: 50px !important;
-    visibility: visible !important;
-    background-color: rgba(255, 59, 48, 0.1) !important;
-    border: 1px solid #ff3b30 !important;
-    border-radius: 8px !important;
-    color: #ff3b30 !important;
-    font-size: 14px !important;
-    padding: 12px !important;
+    margin-top: 16px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 12px;
+    background-color: rgba(255, 59, 48, 0.1);
+    border: 1px solid #ff3b30;
+    border-radius: 8px;
+    color: #ff3b30;
+    text-align: center;
+    font-size: 14px;
 }
 
-/* Когда ошибка скрыта — сохраняем место */
-#auth-screen .auth-error[style*="display: none"] {
-    visibility: hidden !important;
-    display: block !important;
+/* Стили для поля ввода телефона с префиксом +7 */
+.phone-input-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.phone-prefix {
+    position: absolute;
+    left: 12px;
+    font-size: 16px;
+    color: var(--max-text-color, #000000);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.phone-input {
+    padding-left: 40px !important;
+}
+
+/* Убираем стрелки в number input для телефона */
+.phone-input::-webkit-outer-spin-button,
+.phone-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.phone-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 /* ========== СТИЛИ ДЛЯ ДЕТАЛЬНОГО ОТЧЁТА ========== */
@@ -885,71 +910,4 @@ textarea.max-input {
 .report-item-salary {
     font-size: 13px;
     color: var(--max-hint-color, #8e8e93);
-}
-
-/* Стили для фильтров */
-.filters-section {
-    margin-bottom: 20px;
-    padding: 12px;
-    background-color: var(--max-secondary-bg-color, #f5f5f5);
-    border-radius: 12px;
-}
-
-.filter-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: flex-end;
-}
-
-.filter-group {
-    flex: 1;
-    min-width: 100px;
-}
-
-.filter-group label {
-    font-size: 12px;
-    margin-bottom: 4px;
-    opacity: 0.7;
-}
-
-.filter-select,
-.filter-input {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--max-border-color, #e0e0e0);
-    border-radius: 8px;
-    font-size: 14px;
-    background-color: var(--max-input-bg, #ffffff);
-    color: var(--max-text-color, #000000);
-    font-family: inherit;
-}
-
-.filter-reset-btn {
-    padding: 8px 16px;
-    background-color: transparent;
-    border: 1px solid var(--max-border-color, #e0e0e0);
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--max-primary-color, #007aff);
-    cursor: pointer;
-    transition: opacity 0.2s;
-    white-space: nowrap;
-}
-
-.filter-reset-btn:active {
-    opacity: 0.6;
-}
-
-@media (max-width: 500px) {
-    .filter-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .filter-reset-btn {
-        width: 100%;
-        margin-top: 4px;
-    }
 }

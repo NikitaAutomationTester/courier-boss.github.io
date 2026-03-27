@@ -1,4 +1,4 @@
-ёdocument.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   if (window.WebApp) {
     window.WebApp.ready();
     window.WebApp.expand();
@@ -10,12 +10,6 @@
   let currentUser = null;
   let currentUserRole = null;
   let isAuthorized = false;
-
-  // Переменные для фильтров
-  let currentFilterCourier = "all";
-  let currentFilterDateFrom = "";
-  let currentFilterDateTo = "";
-  let allReports = [];
 
   // Элементы DOM
   const mainScreen = document.getElementById("main-screen");
@@ -668,97 +662,27 @@
     const reportsListScreen = document.getElementById("reports-list-screen");
     if (reportsListScreen) reportsListScreen.style.display = "block";
 
-    // Загружаем отчёты
-    loadAllReports();
-
-    // Заполняем фильтр курьеров
-    populateCourierFilter();
+    // Загружаем и отображаем отчёты
+    loadReportsList();
   }
 
-  // Загружаем все отчёты из localStorage
-  function loadAllReports() {
-    allReports = JSON.parse(localStorage.getItem("reports") || "[]");
-    console.log("Загружено отчётов:", allReports.length);
-
-    // Сортируем по дате (новые сверху)
-    allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // Применяем фильтры и отображаем
-    applyFiltersAndDisplay();
-  }
-
-  // Заполняем выпадающий список курьеров
-  function populateCourierFilter() {
-    const filterSelect = document.getElementById("filter-courier");
-    if (!filterSelect) return;
-
-    // Получаем уникальных курьеров из отчётов
-    const couriersMap = new Map();
-    allReports.forEach((report) => {
-      const courierName = report.userName || report.userPhone || "Курьер";
-      const courierId = report.userId;
-      if (!couriersMap.has(courierId)) {
-        couriersMap.set(courierId, courierName);
-      }
-    });
-
-    // Сортируем курьеров по имени
-    const couriers = Array.from(couriersMap.entries()).sort((a, b) =>
-      a[1].localeCompare(b[1]),
-    );
-
-    // Строим опции
-    let options = '<option value="all">Все курьеры</option>';
-    couriers.forEach(([id, name]) => {
-      options += `<option value="${id}">${name}</option>`;
-    });
-
-    filterSelect.innerHTML = options;
-
-    // Восстанавливаем выбранное значение после обновления
-    if (currentFilterCourier !== "all") {
-      filterSelect.value = currentFilterCourier;
-    }
-  }
-
-  // Применяем фильтры и отображаем отчёты
-  function applyFiltersAndDisplay() {
-    let filteredReports = [...allReports];
-
-    // Фильтр по курьеру
-    if (currentFilterCourier !== "all") {
-      filteredReports = filteredReports.filter(
-        (report) => report.userId === currentFilterCourier,
-      );
-    }
-
-    // Фильтр по дате "от"
-    if (currentFilterDateFrom) {
-      filteredReports = filteredReports.filter(
-        (report) => report.date >= currentFilterDateFrom,
-      );
-    }
-
-    // Фильтр по дате "до"
-    if (currentFilterDateTo) {
-      filteredReports = filteredReports.filter(
-        (report) => report.date <= currentFilterDateTo,
-      );
-    }
-
-    displayReportsList(filteredReports);
-  }
-
-  // Отображаем список отчётов (без суммы)
-  function displayReportsList(reports) {
+  // Загружаем и отображаем список отчётов
+  function loadReportsList() {
     const container = document.getElementById("reports-list-container");
     if (!container) return;
 
+    // Получаем отчёты из localStorage
+    const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+    console.log("Загружено отчётов:", reports.length);
+
     if (reports.length === 0) {
       container.innerHTML =
-        '<div class="empty-deliveries">Нет отчётов по выбранным фильтрам</div>';
+        '<div class="empty-deliveries">Нет сохранённых отчётов</div>';
       return;
     }
+
+    // Сортируем отчёты по дате (новые сверху)
+    reports.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     container.innerHTML = "";
     reports.forEach((report, index) => {
@@ -770,6 +694,7 @@
       reportDiv.innerHTML = `
         <div class="report-item-date">${report.formattedDate || report.date}</div>
         <div class="report-item-courier">${report.userName || report.userPhone || "Курьер"}</div>
+        <div class="report-item-salary">💰 ${report.totalSalary.toLocaleString("ru-RU")} ₽</div>
       `;
 
       reportDiv.addEventListener("click", () => {
@@ -778,50 +703,6 @@
 
       container.appendChild(reportDiv);
     });
-  }
-
-  // Обновляем фильтр по курьеру
-  function updateFilterCourier() {
-    const filterSelect = document.getElementById("filter-courier");
-    if (filterSelect) {
-      currentFilterCourier = filterSelect.value;
-      applyFiltersAndDisplay();
-    }
-  }
-
-  // Обновляем фильтр по дате "от"
-  function updateFilterDateFrom() {
-    const dateFromInput = document.getElementById("filter-date-from");
-    if (dateFromInput) {
-      currentFilterDateFrom = dateFromInput.value;
-      applyFiltersAndDisplay();
-    }
-  }
-
-  // Обновляем фильтр по дате "до"
-  function updateFilterDateTo() {
-    const dateToInput = document.getElementById("filter-date-to");
-    if (dateToInput) {
-      currentFilterDateTo = dateToInput.value;
-      applyFiltersAndDisplay();
-    }
-  }
-
-  // Сброс всех фильтров
-  function resetFilters() {
-    currentFilterCourier = "all";
-    currentFilterDateFrom = "";
-    currentFilterDateTo = "";
-
-    const filterSelect = document.getElementById("filter-courier");
-    const dateFromInput = document.getElementById("filter-date-from");
-    const dateToInput = document.getElementById("filter-date-to");
-
-    if (filterSelect) filterSelect.value = "all";
-    if (dateFromInput) dateFromInput.value = "";
-    if (dateToInput) dateToInput.value = "";
-
-    applyFiltersAndDisplay();
   }
 
   // Показываем детальный просмотр отчёта
@@ -855,14 +736,14 @@
       clinicsHTML += '<div class="clinics-compact-list">';
       report.clinics.forEach((clinic) => {
         clinicsHTML += `
-          <div class="clinic-compact-item">
-            <div class="clinic-compact-info">
-              <div class="clinic-compact-name">${clinic.name}</div>
-              <div class="clinic-compact-address">${clinic.address}</div>
-            </div>
-            <div class="clinic-compact-salary-badge">${clinic.salary.toLocaleString("ru-RU")} ₽</div>
+        <div class="clinic-compact-item">
+          <div class="clinic-compact-info">
+            <div class="clinic-compact-name">${clinic.name}</div>
+            <div class="clinic-compact-address">${clinic.address}</div>
           </div>
-        `;
+          <div class="clinic-compact-salary-badge">${clinic.salary.toLocaleString("ru-RU")} ₽</div>
+        </div>
+      `;
       });
       clinicsHTML += "</div></div>";
     } else {
@@ -879,43 +760,43 @@
         ")</span></div>";
       report.extraDeliveries.forEach((delivery, idx) => {
         extraDeliveriesHTML += `
-          <div class="delivery-card">
-            <div style="display: flex; align-items: flex-start; width: 100%;">
-              <div class="delivery-number">${idx + 1}</div>
-              <div class="delivery-info">
-                ${delivery.receiveAddress ? `<div class="delivery-card-row"><span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}</div>` : ""}
-                <div class="delivery-card-row"><span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}</div>
-                ${delivery.comment ? `<div class="delivery-card-row"><span class="delivery-card-label">Комментарий:</span> ${delivery.comment}</div>` : ""}
-                <div class="delivery-card-salary">${delivery.salary.toLocaleString("ru-RU")} ₽</div>
-              </div>
+        <div class="delivery-card">
+          <div style="display: flex; align-items: flex-start; width: 100%;">
+            <div class="delivery-number">${idx + 1}</div>
+            <div class="delivery-info">
+              ${delivery.receiveAddress ? `<div class="delivery-card-row"><span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}</div>` : ""}
+              <div class="delivery-card-row"><span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}</div>
+              ${delivery.comment ? `<div class="delivery-card-row"><span class="delivery-card-label">Комментарий:</span> ${delivery.comment}</div>` : ""}
+              <div class="delivery-card-salary">${delivery.salary.toLocaleString("ru-RU")} ₽</div>
             </div>
           </div>
-        `;
+        </div>
+      `;
       });
       extraDeliveriesHTML += "</div>";
     }
 
     container.innerHTML = `
-      <div class="detail-section">
-        <div class="detail-section-title">Основная информация</div>
-        <div class="detail-info-row">
-          <div class="detail-info-label">Дата отчёта</div>
-          <div class="detail-info-value">${report.formattedDate || report.date}</div>
-        </div>
-        <div class="detail-info-row">
-          <div class="detail-info-label">Курьер</div>
-          <div class="detail-info-value">${report.userName || report.userPhone || "Курьер"}</div>
-        </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Основная информация</div>
+      <div class="detail-info-row">
+        <div class="detail-info-label">Дата отчёта</div>
+        <div class="detail-info-value">${report.formattedDate || report.date}</div>
       </div>
-      
-      ${clinicsHTML}
-      ${extraDeliveriesHTML}
-      
-      <div class="total-salary-row">
-        <span class="total-salary-label">Итого зп за день:</span>
-        <span class="total-salary-amount">${report.totalSalary.toLocaleString("ru-RU")} ₽</span>
+      <div class="detail-info-row">
+        <div class="detail-info-label">Курьер</div>
+        <div class="detail-info-value">${report.userName || report.userPhone || "Курьер"}</div>
       </div>
-    `;
+    </div>
+    
+    ${clinicsHTML}
+    ${extraDeliveriesHTML}
+    
+    <div class="total-salary-row">
+      <span class="total-salary-label">Итого зп за день:</span>
+      <span class="total-salary-amount">${report.totalSalary.toLocaleString("ru-RU")} ₽</span>
+    </div>
+  `;
   }
 
   // Возврат к списку отчётов
@@ -1157,24 +1038,5 @@
   if (backToReportsListBtn) {
     backToReportsListBtn.addEventListener("click", backToReportsList);
     console.log("backToReportsListBtn обработчик добавлен");
-  }
-
-  // Обработчики фильтров
-  const filterCourier = document.getElementById("filter-courier");
-  const filterDateFrom = document.getElementById("filter-date-from");
-  const filterDateTo = document.getElementById("filter-date-to");
-  const filterResetBtn = document.getElementById("filter-reset-btn");
-
-  if (filterCourier) {
-    filterCourier.addEventListener("change", updateFilterCourier);
-  }
-  if (filterDateFrom) {
-    filterDateFrom.addEventListener("change", updateFilterDateFrom);
-  }
-  if (filterDateTo) {
-    filterDateTo.addEventListener("change", updateFilterDateTo);
-  }
-  if (filterResetBtn) {
-    filterResetBtn.addEventListener("click", resetFilters);
   }
 });
