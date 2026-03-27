@@ -460,24 +460,30 @@ textarea.max-input {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
-    padding: 8px 0;
+    padding: 0;
+    min-height: 44px;
+    position: relative;
 }
 
 .back-button {
     background: none;
     border: none;
-    font-size: 24px;
-    font-weight: 500;
+    font-size: 28px;
+    font-weight: 400;
     color: var(--max-primary-color, #007aff);
     cursor: pointer;
-    padding: 8px 8px 8px 0;
+    padding: 8px 12px 8px 0;
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    line-height: 1;
+    width: 44px;
+    height: 44px;
+    transition: opacity 0.2s;
 }
 
 .back-button:active {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .screen-title {
@@ -485,11 +491,17 @@ textarea.max-input {
     font-weight: 600;
     margin: 0;
     text-align: center;
-    flex: 1;
+    position: absolute;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    color: var(--max-text-color, #000000);
 }
 
 .placeholder {
-    width: 60px;
+    width: 44px;
+    flex-shrink: 0;
+    visibility: hidden;
 }
 
 .deliveries-list {

@@ -273,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
     alert(message);
   }
 
+  // Функции для работы с экраном дополнительных доставок
   function updateDeliveriesList() {
     const container = document.getElementById("deliveries-list-container");
     const emptyDiv = document.getElementById("empty-deliveries");
@@ -298,43 +299,39 @@ document.addEventListener("DOMContentLoaded", () => {
         const card = document.createElement("div");
         card.className = "delivery-card";
 
-        // Создаём контейнер для нумерации и контента (как у клиник)
         const cardContent = document.createElement("div");
         cardContent.style.display = "flex";
         cardContent.style.alignItems = "flex-start";
         cardContent.style.width = "100%";
 
-        // Нумерация (как чекбокс у клиник)
         const numberBadge = document.createElement("div");
         numberBadge.className = "delivery-number";
         numberBadge.textContent = index + 1;
 
-        // Контейнер для информации
         const infoDiv = document.createElement("div");
         infoDiv.className = "delivery-info";
 
-        // Формируем информацию
         let infoHTML = "";
 
         if (delivery.receiveAddress) {
           infoHTML += `<div class="delivery-card-row">
-                    <span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}
-                </div>`;
+            <span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}
+          </div>`;
         }
 
         infoHTML += `<div class="delivery-card-row">
-                <span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}
-            </div>`;
+          <span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}
+        </div>`;
 
         if (delivery.comment) {
           infoHTML += `<div class="delivery-card-row">
-                    <span class="delivery-card-label">Комментарий:</span> ${delivery.comment}
-                </div>`;
+            <span class="delivery-card-label">Комментарий:</span> ${delivery.comment}
+          </div>`;
         }
 
         infoHTML += `<div class="delivery-card-salary">
-                ${delivery.salary.toLocaleString("ru-RU")} ₽
-            </div>`;
+          ${delivery.salary.toLocaleString("ru-RU")} ₽
+        </div>`;
 
         infoDiv.innerHTML = infoHTML;
 
