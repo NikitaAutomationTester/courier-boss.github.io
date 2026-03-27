@@ -736,14 +736,14 @@ document.addEventListener("DOMContentLoaded", () => {
       clinicsHTML += '<div class="clinics-compact-list">';
       report.clinics.forEach((clinic) => {
         clinicsHTML += `
-        <div class="clinic-compact-item">
-          <div class="clinic-compact-info">
-            <div class="clinic-compact-name">${clinic.name}</div>
-            <div class="clinic-compact-address">${clinic.address}</div>
+          <div class="clinic-compact-item">
+            <div class="clinic-compact-info">
+              <div class="clinic-compact-name">${clinic.name}</div>
+              <div class="clinic-compact-address">${clinic.address}</div>
+            </div>
+            <div class="clinic-compact-salary-badge">${clinic.salary.toLocaleString("ru-RU")} ₽</div>
           </div>
-          <div class="clinic-compact-salary-badge">${clinic.salary.toLocaleString("ru-RU")} ₽</div>
-        </div>
-      `;
+        `;
       });
       clinicsHTML += "</div></div>";
     } else {
@@ -760,43 +760,45 @@ document.addEventListener("DOMContentLoaded", () => {
         ")</span></div>";
       report.extraDeliveries.forEach((delivery, idx) => {
         extraDeliveriesHTML += `
-        <div class="delivery-card">
-          <div style="display: flex; align-items: flex-start; width: 100%;">
-            <div class="delivery-number">${idx + 1}</div>
-            <div class="delivery-info">
-              ${delivery.receiveAddress ? `<div class="delivery-card-row"><span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}</div>` : ""}
-              <div class="delivery-card-row"><span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}</div>
-              ${delivery.comment ? `<div class="delivery-card-row"><span class="delivery-card-label">Комментарий:</span> ${delivery.comment}</div>` : ""}
-              <div class="delivery-card-salary">${delivery.salary.toLocaleString("ru-RU")} ₽</div>
+          <div class="delivery-card">
+            <div style="display: flex; align-items: flex-start; width: 100%;">
+              <div class="delivery-number">${idx + 1}</div>
+              <div class="delivery-info">
+                ${delivery.receiveAddress ? `<div class="delivery-card-row"><span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}</div>` : ""}
+                <div class="delivery-card-row"><span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}</div>
+                ${delivery.comment ? `<div class="delivery-card-row"><span class="delivery-card-label">Комментарий:</span> ${delivery.comment}</div>` : ""}
+                <div class="delivery-card-salary">${delivery.salary.toLocaleString("ru-RU")} ₽</div>
+              </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
       });
       extraDeliveriesHTML += "</div>";
     }
 
     container.innerHTML = `
-    <div class="detail-section">
-      <div class="detail-section-title">Основная информация</div>
-      <div class="detail-info-row">
-        <div class="detail-info-label">Дата отчёта</div>
-        <div class="detail-info-value">${report.formattedDate || report.date}</div>
+      <div class="detail-section">
+        <div class="detail-section-title">Основная информация</div>
+        <div class="detail-info-row">
+          <div class="detail-info-label">Дата отчёта</div>
+          <div class="detail-info-value">${report.formattedDate || report.date}</div>
+        </div>
+        <div class="detail-info-row">
+          <div class="detail-info-label">Курьер</div>
+          <div class="detail-info-value">${report.userName || report.userPhone || "Курьер"}</div>
+        </div>
       </div>
-      <div class="detail-info-row">
-        <div class="detail-info-label">Курьер</div>
-        <div class="detail-info-value">${report.userName || report.userPhone || "Курьер"}</div>
+      
+      ${clinicsHTML}
+      ${extraDeliveriesHTML}
+      
+      <div class="detail-section">
+        <div class="detail-section-title">Итого</div>
+        <div class="detail-total-salary">
+          Всего: ${report.totalSalary.toLocaleString("ru-RU")} ₽
+        </div>
       </div>
-    </div>
-    
-    ${clinicsHTML}
-    ${extraDeliveriesHTML}
-    
-    <div class="total-salary-row">
-      <span class="total-salary-label">Итого зп за день:</span>
-      <span class="total-salary-amount">${report.totalSalary.toLocaleString("ru-RU")} ₽</span>
-    </div>
-  `;
+    `;
   }
 
   // Возврат к списку отчётов
