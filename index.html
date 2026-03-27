@@ -16,18 +16,36 @@
   </head>
   <body>
     <!-- ЭКРАН АВТОРИЗАЦИИ -->
-    <div class="container" id="auth-screen" style="display: none">
-      <h1>Вход в систему</h1>
-      <p class="auth-description">
-        Для входа в приложение необходимо разрешить доступ к вашему номеру
-        телефона.
-      </p>
-      <button id="auth-request-btn" class="max-button max-button--primary">
-        Войти по номеру телефона
+    <div class="container" id="auth-screen">
+      <h1>Авторизация</h1>
+
+      <div class="form-group">
+        <label for="auth-phone">Номер телефона</label>
+        <input
+          type="tel"
+          id="auth-phone"
+          class="max-input"
+          placeholder="+7 900 123-45-67"
+        />
+      </div>
+
+      <button id="auth-login-btn" class="max-button max-button--primary">
+        Авторизоваться
       </button>
+
       <div id="auth-error" class="auth-error" style="display: none"></div>
     </div>
+    <!-- ЭКРАН ЗАГРУЗКИ (оставляем) -->
+    <div class="loading-screen" id="loading-screen" style="display: none">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Загрузка...</div>
+    </div>
 
+    <!-- ОСНОВНОЙ ЭКРАН (скрыт по умолчанию) -->
+    <div class="container" id="main-screen" style="display: none">
+      <!-- остальное содержимое главного экрана без изменений -->
+      ...
+    </div>
     <!-- ЭКРАН ЗАГРУЗКИ -->
     <div class="loading-screen" id="loading-screen" style="display: none">
       <div class="loading-spinner"></div>

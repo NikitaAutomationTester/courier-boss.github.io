@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentScreen = "main";
   let currentUser = null;
   let isAuthorized = false;
-  let isWaitingForPhone = false;
 
   // Элементы DOM
   const mainScreen = document.getElementById("main-screen");
@@ -17,7 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const accessDeniedScreen = document.getElementById("access-denied-screen");
   const loadingScreen = document.getElementById("loading-screen");
   const authScreen = document.getElementById("auth-screen");
-  const authRequestBtn = document.getElementById("auth-request-btn");
+  const authPhone = document.getElementById("auth-phone");
+  const authLoginBtn = document.getElementById("auth-login-btn");
   const authError = document.getElementById("auth-error");
 
   // Показываем экран загрузки
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loadingScreen) loadingScreen.style.display = "none";
   }
 
-  // Показываем экран авторизации с кнопкой
+  // Показываем экран авторизации
   function showAuthScreen() {
     hideLoading();
     if (authScreen) authScreen.style.display = "block";
@@ -67,64 +67,50 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Показываем ошибку на экране авторизации
-  function showAuthErrorMessage(message) {
+  function showAuthError(message) {
     if (authError) {
       authError.textContent = message;
       authError.style.display = "block";
       setTimeout(() => {
         if (authError) authError.style.display = "none";
-      }, 5000);
+      }, 3000);
     }
   }
 
-  // Универсальная функция для показа сообщений
-  function showMessage(message, isError = false) {
-    if (window.WebApp && typeof window.WebApp.showPopup === "function") {
-      window.WebApp.showPopup({
-        title: isError ? "Ошибка" : "Успешно",
-        message: message,
-        buttons: [{ type: "ok", text: "OK" }],
-      });
-    } else {
-      alert(message);
+  // Функция авторизации
+  function login() {
+    const phone = authPhone ? authPhone.value.trim() : "";
+
+    if (!phone) {
+      showAuthError("Введите номер телефона");
+      return;
     }
-  }
 
-  function showSuccess(message) {
-    showMessage(message, false);
-  }
+    showLoading();
 
-  function showError(message) {
-    showMessage(message, true);
-  }
-
-  // Функция авторизации по номеру телефона
-  function authorizeUser(phoneNumber) {
-    console.log("Проверка номера:", phoneNumber);
-
-    if (window.isUserAllowed && window.isUserAllowed(phoneNumber)) {
-      const user = window.getUserByPhone(phoneNumber);
+    // Проверяем номер в базе
+    if (window.isUserAllowed && window.isUserAllowed(phone)) {
+      const user = window.getUserByPhone(phone);
       if (user) {
         currentUser = user;
         currentUserId = user.id;
         isAuthorized = true;
 
+        // Сохраняем сессию
         sessionStorage.setItem("authorizedUserId", user.id);
-        sessionStorage.setItem("authorizedUserPhone", phoneNumber);
+        sessionStorage.setItem("authorizedUserPhone", phone);
         sessionStorage.setItem("authorizedUserName", user.name);
 
         console.log("Авторизация успешна:", user);
         initMainApp();
         showMainInterface();
-        return true;
+        return;
       }
     }
 
-    console.log("Авторизация失败: номер не найден");
-    showAuthErrorMessage(
-      "Номер телефона не найден в списке курьеров. Обратитесь к администратору.",
-    );
-    return false;
+    // Если пользователь не найден
+    hideLoading();
+    showAuthError("Неверный номер телефона. Обратитесь к администратору.");
   }
 
   // Проверяем сохранённую сессию
@@ -147,116 +133,103 @@ document.addEventListener("DOMContentLoaded", () => {
         initMainApp();
         showMainInterface();
         return true;
+      } else {
+        // Сессия невалидна, очищаем
+        sessionStorage.removeItem("authorizedUserId");
+        sessionStorage.removeItem("authorizedUserPhone");
+        sessionStorage.removeItem("authorizedUserName");
       }
     }
     return false;
   }
 
-  // Запрос номера телефона через MAX Bridge (вызывается по кнопке)
-  function requestPhoneNumber() {
-    if (isWaitingForPhone) return;
-
-    console.log("Запрашиваем номер телефона...");
-    isWaitingForPhone = true;
-    showLoading();
-
-    if (window.WebApp && typeof window.WebApp.requestContact === "function") {
-      window.WebApp.requestContact(function (granted, phoneNumber) {
-        isWaitingForPhone = false;
-
-        if (granted && phoneNumber) {
-          console.log("Номер телефона получен:", phoneNumber);
-          authorizeUser(phoneNumber);
-        } else {
-          console.log("Пользователь отказался поделиться номером");
-          hideLoading();
-          showAuthErrorMessage("Необходимо разрешить доступ к номеру телефона");
-        }
+  // ========== УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДЛЯ СООБЩЕНИЙ ==========
+  function showMessage(message, isError = false) {
+    if (window.WebApp && typeof window.WebApp.showPopup === "function") {
+      window.WebApp.showPopup({
+        title: isError ? "Ошибка" : "Успешно",
+        message: message,
+        buttons: [{ type: "ok", text: "OK" }],
       });
     } else {
-      console.log("requestContact недоступен, используем тестовый режим");
-      isWaitingForPhone = false;
-      hideLoading();
-
-      const testPhone = "+79054963954";
-      if (window.isUserAllowed && window.isUserAllowed(testPhone)) {
-        authorizeUser(testPhone);
-      } else {
-        showAuthErrorMessage(
-          "Тестовый режим: номер не найден в списке. Проверьте файл users.js",
-        );
-      }
+      alert(message);
     }
+  }
+
+  function showSuccess(message) {
+    showMessage(message, false);
+  }
+
+  function showError(message) {
+    showMessage(message, true);
   }
 
   // ========== ОСНОВНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ==========
 
   function loadClinicsForUser(userId) {
-    const mockClinics = {
-      test_courier_123: [
-        {
-          id: 1,
-          name: 'Медицинский центр "Здоровье"',
-          address: "ул. Ленина, 15, офис 301",
-          salary: 500,
-        },
-        {
-          id: 2,
-          name: 'Клиника "Семейный доктор"',
-          address: "пр. Мира, 42, этаж 2",
-          salary: 750,
-        },
-        {
-          id: 3,
-          name: 'Диагностический центр "МРТ-Эксперт"',
-          address: "ул. Гагарина, 7, корпус Б",
-          salary: 1200,
-        },
-        {
-          id: 4,
-          name: "Женская консультация №5",
-          address: "бульвар Строителей, 23",
-          salary: 600,
-        },
-        {
-          id: 5,
-          name: 'Стоматология "Улыбка"',
-          address: "ул. Советская, 10",
-          salary: 450,
-        },
-        {
-          id: 6,
-          name: 'Клиника "Медси" на Ленина',
-          address: "ул. Ленина, 55",
-          salary: 950,
-        },
-        {
-          id: 7,
-          name: 'Лаборатория "Гемотест" Центральная',
-          address: "ул. Центральная, 8",
-          salary: 800,
-        },
-        {
-          id: 8,
-          name: 'Медицинский центр "Промед"',
-          address: "ул. Промышленная, 12",
-          salary: 680,
-        },
-        {
-          id: 9,
-          name: 'Клиника "Скандинавия"',
-          address: "пр. Победы, 34",
-          salary: 1100,
-        },
-        {
-          id: 10,
-          name: 'Центр репродукции "Эмбрио"',
-          address: "ул. Садовая, 7",
-          salary: 890,
-        },
-      ],
-    };
-    return mockClinics.test_courier_123;
+    const mockClinics = [
+      {
+        id: 1,
+        name: 'Медицинский центр "Здоровье"',
+        address: "ул. Ленина, 15, офис 301",
+        salary: 500,
+      },
+      {
+        id: 2,
+        name: 'Клиника "Семейный доктор"',
+        address: "пр. Мира, 42, этаж 2",
+        salary: 750,
+      },
+      {
+        id: 3,
+        name: 'Диагностический центр "МРТ-Эксперт"',
+        address: "ул. Гагарина, 7, корпус Б",
+        salary: 1200,
+      },
+      {
+        id: 4,
+        name: "Женская консультация №5",
+        address: "бульвар Строителей, 23",
+        salary: 600,
+      },
+      {
+        id: 5,
+        name: 'Стоматология "Улыбка"',
+        address: "ул. Советская, 10",
+        salary: 450,
+      },
+      {
+        id: 6,
+        name: 'Клиника "Медси" на Ленина',
+        address: "ул. Ленина, 55",
+        salary: 950,
+      },
+      {
+        id: 7,
+        name: 'Лаборатория "Гемотест" Центральная',
+        address: "ул. Центральная, 8",
+        salary: 800,
+      },
+      {
+        id: 8,
+        name: 'Медицинский центр "Промед"',
+        address: "ул. Промышленная, 12",
+        salary: 680,
+      },
+      {
+        id: 9,
+        name: 'Клиника "Скандинавия"',
+        address: "пр. Победы, 34",
+        salary: 1100,
+      },
+      {
+        id: 10,
+        name: 'Центр репродукции "Эмбрио"',
+        address: "ул. Садовая, 7",
+        salary: 890,
+      },
+    ];
+    return mockClinics;
   }
 
   function checkFormValidity() {
@@ -679,17 +652,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Запуск: показываем экран авторизации с кнопкой
+  // Запуск приложения
   showLoading();
 
   if (!checkSavedSession()) {
-    // Не запрашиваем номер автоматически, показываем экран с кнопкой
+    // Если нет сохранённой сессии, показываем экран авторизации
     hideLoading();
     showAuthScreen();
   }
 
-  // Обработчик кнопки запроса номера
-  if (authRequestBtn) {
-    authRequestBtn.addEventListener("click", requestPhoneNumber);
+  // Обработчик кнопки авторизации
+  if (authLoginBtn) {
+    authLoginBtn.addEventListener("click", login);
+  }
+
+  // Обработка нажатия Enter в поле телефона
+  if (authPhone) {
+    authPhone.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        login();
+      }
+    });
   }
 });

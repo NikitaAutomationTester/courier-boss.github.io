@@ -1,4 +1,4 @@
-// База данных курьеров (теперь проверяем по телефону)
+// База данных курьеров
 const USERS_DB = [
   {
     id: "courier_001",
@@ -10,9 +10,31 @@ const USERS_DB = [
     phone: "+79123456789",
     name: "Иван Петров",
   },
+  {
+    id: "courier_003",
+    phone: "+79201234567",
+    name: "Дмитрий Сидоров",
+  },
 ];
 
-// Проверка по номеру телефона
+// Проверка пользователя по номеру телефона
 function checkAuthByPhone(phone) {
-  return USERS_DB.find((user) => user.phone === phone) || null;
+  // Очищаем номер от лишних символов для сравнения
+  const cleanPhone = phone.replace(/[^\d+]/g, "");
+  return (
+    USERS_DB.find((user) => {
+      const cleanUserPhone = user.phone.replace(/[^\d+]/g, "");
+      return cleanUserPhone === cleanPhone;
+    }) || null
+  );
+}
+
+// Функция для получения пользователя по номеру
+function getUserByPhone(phone) {
+  return checkAuthByPhone(phone);
+}
+
+// Функция проверки, есть ли пользователь
+function isUserAllowed(phone) {
+  return checkAuthByPhone(phone) !== null;
 }
