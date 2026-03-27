@@ -631,26 +631,6 @@ textarea.max-input {
     line-height: 1.4;
 }
 
-/* Экран авторизации */
-.auth-description {
-    text-align: center;
-    color: var(--max-hint-color, #8e8e93);
-    margin: 16px 0 24px;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.auth-error {
-    margin-top: 16px;
-    padding: 12px;
-    background-color: rgba(255, 59, 48, 0.1);
-    border: 1px solid #ff3b30;
-    border-radius: 8px;
-    color: #ff3b30;
-    text-align: center;
-    font-size: 14px;
-}
-
 /* Экран загрузки */
 .loading-screen {
     position: fixed;
@@ -683,6 +663,40 @@ textarea.max-input {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* ========== СТИЛИ ДЛЯ ЭКРАНА АВТОРИЗАЦИИ ========== */
+#auth-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#auth-screen h1 {
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+#auth-screen .form-group {
+    margin-bottom: 20px;
+}
+
+#auth-screen .max-button {
+    margin-top: 8px;
+}
+
+.auth-error {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: rgba(255, 59, 48, 0.1);
+    border: 1px solid #ff3b30;
+    border-radius: 8px;
+    color: #ff3b30;
+    text-align: center;
+    font-size: 14px;
 }
 
 /* Стили для поля ввода телефона с префиксом +7 */
