@@ -6,31 +6,82 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentUserId = null;
   let extraDeliveries = [];
-  let currentScreen = "main"; // 'main' или 'deliveries'
+  let currentScreen = "main";
+  let currentUser = null;
+  let isAuthorized = false;
 
+  // Получаем данные пользователя из MAX
   if (
     window.WebApp &&
     window.WebApp.initDataUnsafe &&
     window.WebApp.initDataUnsafe.user
   ) {
     currentUserId = window.WebApp.initDataUnsafe.user.id;
+    const userPhone = window.WebApp.initDataUnsafe.user.phone_number;
+    const userName = window.WebApp.initDataUnsafe.user.first_name;
+
+    console.log("ID пользователя:", currentUserId);
+    console.log("Номер телефона:", userPhone);
+    console.log("Имя пользователя:", userName);
+
+    if (userPhone && isUserAllowed(userPhone)) {
+      isAuthorized = true;
+      currentUser = getUserByPhone(userPhone);
+      console.log("Авторизация успешна:", currentUser);
+    } else {
+      isAuthorized = false;
+      console.log("Доступ запрещён. Номер не в списке:", userPhone);
+    }
   } else {
+    // Тестовый режим
     currentUserId = "test_courier_123";
+    console.log("Тестовый режим. ID пользователя:", currentUserId);
+
+    const testPhone = "+79123456789";
+    if (isUserAllowed(testPhone)) {
+      isAuthorized = true;
+      currentUser = getUserByPhone(testPhone);
+      console.log("Тестовый режим: авторизация успешна");
+    } else {
+      isAuthorized = false;
+      console.log("Тестовый режим: доступ запрещён");
+    }
   }
 
-  // Универсальная функция для показа сообщений (работает и в MAX, и в браузере)
+  function showAccessDenied() {
+    const mainScreen = document.getElementById("main-screen");
+    const deliveriesScreen = document.getElementById("deliveries-screen");
+    const accessDeniedScreen = document.getElementById("access-denied-screen");
+
+    if (mainScreen) mainScreen.style.display = "none";
+    if (deliveriesScreen) deliveriesScreen.style.display = "none";
+    if (accessDeniedScreen) accessDeniedScreen.style.display = "block";
+  }
+
+  function showMainInterface() {
+    const mainScreen = document.getElementById("main-screen");
+    const deliveriesScreen = document.getElementById("deliveries-screen");
+    const accessDeniedScreen = document.getElementById("access-denied-screen");
+
+    if (mainScreen) mainScreen.style.display = "block";
+    if (deliveriesScreen) deliveriesScreen.style.display = "none";
+    if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
+  }
+
+  if (!isAuthorized) {
+    showAccessDenied();
+    return;
+  }
+
   // Универсальная функция для показа сообщений
   function showMessage(message, isError = false) {
-    // 1. Пытаемся использовать метод showPopup из MAX Bridge
     if (window.WebApp && typeof window.WebApp.showPopup === "function") {
       window.WebApp.showPopup({
         title: isError ? "Ошибка" : "Успешно",
         message: message,
         buttons: [{ type: "ok", text: "OK" }],
       });
-    }
-    // 2. Fallback для браузера
-    else {
+    } else {
       alert(message);
     }
   }
@@ -280,8 +331,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     console.log("Отправлен отчет:", report);
+    console.log("Курьер:", currentUser);
 
-    // Показываем сообщение об успешной отправке
     showSuccess("Отчёт успешно отправлен");
   }
 
@@ -587,5 +638,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  showMainInterface();
   checkFormValidity();
 });

@@ -601,3 +601,32 @@ textarea.max-input {
         padding: 2px 6px;
     }
 }
+
+/* Экран отказа в доступе */
+.access-denied-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    text-align: center;
+    padding: 20px;
+}
+
+.access-denied-icon {
+    font-size: 64px;
+    margin-bottom: 24px;
+}
+
+.access-denied-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--max-text-color, #000000);
+}
+
+.access-denied-message {
+    font-size: 16px;
+    color: var(--max-hint-color, #8e8e93);
+    line-height: 1.4;
+}

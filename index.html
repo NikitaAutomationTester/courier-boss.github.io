@@ -98,6 +98,18 @@
       </div>
     </div>
 
+    <!-- ЭКРАН ОТКАЗА В ДОСТУПЕ -->
+    <div class="container" id="access-denied-screen" style="display: none">
+      <div class="access-denied-content">
+        <div class="access-denied-icon">🔒</div>
+        <h1 class="access-denied-title">Доступ запрещён</h1>
+        <p class="access-denied-message">
+          У вас нет прав для использования этого приложения.<br />
+          Обратитесь к администратору для получения доступа.
+        </p>
+      </div>
+    </div>
+
     <!-- Модальное окно добавления доставки -->
     <div class="modal-backdrop" id="extra-delivery-modal-backdrop" hidden>
       <div
@@ -176,6 +188,7 @@
       </div>
     </div>
 
+    <script src="allowed-users.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
