@@ -133,7 +133,7 @@ label {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-height: calc(100vh - 260px);
+    max-height: 400px; /* фиксированная высота, как было раньше */
     min-height: 150px;
     overflow-y: auto;
     border: 1px solid var(--max-border-color, #e0e0e0);
@@ -143,18 +143,7 @@ label {
     box-sizing: border-box;
 }
 
-/* Адаптивная высота для разных экранов */
-@media (max-height: 700px) {
-    .clinics-grid {
-        max-height: calc(100vh - 240px);
-    }
-}
 
-@media (max-height: 600px) {
-    .clinics-grid {
-        max-height: calc(100vh - 220px);
-    }
-}
 
 /* Карточка клиники */
 .clinic-item {
