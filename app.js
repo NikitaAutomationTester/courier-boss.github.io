@@ -18,6 +18,35 @@ document.addEventListener("DOMContentLoaded", () => {
     currentUserId = "test_courier_123";
   }
 
+  // Универсальная функция для показа сообщений
+  function showMessage(title, message, isError = false) {
+    // Пытаемся использовать нативный попап MAX
+    if (window.WebApp && window.WebApp.showPopup) {
+      window.WebApp.showPopup({
+        title: title,
+        message: message,
+        buttons: [{ type: "ok" }],
+      });
+    }
+    // Fallback для браузера или если showPopup недоступен
+    else if (window.WebApp && window.WebApp.showAlert) {
+      window.WebApp.showAlert(message);
+    } else {
+      // Стандартный alert для тестирования в браузере
+      alert(message);
+    }
+  }
+
+  // Универсальная функция для показа успешного сообщения
+  function showSuccess(message) {
+    showMessage("Успешно", message);
+  }
+
+  // Универсальная функция для показа ошибки
+  function showError(message) {
+    showMessage("Ошибка", message, true);
+  }
+
   function loadClinicsForUser(userId) {
     const mockClinics = {
       test_courier_123: [
@@ -205,7 +234,10 @@ document.addEventListener("DOMContentLoaded", () => {
   async function saveReport() {
     const dateInput = document.getElementById("report-date");
     const selectedDate = dateInput.value;
-    if (!selectedDate) return alert("Пожалуйста, выберите дату");
+    if (!selectedDate) {
+      showError("Пожалуйста, выберите дату");
+      return;
+    }
 
     const [year, month, day] = selectedDate.split("-");
     const formattedDate = `${day}.${month}.${year}`;
@@ -235,7 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const hasExtraDeliveries = extraDeliveries.length > 0;
 
     if (selectedClinics.length === 0 && !hasExtraDeliveries) {
-      return alert("Выберите клиники или добавьте доставку");
+      showError("Выберите клиники или добавьте доставку");
+      return;
     }
 
     totalSalary += extraDeliveries.reduce((sum, d) => sum + (d.salary || 0), 0);
@@ -250,27 +283,10 @@ document.addEventListener("DOMContentLoaded", () => {
       timestamp: new Date().toISOString(),
     };
 
-    let message = `Отчёт за ${formattedDate}\nИтого: ${totalSalary.toLocaleString("ru-RU")} ₽\n\nПосещено клиник: ${selectedClinics.length}\n`;
+    console.log("Отправлен отчет:", report);
 
-    if (selectedClinics.length > 0) {
-      message += `\nСписок:\n`;
-    }
-    selectedClinics.forEach((clinic) => {
-      message += `• ${clinic.name}\n  ${clinic.address}\n  ${clinic.salary.toLocaleString("ru-RU")} ₽\n\n`;
-    });
-
-    if (extraDeliveries.length > 0) {
-      message += `\nДополнительные доставки:\n`;
-      extraDeliveries.forEach((d, idx) => {
-        message += `#${idx + 1}\n`;
-        if (d.receiveAddress)
-          message += `Получение груза: ${d.receiveAddress}\n`;
-        message += `Доставка груза: ${d.deliveryAddress}\n`;
-        if (d.comment) message += `Комментарий: ${d.comment}\n`;
-        message += `Зарплата: ${d.salary.toLocaleString("ru-RU")} ₽\n\n`;
-      });
-    }
-    alert(message);
+    // Показываем сообщение об успешной отправке
+    showSuccess("Отчёт успешно отправлен");
   }
 
   // Функции для работы с экраном дополнительных доставок
@@ -436,11 +452,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const isSalaryValid = /^\d+$/.test(salaryText);
 
     if (!deliveryAddress) {
-      alert("Укажите адрес доставки груза");
+      showError("Укажите адрес доставки груза");
       return;
     }
     if (!isSalaryValid) {
-      alert("Укажите зарплату целым числом");
+      showError("Укажите зарплату целым числом");
       return;
     }
 
