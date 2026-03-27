@@ -77,8 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Функция авторизации
   function login() {
-    // Получаем номер без +7 (только цифры)
     const rawPhone = authPhone ? authPhone.value.trim() : "";
 
     if (!rawPhone) {
@@ -112,6 +112,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Если пользователь не найден
     showAuthError("Номер телефона не верный");
+  }
+
+  // Проверяем сохранённую сессию
+  function checkSavedSession() {
+    const savedUserId = sessionStorage.getItem("authorizedUserId");
+    const savedUserPhone = sessionStorage.getItem("authorizedUserPhone");
+    const savedUserName = sessionStorage.getItem("authorizedUserName");
+
+    if (savedUserId && savedUserPhone && savedUserName) {
+      if (window.isUserAllowed && window.isUserAllowed(savedUserPhone)) {
+        currentUser = {
+          id: savedUserId,
+          phone: savedUserPhone,
+          name: savedUserName,
+        };
+        currentUserId = savedUserId;
+        isAuthorized = true;
+
+        console.log("Восстановлена сессия для:", currentUser);
+        initMainApp();
+        showMainInterface();
+        return true;
+      } else {
+        // Сессия невалидна, очищаем
+        sessionStorage.removeItem("authorizedUserId");
+        sessionStorage.removeItem("authorizedUserPhone");
+        sessionStorage.removeItem("authorizedUserName");
+      }
+    }
+    return false;
   }
 
   // ========== УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДЛЯ СООБЩЕНИЙ ==========
@@ -623,12 +653,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Запуск приложения
-  showLoading();
+  // ========== ЗАПУСК ПРИЛОЖЕНИЯ ==========
 
-  if (!checkSavedSession()) {
-    // Если нет сохранённой сессии, показываем экран авторизации
-    hideLoading();
+  // Проверяем сохранённую сессию
+  if (checkSavedSession()) {
+    // Сессия есть — главный экран уже показан внутри checkSavedSession
+    // Ничего дополнительно не делаем
+  } else {
+    // Сессии нет — показываем экран авторизации
     showAuthScreen();
   }
 
