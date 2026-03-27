@@ -42,14 +42,14 @@ label {
     font-size: 14px;
 }
 
-/* Универсальный стиль для всех полей ввода */
+/* Универсальный стиль для всех полей ввода — шрифт 16px для предотвращения масштабирования на iOS */
 .max-input,
 #report-date {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid var(--max-border-color, #e0e0e0);
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 16px; /* Увеличено с 15px до 16px для iOS */
     box-sizing: border-box;
     background-color: var(--max-input-bg, #ffffff);
     color: var(--max-text-color, #000000);
@@ -63,7 +63,7 @@ label {
 .date-control {
     position: relative;
     width: 100%;
-    min-height: 44px;
+    min-height: 46px;
     cursor: pointer;
 }
 
@@ -79,6 +79,7 @@ label {
     margin: 0;
     box-shadow: none;
     cursor: pointer;
+    font-size: 16px; /* Увеличено */
 }
 
 .date-display {
@@ -87,11 +88,11 @@ label {
     padding: 10px 12px;
     border: 1px solid var(--max-border-color, #e0e0e0);
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 16px; /* Увеличено с 15px до 16px */
     box-sizing: border-box;
     background-color: var(--max-input-bg, #ffffff);
     color: var(--max-text-color, #000000);
-    min-height: 44px;
+    min-height: 46px;
     width: 100%;
     white-space: nowrap;
     overflow: hidden;
@@ -396,8 +397,8 @@ textarea.max-input {
     .max-input,
     .date-display {
         padding: 8px 10px;
-        font-size: 14px;
-        min-height: 40px;
+        font-size: 16px; /* Оставляем 16px для предотвращения масштабирования */
+        min-height: 42px;
     }
     
     .clinic-name {
@@ -422,7 +423,7 @@ textarea.max-input {
     }
 }
 
-/* Скрываем скроллбар в WebKit для более чистого вида (опционально) */
+/* Скрываем скроллбар в WebKit для более чистого вида */
 .clinics-grid::-webkit-scrollbar {
     width: 4px;
 }
