@@ -59,6 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Показываем основной интерфейс
   function showMainInterface() {
+    console.log("showMainInterface вызван");
+    console.log("authScreen элемент:", authScreen);
+    console.log("mainScreen элемент:", mainScreen);
+    console.log("deliveriesScreen элемент:", deliveriesScreen);
+    console.log("accessDeniedScreen элемент:", accessDeniedScreen);
     hideLoading();
     if (authScreen) authScreen.style.display = "none";
     if (mainScreen) mainScreen.style.display = "block";
