@@ -721,39 +721,46 @@ document.addEventListener("DOMContentLoaded", () => {
     displayReportDetail(report);
   }
 
-  // Отображаем детали отчёта
+  // Отображаем детали отчёта (компактная версия с плашкой зарплаты)
   function displayReportDetail(report) {
     const container = document.getElementById("report-detail-container");
     if (!container) return;
 
-    // Формируем HTML для клиник (такой же как на главном экране курьера)
+    // Формируем HTML для клиник (компактная версия с плашкой зарплаты)
     let clinicsHTML = "";
     if (report.clinics && report.clinics.length > 0) {
       clinicsHTML =
-        '<div class="detail-section"><div class="detail-section-title">Посещённые клиники</div>';
+        '<div class="detail-section"><div class="detail-section-title">Посещённые клиники <span class="clinics-count">(' +
+        report.clinics.length +
+        ")</span></div>";
+      clinicsHTML += '<div class="clinics-compact-list">';
       report.clinics.forEach((clinic) => {
         clinicsHTML += `
-          <div class="detail-clinic-item">
-            <div class="detail-clinic-name">${clinic.name}</div>
-            <div class="detail-clinic-address">${clinic.address}</div>
-            <div class="detail-clinic-salary">${clinic.salary.toLocaleString("ru-RU")} ₽</div>
+          <div class="clinic-compact-item">
+            <div class="clinic-compact-info">
+              <div class="clinic-compact-name">${clinic.name}</div>
+              <div class="clinic-compact-address">${clinic.address}</div>
+            </div>
+            <div class="clinic-compact-salary-badge">${clinic.salary.toLocaleString("ru-RU")} ₽</div>
           </div>
         `;
       });
-      clinicsHTML += "</div>";
+      clinicsHTML += "</div></div>";
     } else {
       clinicsHTML =
         '<div class="detail-section"><div class="detail-section-title">Посещённые клиники</div><div class="empty-deliveries">Нет посещённых клиник</div></div>';
     }
 
-    // Формируем HTML для дополнительных доставок (один в один как у курьера)
+    // Формируем HTML для дополнительных доставок
     let extraDeliveriesHTML = "";
     if (report.extraDeliveries && report.extraDeliveries.length > 0) {
       extraDeliveriesHTML =
-        '<div class="detail-section"><div class="detail-section-title">Дополнительные доставки</div>';
+        '<div class="detail-section"><div class="detail-section-title">Дополнительные доставки <span class="deliveries-count">(' +
+        report.extraDeliveries.length +
+        ")</span></div>";
       report.extraDeliveries.forEach((delivery, idx) => {
         extraDeliveriesHTML += `
-          <div class="delivery-card" style="margin-bottom: 8px;">
+          <div class="delivery-card">
             <div style="display: flex; align-items: flex-start; width: 100%;">
               <div class="delivery-number">${idx + 1}</div>
               <div class="delivery-info">
