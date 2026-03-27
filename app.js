@@ -721,7 +721,7 @@ document.addEventListener("DOMContentLoaded", () => {
     displayReportDetail(report);
   }
 
-  // Отображаем детали отчёта (компактная версия с плашкой зарплаты)
+  // Отображаем детали отчёта (обновлённая версия с одной строкой зарплаты)
   function displayReportDetail(report) {
     const container = document.getElementById("report-detail-container");
     if (!container) return;
@@ -792,11 +792,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ${clinicsHTML}
       ${extraDeliveriesHTML}
       
-      <div class="detail-section">
-        <div class="detail-section-title">Итого</div>
-        <div class="detail-total-salary">
-          Всего: ${report.totalSalary.toLocaleString("ru-RU")} ₽
-        </div>
+      <div class="total-salary-row">
+        <span class="total-salary-label">Итого зп за день:</span>
+        <span class="total-salary-amount">${report.totalSalary.toLocaleString("ru-RU")} ₽</span>
       </div>
     `;
   }

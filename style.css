@@ -670,33 +670,38 @@ textarea.max-input {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 100vh;
-    width: 100%;
-    max-width: 100%;
-    padding: 20px;
-    margin: 0;
-    box-sizing: border-box;
+    align-items: center;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100%;
+    height: 100%;
     background-color: var(--max-bg-color, #ffffff);
+    padding: 20px;
+    margin: 0;
+    box-sizing: border-box;
     overflow-y: auto;
+    z-index: 100;
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
 #auth-screen h1 {
     margin-bottom: 32px;
     text-align: center;
     font-size: 24px;
+    width: 100%;
 }
 
 #auth-screen .form-group {
     margin-bottom: 20px;
     width: 100%;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 #auth-screen .phone-input-wrapper {
@@ -706,24 +711,27 @@ textarea.max-input {
 #auth-screen .max-button {
     margin-top: 8px;
     width: 100%;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
 }
 
+/* Блок ошибки — фиксированной высоты, чтобы не "прыгал" контент */
 #auth-screen .auth-error {
     margin-top: 16px;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 12px;
+    width: 100%;
+    text-align: center;
+    min-height: 50px;
+    visibility: visible;
     background-color: rgba(255, 59, 48, 0.1);
     border: 1px solid #ff3b30;
     border-radius: 8px;
     color: #ff3b30;
-    text-align: center;
     font-size: 14px;
+    padding: 12px;
+}
+
+/* Когда ошибка скрыта — сохраняем место */
+#auth-screen .auth-error[style*="display: none"] {
+    visibility: hidden !important;
+    display: block !important;
 }
 
 /* Стили для поля ввода телефона с префиксом +7 */
@@ -757,120 +765,6 @@ textarea.max-input {
 .phone-input[type="number"] {
     -moz-appearance: textfield;
     appearance: textfield;
-}
-
-/* Принудительное центрирование экрана авторизации */
-#auth-screen {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background-color: var(--max-bg-color, #ffffff) !important;
-    padding: 20px !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    overflow-y: auto !important;
-    z-index: 100 !important;
-}
-
-#auth-screen h1 {
-    margin-bottom: 32px !important;
-    text-align: center !important;
-    font-size: 24px !important;
-    width: 100% !important;
-}
-
-#auth-screen .form-group {
-    margin-bottom: 20px !important;
-    width: 100% !important;
-    max-width: 400px !important;
-}
-
-#auth-screen .phone-input-wrapper {
-    width: 100% !important;
-}
-
-#auth-screen .max-button {
-    margin-top: 8px !important;
-    width: 100% !important;
-    max-width: 400px !important;
-}
-
-#auth-screen .auth-error {
-    margin-top: 16px !important;
-    max-width: 400px !important;
-    width: 100% !important;
-    text-align: center !important;
-}
-
-/* ===== ЦЕНТРИРОВАНИЕ ЭКРАНА АВТОРИЗАЦИИ ===== */
-#auth-screen {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background-color: var(--max-bg-color, #ffffff) !important;
-    padding: 20px !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    overflow-y: auto !important;
-    z-index: 100 !important;
-}
-
-.auth-form-container {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-#auth-screen h1 {
-    margin-bottom: 32px !important;
-    text-align: center !important;
-    font-size: 24px !important;
-    width: 100% !important;
-}
-
-#auth-screen .form-group {
-    margin-bottom: 20px !important;
-    width: 100% !important;
-}
-
-#auth-screen .phone-input-wrapper {
-    width: 100% !important;
-}
-
-#auth-screen .max-button {
-    margin-top: 8px !important;
-    width: 100% !important;
-}
-
-/* Блок ошибки — фиксированной высоты, чтобы не "прыгал" контент */
-#auth-screen .auth-error {
-    margin-top: 16px !important;
-    width: 100% !important;
-    text-align: center !important;
-    min-height: 50px !important;
-    visibility: visible !important;
-}
-
-/* Когда ошибка скрыта — сохраняем место */
-#auth-screen .auth-error[style*="display: none"] {
-    visibility: hidden !important;
-    display: block !important;
 }
 
 /* Стили для списка отчётов */
@@ -947,58 +841,6 @@ textarea.max-input {
     font-weight: 500;
 }
 
-.detail-clinic-item {
-    padding: 10px;
-    background-color: var(--max-secondary-bg-color, #f5f5f5);
-    border-radius: 10px;
-    margin-bottom: 8px;
-}
-
-.detail-clinic-name {
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.detail-clinic-address {
-    font-size: 12px;
-    opacity: 0.7;
-    margin-bottom: 4px;
-}
-
-.detail-clinic-salary {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--max-primary-color, #007aff);
-}
-
-.detail-delivery-item {
-    padding: 10px;
-    background-color: var(--max-secondary-bg-color, #f5f5f5);
-    border-radius: 10px;
-    margin-bottom: 8px;
-}
-
-.detail-delivery-header {
-    font-weight: 600;
-    margin-bottom: 6px;
-    font-size: 13px;
-}
-
-.detail-delivery-row {
-    font-size: 12px;
-    margin-bottom: 4px;
-}
-
-.detail-total-salary {
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--max-primary-color, #007aff);
-    text-align: right;
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid var(--max-border-color, #e0e0e0);
-}
-
 /* Компактный список клиник для детального отчёта */
 .clinics-compact-list {
     display: flex;
@@ -1059,4 +901,26 @@ textarea.max-input {
     font-weight: normal;
     color: var(--max-hint-color, #8e8e93);
     margin-left: 6px;
+}
+
+/* Строка итоговой зарплаты (без лишних разделителей) */
+.total-salary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0 8px 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--max-border-color, #e0e0e0);
+}
+
+.total-salary-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--max-text-color, #000000);
+}
+
+.total-salary-amount {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--max-primary-color, #007aff);
 }
