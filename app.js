@@ -19,10 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Универсальная функция для показа сообщений (работает и в MAX, и в браузере)
+  // Универсальная функция для показа сообщений
   function showMessage(message, isError = false) {
     // 1. Пытаемся использовать метод showPopup из MAX Bridge
-    if (window.Telegram?.WebApp?.showPopup) {
-      window.Telegram.WebApp.showPopup({
+    if (window.WebApp && typeof window.WebApp.showPopup === "function") {
+      window.WebApp.showPopup({
         title: isError ? "Ошибка" : "Успешно",
         message: message,
         buttons: [{ type: "ok", text: "OK" }],
