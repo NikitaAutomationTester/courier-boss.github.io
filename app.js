@@ -18,27 +18,28 @@ document.addEventListener("DOMContentLoaded", () => {
     currentUserId = "test_courier_123";
   }
 
-  // Универсальная функция для показа сообщений
+  // Универсальная функция для показа сообщений (работает и в MAX, и в браузере)
   function showMessage(message, isError = false) {
-    // Пытаемся использовать метод MAX, если он доступен
-    if (window.WebApp && window.WebApp.showAlert) {
-      // Используем showAlert для простых сообщений
-      window.WebApp.showAlert(message);
+    // 1. Пытаемся использовать метод showPopup из MAX Bridge
+    if (window.Telegram?.WebApp?.showPopup) {
+      window.Telegram.WebApp.showPopup({
+        title: isError ? "Ошибка" : "Успешно",
+        message: message,
+        buttons: [{ type: "ok", text: "OK" }],
+      });
     }
-    // Fallback для браузера
+    // 2. Fallback для браузера
     else {
       alert(message);
     }
   }
 
-  // Функция для показа успешного сообщения
   function showSuccess(message) {
-    showMessage(message);
+    showMessage(message, false);
   }
 
-  // Функция для показа ошибки
   function showError(message) {
-    showMessage(message);
+    showMessage(message, true);
   }
 
   function loadClinicsForUser(userId) {
