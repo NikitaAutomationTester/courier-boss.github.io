@@ -9,13 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentScreen = "main";
   let currentUser = null;
   let isAuthorized = false;
-  let isWaitingForPhone = false; // Флаг ожидания получения номера
+  let isWaitingForPhone = false;
 
   // Элементы DOM
   const mainScreen = document.getElementById("main-screen");
   const deliveriesScreen = document.getElementById("deliveries-screen");
   const accessDeniedScreen = document.getElementById("access-denied-screen");
   const loadingScreen = document.getElementById("loading-screen");
+  const authScreen = document.getElementById("auth-screen");
+  const authRequestBtn = document.getElementById("auth-request-btn");
+  const authError = document.getElementById("auth-error");
 
   // Показываем экран загрузки
   function showLoading() {
@@ -23,11 +26,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
+    if (authScreen) authScreen.style.display = "none";
   }
 
   // Скрываем экран загрузки
   function hideLoading() {
     if (loadingScreen) loadingScreen.style.display = "none";
+  }
+
+  // Показываем экран авторизации с кнопкой
+  function showAuthScreen() {
+    hideLoading();
+    if (authScreen) authScreen.style.display = "block";
+    if (mainScreen) mainScreen.style.display = "none";
+    if (deliveriesScreen) deliveriesScreen.style.display = "none";
+    if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
+    if (authError) authError.style.display = "none";
   }
 
   // Показываем экран отказа в доступе
@@ -37,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     hideLoading();
     const deniedMessage = document.getElementById("access-denied-message");
     if (deniedMessage) deniedMessage.textContent = message;
+    if (authScreen) authScreen.style.display = "none";
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "block";
@@ -45,9 +60,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // Показываем основной интерфейс
   function showMainInterface() {
     hideLoading();
+    if (authScreen) authScreen.style.display = "none";
     if (mainScreen) mainScreen.style.display = "block";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
+  }
+
+  // Показываем ошибку на экране авторизации
+  function showAuthErrorMessage(message) {
+    if (authError) {
+      authError.textContent = message;
+      authError.style.display = "block";
+      setTimeout(() => {
+        if (authError) authError.style.display = "none";
+      }, 5000);
+    }
   }
 
   // Универсальная функция для показа сообщений
@@ -75,7 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function authorizeUser(phoneNumber) {
     console.log("Проверка номера:", phoneNumber);
 
-    // Проверяем, есть ли пользователь с таким номером
     if (window.isUserAllowed && window.isUserAllowed(phoneNumber)) {
       const user = window.getUserByPhone(phoneNumber);
       if (user) {
@@ -83,14 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
         currentUserId = user.id;
         isAuthorized = true;
 
-        // Сохраняем в sessionStorage для быстрого доступа при следующих открытиях
         sessionStorage.setItem("authorizedUserId", user.id);
         sessionStorage.setItem("authorizedUserPhone", phoneNumber);
         sessionStorage.setItem("authorizedUserName", user.name);
 
         console.log("Авторизация успешна:", user);
-
-        // Инициализируем основное приложение
         initMainApp();
         showMainInterface();
         return true;
@@ -98,8 +121,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     console.log("Авторизация失败: номер не найден");
-    showAccessDenied(
-      "Доступ запрещён. Ваш номер телефона не найден в списке курьеров. Обратитесь к администратору.",
+    showAuthErrorMessage(
+      "Номер телефона не найден в списке курьеров. Обратитесь к администратору.",
     );
     return false;
   }
@@ -111,7 +134,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedUserName = sessionStorage.getItem("authorizedUserName");
 
     if (savedUserId && savedUserPhone && savedUserName) {
-      // Проверяем, что пользователь всё ещё в списке
       if (window.isUserAllowed && window.isUserAllowed(savedUserPhone)) {
         currentUser = {
           id: savedUserId,
@@ -130,15 +152,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return false;
   }
 
-  // Запрос номера телефона через MAX Bridge
+  // Запрос номера телефона через MAX Bridge (вызывается по кнопке)
   function requestPhoneNumber() {
     if (isWaitingForPhone) return;
 
     console.log("Запрашиваем номер телефона...");
     isWaitingForPhone = true;
+    showLoading();
 
     if (window.WebApp && typeof window.WebApp.requestContact === "function") {
-      // Используем официальный метод MAX Bridge
       window.WebApp.requestContact(function (granted, phoneNumber) {
         isWaitingForPhone = false;
 
@@ -147,31 +169,29 @@ document.addEventListener("DOMContentLoaded", () => {
           authorizeUser(phoneNumber);
         } else {
           console.log("Пользователь отказался поделиться номером");
-          showAccessDenied(
-            'Для работы с приложением необходимо разрешить доступ к номеру телефона. Пожалуйста, перезапустите приложение и нажмите "Разрешить".',
-          );
+          hideLoading();
+          showAuthErrorMessage("Необходимо разрешить доступ к номеру телефона");
         }
       });
     } else {
-      // Fallback для браузера или если метод недоступен
       console.log("requestContact недоступен, используем тестовый режим");
       isWaitingForPhone = false;
+      hideLoading();
 
-      // В браузере используем тестовый номер
       const testPhone = "+79054963954";
       if (window.isUserAllowed && window.isUserAllowed(testPhone)) {
         authorizeUser(testPhone);
       } else {
-        showAccessDenied(
+        showAuthErrorMessage(
           "Тестовый режим: номер не найден в списке. Проверьте файл users.js",
         );
       }
     }
   }
 
-  // Функции основного приложения
+  // ========== ОСНОВНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ==========
+
   function loadClinicsForUser(userId) {
-    // Здесь можно будет загружать клиники для конкретного курьера с сервера
     const mockClinics = {
       test_courier_123: [
         {
@@ -236,11 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       ],
     };
-
-    // Если у нас есть реальный курьер, можно вернуть его список
-    if (currentUser && currentUser.id) {
-      return mockClinics[currentUser.id] || mockClinics.test_courier_123;
-    }
     return mockClinics.test_courier_123;
   }
 
@@ -401,21 +416,16 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     console.log("Отправлен отчет:", report);
-    console.log("Курьер:", currentUser);
-
     showSuccess("Отчёт успешно отправлен");
   }
 
-  // Функции для работы с экраном дополнительных доставок
+  // Функции для дополнительных доставок
   function updateDeliveriesList() {
     const container = document.getElementById("deliveries-list-container");
     const emptyDiv = document.getElementById("empty-deliveries");
     const extraCountSpan = document.getElementById("extra-count");
 
-    if (extraCountSpan) {
-      extraCountSpan.textContent = extraDeliveries.length;
-    }
-
+    if (extraCountSpan) extraCountSpan.textContent = extraDeliveries.length;
     if (!container) return;
 
     if (extraDeliveries.length === 0) {
@@ -424,14 +434,12 @@ document.addEventListener("DOMContentLoaded", () => {
       cards.forEach((card) => card.remove());
     } else {
       if (emptyDiv) emptyDiv.style.display = "none";
-
       const cards = container.querySelectorAll(".delivery-card");
       cards.forEach((card) => card.remove());
 
       extraDeliveries.forEach((delivery, index) => {
         const card = document.createElement("div");
         card.className = "delivery-card";
-
         const cardContent = document.createElement("div");
         cardContent.style.display = "flex";
         cardContent.style.alignItems = "flex-start";
@@ -443,31 +451,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const infoDiv = document.createElement("div");
         infoDiv.className = "delivery-info";
-
         let infoHTML = "";
 
         if (delivery.receiveAddress) {
-          infoHTML += `<div class="delivery-card-row">
-            <span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}
-          </div>`;
+          infoHTML += `<div class="delivery-card-row"><span class="delivery-card-label">Откуда:</span> ${delivery.receiveAddress}</div>`;
         }
-
-        infoHTML += `<div class="delivery-card-row">
-          <span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}
-        </div>`;
-
+        infoHTML += `<div class="delivery-card-row"><span class="delivery-card-label">Куда:</span> ${delivery.deliveryAddress}</div>`;
         if (delivery.comment) {
-          infoHTML += `<div class="delivery-card-row">
-            <span class="delivery-card-label">Комментарий:</span> ${delivery.comment}
-          </div>`;
+          infoHTML += `<div class="delivery-card-row"><span class="delivery-card-label">Комментарий:</span> ${delivery.comment}</div>`;
         }
-
-        infoHTML += `<div class="delivery-card-salary">
-          ${delivery.salary.toLocaleString("ru-RU")} ₽
-        </div>`;
+        infoHTML += `<div class="delivery-card-salary">${delivery.salary.toLocaleString("ru-RU")} ₽</div>`;
 
         infoDiv.innerHTML = infoHTML;
-
         cardContent.appendChild(numberBadge);
         cardContent.appendChild(infoDiv);
         card.appendChild(cardContent);
@@ -490,14 +485,15 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTotalSalary();
   }
 
-  // Инициализация основного приложения
   function initMainApp() {
     const userClinics = loadClinicsForUser(currentUserId);
     displayClinics(userClinics);
 
     const saveButton = document.getElementById("save-report-btn");
-    if (saveButton) saveButton.removeEventListener("click", saveReport);
-    if (saveButton) saveButton.addEventListener("click", saveReport);
+    if (saveButton) {
+      saveButton.removeEventListener("click", saveReport);
+      saveButton.addEventListener("click", saveReport);
+    }
 
     const extraDeliveriesBtn = document.getElementById("extra-deliveries-btn");
     if (extraDeliveriesBtn)
@@ -540,7 +536,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const salaryText = extraModalSalaryEl
       ? extraModalSalaryEl.value.trim()
       : "";
-
     const isSalaryValid = /^\d+$/.test(salaryText);
     const canAdd = !!deliveryAddress && isSalaryValid;
     modalAddBtn.disabled = !canAdd;
@@ -572,7 +567,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (extraModalSalaryEl)
       extraModalSalaryEl.value =
         values.salary != null ? String(values.salary) : "";
-
     updateExtraModalAddButtonState();
   }
 
@@ -587,7 +581,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const salaryText = extraModalSalaryEl
       ? extraModalSalaryEl.value.trim()
       : "";
-
     const isSalaryValid = /^\d+$/.test(salaryText);
 
     if (!deliveryAddress) {
@@ -600,13 +593,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const salary = parseInt(salaryText, 10);
-
-    extraDeliveries.push({
-      receiveAddress,
-      deliveryAddress,
-      comment,
-      salary,
-    });
+    extraDeliveries.push({ receiveAddress, deliveryAddress, comment, salary });
 
     setModalValues({
       receiveAddress: "",
@@ -626,7 +613,6 @@ document.addEventListener("DOMContentLoaded", () => {
     modalCloseBtn.addEventListener("click", closeExtraDeliveryModal);
   if (modalAddBtn)
     modalAddBtn.addEventListener("click", addExtraDeliveryFromModal);
-
   if (extraModalDeliverEl) {
     extraModalDeliverEl.addEventListener(
       "input",
@@ -637,7 +623,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateExtraModalAddButtonState,
     );
   }
-
   if (extraModalSalaryEl) {
     extraModalSalaryEl.addEventListener(
       "input",
@@ -648,7 +633,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateExtraModalAddButtonState,
     );
   }
-
   if (modalBackdrop) {
     modalBackdrop.addEventListener("click", (e) => {
       if (e.target === modalBackdrop) closeExtraDeliveryModal();
@@ -662,15 +646,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const formatIsoDateToRu = (isoDate) => {
       if (!isoDate) return "";
       const [year, month, day] = isoDate.split("-");
-      if (!year || !month || !day) return "";
       return `${day}.${month}.${year}`;
     };
-
     const syncDateDisplay = () => {
       if (dateDisplay)
         dateDisplay.textContent = formatIsoDateToRu(dateInput.value);
     };
-
     dateInput.value = "";
     syncDateDisplay();
     dateInput.addEventListener("change", () => {
@@ -687,28 +668,28 @@ document.addEventListener("DOMContentLoaded", () => {
       const d = new Date();
       d.setHours(0, 0, 0, 0);
       d.setDate(d.getDate() + offsetDays);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      dateInput.value = `${yyyy}-${mm}-${dd}`;
+      dateInput.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       syncDateDisplay();
       checkFormValidity();
     };
-
     dateQuickButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const offset = parseInt(btn.dataset.offset || "0", 10);
-        setDateByOffsetDays(offset);
-      });
+      btn.addEventListener("click", () =>
+        setDateByOffsetDays(parseInt(btn.dataset.offset || "0", 10)),
+      );
     });
   }
 
-  // Запуск авторизации
+  // Запуск: показываем экран авторизации с кнопкой
   showLoading();
 
-  // Сначала проверяем сохранённую сессию
   if (!checkSavedSession()) {
-    // Если сессии нет, запрашиваем номер телефона
-    requestPhoneNumber();
+    // Не запрашиваем номер автоматически, показываем экран с кнопкой
+    hideLoading();
+    showAuthScreen();
+  }
+
+  // Обработчик кнопки запроса номера
+  if (authRequestBtn) {
+    authRequestBtn.addEventListener("click", requestPhoneNumber);
   }
 });

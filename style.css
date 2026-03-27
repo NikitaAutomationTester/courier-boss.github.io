@@ -630,3 +630,57 @@ textarea.max-input {
     color: var(--max-hint-color, #8e8e93);
     line-height: 1.4;
 }
+
+/* Экран авторизации */
+.auth-description {
+    text-align: center;
+    color: var(--max-hint-color, #8e8e93);
+    margin: 16px 0 24px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.auth-error {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: rgba(255, 59, 48, 0.1);
+    border: 1px solid #ff3b30;
+    border-radius: 8px;
+    color: #ff3b30;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Экран загрузки */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--max-bg-color, #ffffff);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--max-border-color, #e0e0e0);
+    border-top-color: var(--max-primary-color, #007aff);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--max-hint-color, #8e8e93);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
