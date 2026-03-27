@@ -38,6 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
     if (authScreen) authScreen.style.display = "none";
     if (adminScreen) adminScreen.style.display = "none";
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+    if (reportDetailScreen) reportDetailScreen.style.display = "none";
   }
 
   // Скрываем экран загрузки
@@ -71,6 +75,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
     if (adminScreen) adminScreen.style.display = "none";
     if (authError) authError.style.display = "none";
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+    if (reportDetailScreen) reportDetailScreen.style.display = "none";
   }
 
   // Показываем экран отказа в доступе
@@ -86,6 +94,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "block";
     if (adminScreen) adminScreen.style.display = "none";
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+    if (reportDetailScreen) reportDetailScreen.style.display = "none";
   }
 
   // Показываем основной интерфейс (в зависимости от роли)
@@ -109,6 +121,12 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       console.log("authScreen принудительно скрыт");
     }
+
+    // Скрываем экраны администратора
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+    if (reportDetailScreen) reportDetailScreen.style.display = "none";
 
     // Показываем нужный экран в зависимости от роли
     if (currentUserRole === "admin") {
@@ -631,6 +649,186 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("=== initMainApp END ===");
   }
 
+  // ========== ФУНКЦИИ ДЛЯ АДМИНИСТРАТОРА ==========
+
+  // Показываем экран списка отчётов
+  function showReportsListScreen() {
+    console.log("showReportsListScreen вызван");
+
+    // Скрываем админ-панель
+    if (adminScreen) adminScreen.style.display = "none";
+
+    // Показываем экран списка отчётов
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "block";
+
+    // Загружаем и отображаем отчёты
+    loadReportsList();
+  }
+
+  // Загружаем и отображаем список отчётов
+  function loadReportsList() {
+    const container = document.getElementById("reports-list-container");
+    if (!container) return;
+
+    // Получаем отчёты из localStorage
+    const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+    console.log("Загружено отчётов:", reports.length);
+
+    if (reports.length === 0) {
+      container.innerHTML =
+        '<div class="empty-deliveries">Нет сохранённых отчётов</div>';
+      return;
+    }
+
+    // Сортируем отчёты по дате (новые сверху)
+    reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    container.innerHTML = "";
+    reports.forEach((report, index) => {
+      const reportDiv = document.createElement("div");
+      reportDiv.className = "report-item";
+      reportDiv.dataset.index = index;
+      reportDiv.dataset.id = report.id;
+
+      reportDiv.innerHTML = `
+        <div class="report-item-date">${report.formattedDate || report.date}</div>
+        <div class="report-item-courier">${report.userName || report.userPhone || "Курьер"}</div>
+        <div class="report-item-salary">💰 ${report.totalSalary.toLocaleString("ru-RU")} ₽</div>
+      `;
+
+      reportDiv.addEventListener("click", () => {
+        showReportDetail(report);
+      });
+
+      container.appendChild(reportDiv);
+    });
+  }
+
+  // Показываем детальный просмотр отчёта
+  function showReportDetail(report) {
+    console.log("showReportDetail вызван для отчёта:", report.id);
+
+    // Скрываем список отчётов
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+
+    // Показываем экран деталей
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportDetailScreen) reportDetailScreen.style.display = "block";
+
+    // Отображаем детали
+    displayReportDetail(report);
+  }
+
+  // Отображаем детали отчёта
+  function displayReportDetail(report) {
+    const container = document.getElementById("report-detail-container");
+    if (!container) return;
+
+    // Формируем HTML для клиник
+    let clinicsHTML = "";
+    if (report.clinics && report.clinics.length > 0) {
+      clinicsHTML =
+        '<div class="detail-section"><div class="detail-section-title">Посещённые клиники</div>';
+      report.clinics.forEach((clinic) => {
+        clinicsHTML += `
+          <div class="detail-clinic-item">
+            <div class="detail-clinic-name">${clinic.name}</div>
+            <div class="detail-clinic-address">${clinic.address}</div>
+            <div class="detail-clinic-salary">${clinic.salary.toLocaleString("ru-RU")} ₽</div>
+          </div>
+        `;
+      });
+      clinicsHTML += "</div>";
+    } else {
+      clinicsHTML =
+        '<div class="detail-section"><div class="detail-section-title">Посещённые клиники</div><div class="empty-deliveries">Нет посещённых клиник</div></div>';
+    }
+
+    // Формируем HTML для дополнительных доставок
+    let extraDeliveriesHTML = "";
+    if (report.extraDeliveries && report.extraDeliveries.length > 0) {
+      extraDeliveriesHTML =
+        '<div class="detail-section"><div class="detail-section-title">Дополнительные доставки</div>';
+      report.extraDeliveries.forEach((delivery, idx) => {
+        extraDeliveriesHTML += `
+          <div class="detail-delivery-item">
+            <div class="detail-delivery-header">Доставка #${idx + 1}</div>
+            ${delivery.receiveAddress ? `<div class="detail-delivery-row"><strong>Откуда:</strong> ${delivery.receiveAddress}</div>` : ""}
+            <div class="detail-delivery-row"><strong>Куда:</strong> ${delivery.deliveryAddress}</div>
+            ${delivery.comment ? `<div class="detail-delivery-row"><strong>Комментарий:</strong> ${delivery.comment}</div>` : ""}
+            <div class="detail-delivery-row"><strong>Зарплата:</strong> ${delivery.salary.toLocaleString("ru-RU")} ₽</div>
+          </div>
+        `;
+      });
+      extraDeliveriesHTML += "</div>";
+    }
+
+    const totalClinicsSalary = report.clinics
+      ? report.clinics.reduce((sum, c) => sum + c.salary, 0)
+      : 0;
+    const totalExtraSalary = report.extraDeliveries
+      ? report.extraDeliveries.reduce((sum, d) => sum + d.salary, 0)
+      : 0;
+
+    container.innerHTML = `
+      <div class="detail-section">
+        <div class="detail-section-title">Основная информация</div>
+        <div class="detail-info-row">
+          <div class="detail-info-label">Дата отчёта</div>
+          <div class="detail-info-value">${report.formattedDate || report.date}</div>
+        </div>
+        <div class="detail-info-row">
+          <div class="detail-info-label">Курьер</div>
+          <div class="detail-info-value">${report.userName || report.userPhone || "Курьер"}</div>
+        </div>
+        <div class="detail-info-row">
+          <div class="detail-info-label">ID курьера</div>
+          <div class="detail-info-value">${report.userId || "—"}</div>
+        </div>
+      </div>
+      
+      ${clinicsHTML}
+      ${extraDeliveriesHTML}
+      
+      <div class="detail-section">
+        <div class="detail-section-title">Итого</div>
+        <div class="detail-total-salary">
+          Всего: ${report.totalSalary.toLocaleString("ru-RU")} ₽
+        </div>
+        <div class="detail-info-row" style="margin-top: 8px;">
+          <div class="detail-info-label">Клиники:</div>
+          <div class="detail-info-value">${totalClinicsSalary.toLocaleString("ru-RU")} ₽</div>
+        </div>
+        <div class="detail-info-row">
+          <div class="detail-info-label">Доп. доставки:</div>
+          <div class="detail-info-value">${totalExtraSalary.toLocaleString("ru-RU")} ₽</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Возврат к списку отчётов
+  function backToReportsList() {
+    console.log("backToReportsList вызван");
+
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportDetailScreen) reportDetailScreen.style.display = "none";
+
+    showReportsListScreen();
+  }
+
+  // Возврат к админ-панели
+  function backToAdminPanel() {
+    console.log("backToAdminPanel вызван");
+
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+
+    if (adminScreen) adminScreen.style.display = "block";
+  }
+
   // Модальное окно
   const modalBackdrop = document.getElementById(
     "extra-delivery-modal-backdrop",
@@ -832,16 +1030,23 @@ document.addEventListener("DOMContentLoaded", () => {
   if (adminReportsBtn) {
     adminReportsBtn.addEventListener("click", () => {
       console.log("Кнопка 'Отчёты курьеров' нажата");
-      const reports = JSON.parse(localStorage.getItem("reports") || "[]");
-      console.log("Всего отчётов в localStorage:", reports.length);
-      if (reports.length === 0) {
-        showError("Нет сохранённых отчётов");
-      } else {
-        showSuccess(
-          `Найдено ${reports.length} отчётов. Раздел в разработке — скоро здесь будет список.`,
-        );
-      }
+      showReportsListScreen();
     });
     console.log("adminReportsBtn обработчик добавлен");
+  }
+
+  // Обработчики навигации для экранов администратора
+  const backToAdminBtn = document.getElementById("back-to-admin-btn");
+  if (backToAdminBtn) {
+    backToAdminBtn.addEventListener("click", backToAdminPanel);
+    console.log("backToAdminBtn обработчик добавлен");
+  }
+
+  const backToReportsListBtn = document.getElementById(
+    "back-to-reports-list-btn",
+  );
+  if (backToReportsListBtn) {
+    backToReportsListBtn.addEventListener("click", backToReportsList);
+    console.log("backToReportsListBtn обработчик добавлен");
   }
 });

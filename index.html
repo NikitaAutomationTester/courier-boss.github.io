@@ -53,6 +53,36 @@
       </div>
     </div>
 
+    <!-- ЭКРАН СПИСКА ОТЧЁТОВ (для администратора) -->
+    <div class="container" id="reports-list-screen" style="display: none">
+      <div class="screen-header">
+        <button type="button" id="back-to-admin-btn" class="back-button">
+          ←
+        </button>
+        <h1 class="screen-title">Отчёты курьеров</h1>
+        <div class="placeholder"></div>
+      </div>
+
+      <div id="reports-list-container" class="reports-list">
+        <div class="loading">Загрузка отчётов...</div>
+      </div>
+    </div>
+
+    <!-- ЭКРАН ДЕТАЛЬНОГО ПРОСМОТРА ОТЧЁТА -->
+    <div class="container" id="report-detail-screen" style="display: none">
+      <div class="screen-header">
+        <button type="button" id="back-to-reports-list-btn" class="back-button">
+          ←
+        </button>
+        <h1 class="screen-title">Детали отчёта</h1>
+        <div class="placeholder"></div>
+      </div>
+
+      <div id="report-detail-container" class="report-detail">
+        <div class="loading">Загрузка...</div>
+      </div>
+    </div>
+
     <!-- ЭКРАН ЗАГРУЗКИ -->
     <div class="loading-screen" id="loading-screen" style="display: none">
       <div class="loading-spinner"></div>
