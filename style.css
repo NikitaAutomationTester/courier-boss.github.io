@@ -671,25 +671,52 @@ textarea.max-input {
     flex-direction: column;
     justify-content: center;
     min-height: 100vh;
+    width: 100%;
+    max-width: 100%;
     padding: 20px;
+    margin: 0;
     box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--max-bg-color, #ffffff);
+    overflow-y: auto;
 }
 
 #auth-screen h1 {
     margin-bottom: 32px;
     text-align: center;
+    font-size: 24px;
 }
 
 #auth-screen .form-group {
     margin-bottom: 20px;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#auth-screen .phone-input-wrapper {
+    width: 100%;
 }
 
 #auth-screen .max-button {
     margin-top: 8px;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 
-.auth-error {
+#auth-screen .auth-error {
     margin-top: 16px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 12px;
     background-color: rgba(255, 59, 48, 0.1);
     border: 1px solid #ff3b30;
