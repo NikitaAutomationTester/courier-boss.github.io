@@ -19,22 +19,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Универсальная функция для показа сообщений
+  // Универсальная функция для показа сообщений
   function showMessage(title, message, isError = false) {
-    // Пытаемся использовать нативный попап MAX
-    if (window.WebApp && window.WebApp.showPopup) {
+    // 1. Пытаемся использовать нативный попап MAX (как в документации)
+    if (window.WebApp && typeof window.WebApp.showPopup === "function") {
+      // ВАЖНО: MAX ожидает массив buttons и текст в поле text, а не message
       window.WebApp.showPopup({
-        title: title,
-        message: message,
-        buttons: [{ type: "ok" }],
+        text: message, // <-- поле называется 'text', а не 'message'
+        buttons: [
+          {
+            // <-- кнопки передаются массивом
+            type: "ok",
+            text: "OK",
+          },
+        ],
       });
     }
-    // Fallback для браузера или если showPopup недоступен
-    else if (window.WebApp && window.WebApp.showAlert) {
-      window.WebApp.showAlert(message);
-    } else {
-      // Стандартный alert для тестирования в браузере
+    // 2. Fallback для браузера или если showPopup недоступен
+    else {
       alert(message);
     }
+  }
+
+  // Вспомогательные функции (оставляем без изменений)
+  function showSuccess(message) {
+    showMessage("Успешно", message);
+  }
+
+  function showError(message) {
+    showMessage("Ошибка", message, true);
   }
 
   // Универсальная функция для показа успешного сообщения
