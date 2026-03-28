@@ -11,6 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUserRole = null;
   let isAuthorized = false;
 
+  // Переменные для фильтров
+  let currentFilterCourier = "all";
+  let currentFilterDateFrom = "";
+  let currentFilterDateTo = "";
+  let allReports = [];
+
   // Элементы DOM
   const mainScreen = document.getElementById("main-screen");
   const deliveriesScreen = document.getElementById("deliveries-screen");
@@ -662,40 +668,108 @@ document.addEventListener("DOMContentLoaded", () => {
     const reportsListScreen = document.getElementById("reports-list-screen");
     if (reportsListScreen) reportsListScreen.style.display = "block";
 
-    // Загружаем и отображаем отчёты
-    loadReportsList();
+    // Загружаем все отчёты
+    loadAllReports();
+
+    // Заполняем фильтр курьеров
+    populateCourierFilter();
   }
 
-  /// Загружаем и отображаем список отчётов
-  function loadReportsList() {
+  // Загружаем все отчёты из localStorage
+  function loadAllReports() {
+    allReports = JSON.parse(localStorage.getItem("reports") || "[]");
+    console.log("Загружено отчётов:", allReports.length);
+
+    // Сортируем по дате (новые сверху)
+    allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Применяем фильтры и отображаем
+    applyFiltersAndDisplay();
+  }
+
+  // Заполняем выпадающий список курьеров
+  function populateCourierFilter() {
+    const filterSelect = document.getElementById("filter-courier");
+    if (!filterSelect) return;
+
+    // Получаем уникальных курьеров из отчётов
+    const couriersMap = new Map();
+    allReports.forEach((report) => {
+      const courierName = report.userName || report.userPhone || "Курьер";
+      const courierId = report.userId;
+      if (!couriersMap.has(courierId)) {
+        couriersMap.set(courierId, courierName);
+      }
+    });
+
+    // Сортируем курьеров по имени
+    const couriers = Array.from(couriersMap.entries()).sort((a, b) =>
+      a[1].localeCompare(b[1]),
+    );
+
+    // Строим опции
+    let options = '<option value="all">Все курьеры</option>';
+    couriers.forEach(([id, name]) => {
+      options += `<option value="${id}">${name}</option>`;
+    });
+
+    filterSelect.innerHTML = options;
+
+    // Восстанавливаем выбранное значение после обновления
+    if (currentFilterCourier !== "all") {
+      filterSelect.value = currentFilterCourier;
+    }
+  }
+
+  // Применяем фильтры и отображаем отчёты
+  function applyFiltersAndDisplay() {
+    let filteredReports = [...allReports];
+
+    // Фильтр по курьеру
+    if (currentFilterCourier !== "all") {
+      filteredReports = filteredReports.filter(
+        (report) => report.userId === currentFilterCourier,
+      );
+    }
+
+    // Фильтр по дате "от"
+    if (currentFilterDateFrom) {
+      filteredReports = filteredReports.filter(
+        (report) => report.date >= currentFilterDateFrom,
+      );
+    }
+
+    // Фильтр по дате "до"
+    if (currentFilterDateTo) {
+      filteredReports = filteredReports.filter(
+        (report) => report.date <= currentFilterDateTo,
+      );
+    }
+
+    displayReportsList(filteredReports);
+  }
+
+  // Отображаем список отчётов
+  function displayReportsList(reports) {
     const container = document.getElementById("reports-list-container");
     if (!container) return;
 
-    // Получаем отчёты из localStorage
-    const reports = JSON.parse(localStorage.getItem("reports") || "[]");
-    console.log("Загружено отчётов:", reports.length);
-
     if (reports.length === 0) {
       container.innerHTML =
-        '<div class="empty-deliveries">Нет сохранённых отчётов</div>';
+        '<div class="empty-deliveries">Нет отчётов по выбранным фильтрам</div>';
       return;
     }
 
-    // Сортируем отчёты по дате (новые сверху)
-    reports.sort((a, b) => new Date(b.date) - new Date(a.date));
-
     container.innerHTML = "";
-    reports.forEach((report, index) => {
+    reports.forEach((report) => {
       const reportDiv = document.createElement("div");
       reportDiv.className = "report-item";
-      reportDiv.dataset.index = index;
       reportDiv.dataset.id = report.id;
 
-      // Убрали иконку 💰 и сумму зарплаты
       reportDiv.innerHTML = `
-      <div class="report-item-date">${report.formattedDate || report.date}</div>
-      <div class="report-item-courier">${report.userName || report.userPhone || "Курьер"}</div>
-    `;
+        <div class="report-item-date">${report.formattedDate || report.date}</div>
+        <div class="report-item-courier">${report.userName || report.userPhone || "Курьер"}</div>
+      `;
 
       reportDiv.addEventListener("click", () => {
         showReportDetail(report);
@@ -704,21 +778,64 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(reportDiv);
     });
   }
+
+  // Обновляем фильтр по курьеру
+  function updateFilterCourier() {
+    const filterSelect = document.getElementById("filter-courier");
+    if (filterSelect) {
+      currentFilterCourier = filterSelect.value;
+      applyFiltersAndDisplay();
+    }
+  }
+
+  // Обновляем фильтр по дате "от"
+  function updateFilterDateFrom() {
+    const dateFromInput = document.getElementById("filter-date-from");
+    if (dateFromInput) {
+      currentFilterDateFrom = dateFromInput.value;
+      applyFiltersAndDisplay();
+    }
+  }
+
+  // Обновляем фильтр по дате "до"
+  function updateFilterDateTo() {
+    const dateToInput = document.getElementById("filter-date-to");
+    if (dateToInput) {
+      currentFilterDateTo = dateToInput.value;
+      applyFiltersAndDisplay();
+    }
+  }
+
+  // Сброс всех фильтров
+  function resetFilters() {
+    currentFilterCourier = "all";
+    currentFilterDateFrom = "";
+    currentFilterDateTo = "";
+
+    const filterSelect = document.getElementById("filter-courier");
+    const dateFromInput = document.getElementById("filter-date-from");
+    const dateToInput = document.getElementById("filter-date-to");
+
+    if (filterSelect) filterSelect.value = "all";
+    if (dateFromInput) dateFromInput.value = "";
+    if (dateToInput) dateToInput.value = "";
+
+    applyFiltersAndDisplay();
+  }
+
   // Показываем детальный просмотр отчёта
   function showReportDetail(report) {
     console.log("showReportDetail вызван для отчёта:", report.id);
 
-    // Скрываем список отчётов
     const reportsListScreen = document.getElementById("reports-list-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
 
-    // Показываем экран деталей
     const reportDetailScreen = document.getElementById("report-detail-screen");
     if (reportDetailScreen) reportDetailScreen.style.display = "block";
 
-    // Отображаем детали
     displayReportDetail(report);
   }
+
   // Отображаем детали отчёта (обновлённая версия с одной строкой зарплаты)
   function displayReportDetail(report) {
     const container = document.getElementById("report-detail-container");
@@ -1036,5 +1153,24 @@ document.addEventListener("DOMContentLoaded", () => {
   if (backToReportsListBtn) {
     backToReportsListBtn.addEventListener("click", backToReportsList);
     console.log("backToReportsListBtn обработчик добавлен");
+  }
+
+  // Обработчики фильтров
+  const filterCourier = document.getElementById("filter-courier");
+  const filterDateFrom = document.getElementById("filter-date-from");
+  const filterDateTo = document.getElementById("filter-date-to");
+  const filterResetBtn = document.getElementById("filter-reset-btn");
+
+  if (filterCourier) {
+    filterCourier.addEventListener("change", updateFilterCourier);
+  }
+  if (filterDateFrom) {
+    filterDateFrom.addEventListener("change", updateFilterDateFrom);
+  }
+  if (filterDateTo) {
+    filterDateTo.addEventListener("change", updateFilterDateTo);
+  }
+  if (filterResetBtn) {
+    filterResetBtn.addEventListener("click", resetFilters);
   }
 });
