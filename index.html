@@ -65,25 +65,33 @@
 
       <!-- Блок фильтров -->
       <div class="filters-section">
-        <div class="filter-row">
-          <div class="filter-group">
-            <label for="filter-courier">Курьер</label>
-            <select id="filter-courier" class="filter-select">
-              <option value="all">Все курьеры</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-date-from">Дата от</label>
-            <input type="date" id="filter-date-from" class="filter-input" />
-          </div>
-          <div class="filter-group">
-            <label for="filter-date-to">Дата до</label>
-            <input type="date" id="filter-date-to" class="filter-input" />
-          </div>
-          <button id="filter-reset-btn" class="filter-reset-btn">
-            Сбросить
-          </button>
+        <div class="filter-group">
+          <label for="filter-courier">Курьер</label>
+          <select id="filter-courier" class="filter-select">
+            <option value="all">Все курьеры</option>
+          </select>
         </div>
+
+        <div class="filter-period">
+          <div class="filter-period-label">Период</div>
+          <div class="filter-date-group">
+            <input
+              type="date"
+              id="filter-date-from"
+              class="filter-input"
+              placeholder="дд.мм.гггг"
+            />
+            <span class="filter-date-separator">—</span>
+            <input
+              type="date"
+              id="filter-date-to"
+              class="filter-input"
+              placeholder="дд.мм.гггг"
+            />
+          </div>
+        </div>
+
+        <button id="filter-reset-btn" class="filter-reset-btn">Сбросить</button>
       </div>
 
       <div id="reports-list-container" class="reports-list">
