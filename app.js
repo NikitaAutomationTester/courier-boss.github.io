@@ -657,6 +657,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ========== ФУНКЦИИ ДЛЯ АДМИНИСТРАТОРА ==========
 
+  function formatIsoDateToRu(isoDate) {
+    if (!isoDate) return "";
+    const [year, month, day] = isoDate.split("-");
+    return `${day}.${month}.${year}`;
+  }
+
+  function syncSheetDateDisplays() {
+    const fromInput = document.getElementById("filter-date-from-sheet");
+    const toInput = document.getElementById("filter-date-to-sheet");
+    const fromDisplay = document.getElementById("filter-date-from-sheet-display");
+    const toDisplay = document.getElementById("filter-date-to-sheet-display");
+
+    if (fromDisplay) {
+      fromDisplay.textContent = fromInput?.value
+        ? formatIsoDateToRu(fromInput.value)
+        : "ДД.ММ.ГГГГ";
+    }
+    if (toDisplay) {
+      toDisplay.textContent = toInput?.value
+        ? formatIsoDateToRu(toInput.value)
+        : "ДД.ММ.ГГГГ";
+    }
+  }
+
   /** Поля даты в DOM всегда совпадают с состоянием (иначе десктопный WebView МАКС может подставить «сегодня» при пустом фильтре). */
   function syncFilterDateInputsFromState() {
     const dateFromInput = document.getElementById("filter-date-from");
@@ -678,6 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (filterSelect) filterSelect.value = currentFilterCourier;
     if (dateFromInput) dateFromInput.value = currentFilterDateFrom || "";
     if (dateToInput) dateToInput.value = currentFilterDateTo || "";
+    syncSheetDateDisplays();
   }
 
   function syncAllFilterInputsFromState() {
@@ -1275,6 +1300,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const filtersSheetBackdrop = document.getElementById("filters-sheet-backdrop");
   const filtersSheetApply = document.getElementById("filters-sheet-apply");
   const filtersSheetReset = document.getElementById("filters-sheet-reset");
+  const filterDateFromSheet = document.getElementById("filter-date-from-sheet");
+  const filterDateToSheet = document.getElementById("filter-date-to-sheet");
 
   if (filterOpenSheetBtn) {
     filterOpenSheetBtn.addEventListener("click", openFiltersSheet);
@@ -1297,6 +1324,15 @@ document.addEventListener("DOMContentLoaded", () => {
       closeFiltersSheet();
     });
   }
+  if (filterDateFromSheet) {
+    filterDateFromSheet.addEventListener("change", syncSheetDateDisplays);
+    filterDateFromSheet.addEventListener("input", syncSheetDateDisplays);
+  }
+  if (filterDateToSheet) {
+    filterDateToSheet.addEventListener("change", syncSheetDateDisplays);
+    filterDateToSheet.addEventListener("input", syncSheetDateDisplays);
+  }
+  syncSheetDateDisplays();
 
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
