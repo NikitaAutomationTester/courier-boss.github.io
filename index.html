@@ -63,33 +63,46 @@
         <div class="placeholder"></div>
       </div>
 
-      <!-- Блок фильтров -->
-      <div class="filters-section">
-        <div class="filter-group">
-          <label for="filter-courier">Курьер</label>
-          <select id="filter-courier" class="filter-select">
-            <option value="all">Все курьеры</option>
-          </select>
-        </div>
-
-        <div class="filter-dates-row">
-          <div class="filter-date-item">
-            <label for="filter-date-from">С</label>
-            <input
-              type="date"
-              id="filter-date-from"
-              class="filter-date-input"
-            />
+      <!-- Фильтры: курьер, период, сброс -->
+      <div class="filters-section" role="region" aria-label="Фильтры отчётов">
+        <div class="filters-compact">
+          <div class="filter-block">
+            <label class="filter-label" for="filter-courier">Курьер</label>
+            <select id="filter-courier" class="max-input filter-select-native">
+              <option value="all">Все курьеры</option>
+            </select>
           </div>
-          <div class="filter-date-item">
-            <label for="filter-date-to">По</label>
-            <input type="date" id="filter-date-to" class="filter-date-input" />
-          </div>
-        </div>
 
-        <button id="filter-reset-btn" class="filter-reset-btn-primary">
-          Сбросить
-        </button>
+          <div class="filter-block">
+            <span class="filter-label">Период</span>
+            <div class="filter-period-row">
+              <div class="filter-date-group">
+                <label class="filter-sublabel" for="filter-date-from">С</label>
+                <input
+                  type="date"
+                  id="filter-date-from"
+                  class="max-input filter-date"
+                />
+              </div>
+              <div class="filter-date-group">
+                <label class="filter-sublabel" for="filter-date-to">По</label>
+                <input
+                  type="date"
+                  id="filter-date-to"
+                  class="max-input filter-date"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="filter-reset-btn"
+            class="max-button filter-reset-btn"
+          >
+            Сбросить фильтр
+          </button>
+        </div>
       </div>
 
       <div id="reports-list-container" class="reports-list">
