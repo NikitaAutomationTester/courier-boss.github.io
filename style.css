@@ -1187,6 +1187,10 @@ textarea.max-input {
     min-width: 0;
 }
 
+.filters-sheet__body .filter-block + .filter-block {
+    margin-top: 8px;
+}
+
 .filter-label {
     display: block;
     font-size: 13px;
