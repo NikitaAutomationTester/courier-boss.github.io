@@ -1046,6 +1046,8 @@ textarea.max-input {
     position: relative;
     z-index: 1;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     max-height: min(92vh, 640px);
     padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));
     border-radius: 16px 16px 0 0;
@@ -1084,7 +1086,10 @@ textarea.max-input {
     -webkit-overflow-scrolling: touch;
     flex: 1;
     min-height: 0;
-    padding-bottom: 4px;
+    min-width: 0;
+    /* Запас от края scrollport: рамка date не упирается в клип (iOS WebKit) */
+    padding: 0 4px 4px;
+    box-sizing: border-box;
 }
 
 .filters-sheet__actions {
@@ -1123,6 +1128,50 @@ textarea.max-input {
 
 .filter-period-row--sheet {
     margin-top: 2px;
+}
+
+/*
+ * Шторка фильтров (мобильная): WebKit bug 301648 — type=date с padding и width:100%
+ * в узкой колонке рисуется шире контейнера; индикатор календаря добавляет ширину.
+ * Решение: период «С/По» в шторке — всегда в одну колонку на всю ширину + отступы body.
+ */
+@media (max-width: 639px) {
+    .filter-period-row--sheet {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .filters-sheet .max-input.filter-date {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        min-height: 44px;
+        line-height: 1.25;
+        /* Чуть меньше горизонтальный padding — меньше ошибка расчёта 100% на iOS */
+        padding: 11px 10px;
+    }
+
+    .filters-sheet .max-input.filter-date::-webkit-calendar-picker-indicator {
+        opacity: 0.55;
+        cursor: pointer;
+        width: 22px;
+        height: 22px;
+        margin: 0;
+        padding: 0;
+        flex-shrink: 0;
+    }
+
+    .filters-sheet .max-input.filter-date::-webkit-datetime-edit {
+        padding: 1px 0 0;
+        max-width: 100%;
+    }
+
+    .filters-sheet .max-input.filter-date::-webkit-datetime-edit-fields-wrapper {
+        padding: 0;
+        max-width: 100%;
+    }
 }
 
 @media (max-width: 639px) {
