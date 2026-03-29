@@ -285,15 +285,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ========== УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДЛЯ СООБЩЕНИЙ ==========
   function showMessage(message, isError = false) {
-    if (window.WebApp && typeof window.WebApp.showPopup === "function") {
-      window.WebApp.showPopup({
-        title: isError ? "Ошибка" : "Успешно",
-        message: message,
-        buttons: [{ type: "ok", text: "OK" }],
-      });
-    } else {
-      alert(message);
+    try {
+      if (window.WebApp && typeof window.WebApp.showPopup === "function") {
+        window.WebApp.showPopup({
+          title: isError ? "Ошибка" : "Успешно",
+          message: message,
+          buttons: [{ type: "ok", text: "OK" }],
+        });
+        return;
+      }
+    } catch (e) {
+      console.error("showPopup error:", e);
     }
+    alert(message);
   }
 
   function showSuccess(message) {
@@ -1096,6 +1100,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return { clinicName, city, address };
   }
 
+  function triggerFileDownload(blob, fileName) {
+    const file = new File([blob], fileName, { type: blob.type });
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      return navigator.share({ files: [file], title: fileName });
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    return Promise.resolve();
+  }
+
   function showDetailsScreen() {
     if (adminScreen) adminScreen.style.display = "none";
     const detailsScreen = document.getElementById("details-screen");
@@ -1118,11 +1143,6 @@ document.addEventListener("DOMContentLoaded", () => {
       showError("Выберите месяц и год");
       return;
     }
-    if (!window.XLSX) {
-      showError("Не удалось загрузить библиотеку Excel");
-      return;
-    }
-
     const reports = JSON.parse(localStorage.getItem("reports") || "[]");
     const monthReports = reports.filter(
       (report) =>
@@ -1166,13 +1186,45 @@ document.addEventListener("DOMContentLoaded", () => {
         rows.push([item.clinicName, item.city, item.address, item.visits]);
       });
 
-    const workbook = window.XLSX.utils.book_new();
-    const worksheet = window.XLSX.utils.aoa_to_sheet(rows);
-    window.XLSX.utils.book_append_sheet(workbook, worksheet, "Детализация");
+    try {
+      if (window.XLSX) {
+        const workbook = window.XLSX.utils.book_new();
+        const worksheet = window.XLSX.utils.aoa_to_sheet(rows);
+        window.XLSX.utils.book_append_sheet(workbook, worksheet, "Детализация");
+        const xlsxBuffer = window.XLSX.write(workbook, {
+          bookType: "xlsx",
+          type: "array",
+        });
+        const xlsxBlob = new Blob([xlsxBuffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        triggerFileDownload(xlsxBlob, `detalizaciya-${monthValue}.xlsx`)
+          .then(() => showSuccess("Файл Excel выгружен"))
+          .catch(() => showError("Не удалось сохранить файл"));
+        return;
+      }
 
-    const fileName = `detalizaciya-${monthValue}.xlsx`;
-    window.XLSX.writeFile(workbook, fileName);
-    showSuccess("Файл Excel выгружен");
+      const csv = rows
+        .map((row) =>
+          row
+            .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+            .join(";"),
+        )
+        .join("\n");
+      const csvBlob = new Blob(["\uFEFF" + csv], {
+        type: "text/csv;charset=utf-8;",
+      });
+      triggerFileDownload(csvBlob, `detalizaciya-${monthValue}.csv`)
+        .then(() =>
+          showSuccess(
+            "Excel-библиотека недоступна. Сохранён CSV, его можно открыть в Excel.",
+          ),
+        )
+        .catch(() => showError("Не удалось сохранить файл"));
+    } catch (e) {
+      console.error("exportDetailsToExcel error:", e);
+      showError("Ошибка при формировании файла");
+    }
   }
 
   // Модальное окно
