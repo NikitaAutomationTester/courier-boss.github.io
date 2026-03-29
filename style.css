@@ -504,6 +504,25 @@ textarea.max-input {
     visibility: hidden;
 }
 
+.admin-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.details-panel {
+    margin-top: 8px;
+    padding: 14px;
+    border: 1px solid var(--max-border-color, #e0e0e0);
+    border-radius: 12px;
+    background-color: var(--max-input-bg, #ffffff);
+}
+
+.details-panel .max-button {
+    margin-top: 4px;
+}
+
 .deliveries-list {
     display: flex;
     flex-direction: column;

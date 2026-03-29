@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const authScreen = document.getElementById("auth-screen");
   const adminScreen = document.getElementById("admin-screen");
   const adminReportsBtn = document.getElementById("admin-reports-btn");
+  const adminDetailsBtn = document.getElementById("admin-details-btn");
   const authPhone = document.getElementById("auth-phone");
   const authLoginBtn = document.getElementById("auth-login-btn");
   const authError = document.getElementById("auth-error");
@@ -46,8 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (adminScreen) adminScreen.style.display = "none";
     const reportsListScreen = document.getElementById("reports-list-screen");
     const reportDetailScreen = document.getElementById("report-detail-screen");
+    const detailsScreen = document.getElementById("details-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
+    if (detailsScreen) detailsScreen.style.display = "none";
   }
 
   // Скрываем экран загрузки
@@ -83,8 +86,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (authError) authError.style.display = "none";
     const reportsListScreen = document.getElementById("reports-list-screen");
     const reportDetailScreen = document.getElementById("report-detail-screen");
+    const detailsScreen = document.getElementById("details-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
+    if (detailsScreen) detailsScreen.style.display = "none";
   }
 
   // Показываем экран отказа в доступе
@@ -102,8 +107,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (adminScreen) adminScreen.style.display = "none";
     const reportsListScreen = document.getElementById("reports-list-screen");
     const reportDetailScreen = document.getElementById("report-detail-screen");
+    const detailsScreen = document.getElementById("details-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
+    if (detailsScreen) detailsScreen.style.display = "none";
   }
 
   // Показываем основной интерфейс (в зависимости от роли)
@@ -131,8 +138,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Скрываем экраны администратора
     const reportsListScreen = document.getElementById("reports-list-screen");
     const reportDetailScreen = document.getElementById("report-detail-screen");
+    const detailsScreen = document.getElementById("details-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
+    if (detailsScreen) detailsScreen.style.display = "none";
 
     // Показываем нужный экран в зависимости от роли
     if (currentUserRole === "admin") {
@@ -782,6 +791,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Скрываем админ-панель
     if (adminScreen) adminScreen.style.display = "none";
+    const detailsScreen = document.getElementById("details-screen");
+    if (detailsScreen) detailsScreen.style.display = "none";
 
     // Показываем экран списка отчётов
     const reportsListScreen = document.getElementById("reports-list-screen");
@@ -1049,9 +1060,119 @@ document.addEventListener("DOMContentLoaded", () => {
     closeFiltersSheet();
 
     const reportsListScreen = document.getElementById("reports-list-screen");
+    const detailsScreen = document.getElementById("details-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
+    if (detailsScreen) detailsScreen.style.display = "none";
 
     if (adminScreen) adminScreen.style.display = "block";
+  }
+
+  function splitCityAndAddress(rawAddress) {
+    const addressText = (rawAddress || "").trim();
+    if (!addressText) {
+      return { city: "Не указан", address: "" };
+    }
+    const parts = addressText
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+    if (parts.length > 1) {
+      const firstPart = parts[0];
+      if (/^(г\.?|город|пгт\.?|пос\.?|с\.?|д\.?)/i.test(firstPart)) {
+        return {
+          city: firstPart,
+          address: parts.slice(1).join(", "),
+        };
+      }
+    }
+    return { city: "Не указан", address: addressText };
+  }
+
+  function normalizeClinicExportData(clinic) {
+    const clinicName = (clinic?.name || "").trim() || "Без названия";
+    const parsed = splitCityAndAddress(clinic?.address);
+    const city = (clinic?.city || "").trim() || parsed.city;
+    const address = parsed.address || (clinic?.address || "").trim();
+    return { clinicName, city, address };
+  }
+
+  function showDetailsScreen() {
+    if (adminScreen) adminScreen.style.display = "none";
+    const detailsScreen = document.getElementById("details-screen");
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+    if (reportDetailScreen) reportDetailScreen.style.display = "none";
+    const detailsMonthInput = document.getElementById("details-month");
+    if (detailsMonthInput && !detailsMonthInput.value) {
+      const now = new Date();
+      detailsMonthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    }
+    if (detailsScreen) detailsScreen.style.display = "block";
+  }
+
+  function exportDetailsToExcel() {
+    const detailsMonthInput = document.getElementById("details-month");
+    const monthValue = detailsMonthInput ? detailsMonthInput.value : "";
+    if (!monthValue) {
+      showError("Выберите месяц и год");
+      return;
+    }
+    if (!window.XLSX) {
+      showError("Не удалось загрузить библиотеку Excel");
+      return;
+    }
+
+    const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+    const monthReports = reports.filter(
+      (report) =>
+        typeof report?.date === "string" && report.date.startsWith(`${monthValue}-`),
+    );
+
+    const clinicsCounter = new Map();
+    monthReports.forEach((report) => {
+      if (!Array.isArray(report?.clinics)) return;
+      report.clinics.forEach((clinic) => {
+        const normalized = normalizeClinicExportData(clinic);
+        const key = [
+          normalized.clinicName.toLowerCase(),
+          normalized.city.toLowerCase(),
+          normalized.address.toLowerCase(),
+        ].join("|");
+        if (!clinicsCounter.has(key)) {
+          clinicsCounter.set(key, {
+            clinicName: normalized.clinicName,
+            city: normalized.city,
+            address: normalized.address,
+            visits: 0,
+          });
+        }
+        clinicsCounter.get(key).visits += 1;
+      });
+    });
+
+    if (clinicsCounter.size === 0) {
+      showError("За выбранный месяц нет посещений медцентров");
+      return;
+    }
+
+    const rows = [
+      ["Наименование МЦ", "Город", "Адрес отправления", "Количество посещений"],
+    ];
+
+    Array.from(clinicsCounter.values())
+      .sort((a, b) => a.clinicName.localeCompare(b.clinicName, "ru"))
+      .forEach((item) => {
+        rows.push([item.clinicName, item.city, item.address, item.visits]);
+      });
+
+    const workbook = window.XLSX.utils.book_new();
+    const worksheet = window.XLSX.utils.aoa_to_sheet(rows);
+    window.XLSX.utils.book_append_sheet(workbook, worksheet, "Детализация");
+
+    const fileName = `detalizaciya-${monthValue}.xlsx`;
+    window.XLSX.writeFile(workbook, fileName);
+    showSuccess("Файл Excel выгружен");
   }
 
   // Модальное окно
@@ -1259,6 +1380,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     console.log("adminReportsBtn обработчик добавлен");
   }
+  if (adminDetailsBtn) {
+    adminDetailsBtn.addEventListener("click", () => {
+      console.log("Кнопка 'Детализация' нажата");
+      showDetailsScreen();
+    });
+    console.log("adminDetailsBtn обработчик добавлен");
+  }
 
   // Обработчики навигации для экранов администратора
   const backToAdminBtn = document.getElementById("back-to-admin-btn");
@@ -1270,9 +1398,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const backToReportsListBtn = document.getElementById(
     "back-to-reports-list-btn",
   );
+  const backToAdminFromDetailsBtn = document.getElementById(
+    "back-to-admin-from-details-btn",
+  );
   if (backToReportsListBtn) {
     backToReportsListBtn.addEventListener("click", backToReportsList);
     console.log("backToReportsListBtn обработчик добавлен");
+  }
+  if (backToAdminFromDetailsBtn) {
+    backToAdminFromDetailsBtn.addEventListener("click", backToAdminPanel);
+    console.log("backToAdminFromDetailsBtn обработчик добавлен");
+  }
+
+  const detailsExportBtn = document.getElementById("details-export-btn");
+  if (detailsExportBtn) {
+    detailsExportBtn.addEventListener("click", exportDetailsToExcel);
   }
 
   // Обработчики фильтров

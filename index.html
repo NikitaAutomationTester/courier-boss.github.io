@@ -50,6 +50,40 @@
         <button id="admin-reports-btn" class="max-button max-button--primary">
           Отчёты курьеров
         </button>
+        <button id="admin-details-btn" class="max-button max-button--primary">
+          Детализация
+        </button>
+      </div>
+    </div>
+
+    <!-- ЭКРАН ДЕТАЛИЗАЦИИ (для администратора) -->
+    <div class="container" id="details-screen" style="display: none">
+      <div class="screen-header">
+        <button type="button" id="back-to-admin-from-details-btn" class="back-button">
+          ←
+        </button>
+        <h1 class="screen-title">Детализация</h1>
+        <div class="placeholder"></div>
+      </div>
+
+      <div class="details-panel">
+        <div class="form-group">
+          <label for="details-month">Месяц отчёта</label>
+          <input
+            type="month"
+            id="details-month"
+            class="max-input"
+            autocomplete="off"
+          />
+        </div>
+
+        <button
+          type="button"
+          id="details-export-btn"
+          class="max-button max-button--primary"
+        >
+          Выгрузить в Excel
+        </button>
       </div>
     </div>
 
@@ -460,6 +494,7 @@
     </div>
 
     <script src="allowed-users.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
