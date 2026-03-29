@@ -665,6 +665,85 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dateToInput) dateToInput.value = currentFilterDateTo || "";
   }
 
+  function syncDesktopFiltersFromState() {
+    const filterSelect = document.getElementById("filter-courier");
+    if (filterSelect) filterSelect.value = currentFilterCourier;
+    syncFilterDateInputsFromState();
+  }
+
+  function syncSheetInputsFromState() {
+    const filterSelect = document.getElementById("filter-courier-sheet");
+    const dateFromInput = document.getElementById("filter-date-from-sheet");
+    const dateToInput = document.getElementById("filter-date-to-sheet");
+    if (filterSelect) filterSelect.value = currentFilterCourier;
+    if (dateFromInput) dateFromInput.value = currentFilterDateFrom || "";
+    if (dateToInput) dateToInput.value = currentFilterDateTo || "";
+  }
+
+  function syncAllFilterInputsFromState() {
+    syncDesktopFiltersFromState();
+    syncSheetInputsFromState();
+  }
+
+  function countActiveFilters() {
+    let n = 0;
+    if (currentFilterCourier !== "all") n += 1;
+    if (currentFilterDateFrom) n += 1;
+    if (currentFilterDateTo) n += 1;
+    return n;
+  }
+
+  function updateFilterBadge() {
+    const badge = document.getElementById("filter-active-badge");
+    if (!badge) return;
+    const n = countActiveFilters();
+    if (n > 0) {
+      badge.textContent = String(n);
+      badge.hidden = false;
+      badge.setAttribute("aria-label", `Активных условий: ${n}`);
+    } else {
+      badge.textContent = "";
+      badge.hidden = true;
+      badge.removeAttribute("aria-label");
+    }
+  }
+
+  function openFiltersSheet() {
+    syncSheetInputsFromState();
+    const sheet = document.getElementById("filters-sheet");
+    const openBtn = document.getElementById("filter-open-sheet-btn");
+    if (sheet) {
+      sheet.classList.add("filters-sheet--open");
+      sheet.setAttribute("aria-hidden", "false");
+    }
+    if (openBtn) openBtn.setAttribute("aria-expanded", "true");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeFiltersSheet() {
+    const sheet = document.getElementById("filters-sheet");
+    const openBtn = document.getElementById("filter-open-sheet-btn");
+    if (sheet) {
+      sheet.classList.remove("filters-sheet--open");
+      sheet.setAttribute("aria-hidden", "true");
+    }
+    if (openBtn) openBtn.setAttribute("aria-expanded", "false");
+    document.body.style.overflow = "";
+  }
+
+  function applyFiltersFromSheet() {
+    const filterSelect = document.getElementById("filter-courier-sheet");
+    const dateFromInput = document.getElementById("filter-date-from-sheet");
+    const dateToInput = document.getElementById("filter-date-to-sheet");
+    if (filterSelect) currentFilterCourier = filterSelect.value;
+    if (dateFromInput) currentFilterDateFrom = dateFromInput.value || "";
+    if (dateToInput) currentFilterDateTo = dateToInput.value || "";
+    syncDesktopFiltersFromState();
+    scheduleFilterDateInputsSync();
+    applyFiltersAndDisplay();
+    closeFiltersSheet();
+  }
+
   function scheduleFilterDateInputsSync() {
     syncFilterDateInputsFromState();
     requestAnimationFrame(syncFilterDateInputsFromState);
@@ -704,10 +783,11 @@ document.addEventListener("DOMContentLoaded", () => {
     applyFiltersAndDisplay();
   }
 
-  // Заполняем выпадающий список курьеров
+  // Заполняем выпадающий список курьеров (десктоп и шторка)
   function populateCourierFilter() {
     const filterSelect = document.getElementById("filter-courier");
-    if (!filterSelect) return;
+    const filterSelectSheet = document.getElementById("filter-courier-sheet");
+    if (!filterSelect && !filterSelectSheet) return;
 
     // Получаем уникальных курьеров из отчётов
     const couriersMap = new Map();
@@ -730,11 +810,13 @@ document.addEventListener("DOMContentLoaded", () => {
       options += `<option value="${id}">${name}</option>`;
     });
 
-    filterSelect.innerHTML = options;
+    if (filterSelect) filterSelect.innerHTML = options;
+    if (filterSelectSheet) filterSelectSheet.innerHTML = options;
 
     // Восстанавливаем выбранное значение после обновления
     if (currentFilterCourier !== "all") {
-      filterSelect.value = currentFilterCourier;
+      if (filterSelect) filterSelect.value = currentFilterCourier;
+      if (filterSelectSheet) filterSelectSheet.value = currentFilterCourier;
     }
   }
 
@@ -764,6 +846,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     displayReportsList(filteredReports);
+    updateFilterBadge();
   }
 
   // Отображаем список отчётов
@@ -828,21 +911,15 @@ document.addEventListener("DOMContentLoaded", () => {
     currentFilterCourier = "all";
     currentFilterDateFrom = "";
     currentFilterDateTo = "";
-
-    const filterSelect = document.getElementById("filter-courier");
-    const dateFromInput = document.getElementById("filter-date-from");
-    const dateToInput = document.getElementById("filter-date-to");
-
-    if (filterSelect) filterSelect.value = "all";
-    if (dateFromInput) dateFromInput.value = "";
-    if (dateToInput) dateToInput.value = "";
-
+    syncAllFilterInputsFromState();
+    scheduleFilterDateInputsSync();
     applyFiltersAndDisplay();
   }
 
   // Показываем детальный просмотр отчёта
   function showReportDetail(report) {
     console.log("showReportDetail вызван для отчёта:", report.id);
+    closeFiltersSheet();
 
     const reportsListScreen = document.getElementById("reports-list-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
@@ -944,6 +1021,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Возврат к админ-панели
   function backToAdminPanel() {
     console.log("backToAdminPanel вызван");
+    closeFiltersSheet();
 
     const reportsListScreen = document.getElementById("reports-list-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
@@ -1190,4 +1268,46 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterResetBtn) {
     filterResetBtn.addEventListener("click", resetFilters);
   }
+
+  // Мобильная шторка фильтров
+  const filterOpenSheetBtn = document.getElementById("filter-open-sheet-btn");
+  const filterMobileResetBtn = document.getElementById("filter-mobile-reset-btn");
+  const filtersSheetBackdrop = document.getElementById("filters-sheet-backdrop");
+  const filtersSheetApply = document.getElementById("filters-sheet-apply");
+  const filtersSheetReset = document.getElementById("filters-sheet-reset");
+
+  if (filterOpenSheetBtn) {
+    filterOpenSheetBtn.addEventListener("click", openFiltersSheet);
+  }
+  if (filterMobileResetBtn) {
+    filterMobileResetBtn.addEventListener("click", () => {
+      resetFilters();
+      closeFiltersSheet();
+    });
+  }
+  if (filtersSheetBackdrop) {
+    filtersSheetBackdrop.addEventListener("click", closeFiltersSheet);
+  }
+  if (filtersSheetApply) {
+    filtersSheetApply.addEventListener("click", applyFiltersFromSheet);
+  }
+  if (filtersSheetReset) {
+    filtersSheetReset.addEventListener("click", () => {
+      resetFilters();
+      closeFiltersSheet();
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const sheet = document.getElementById("filters-sheet");
+    if (sheet && sheet.classList.contains("filters-sheet--open")) {
+      e.preventDefault();
+      closeFiltersSheet();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth >= 640) closeFiltersSheet();
+  });
 });

@@ -63,8 +63,69 @@
         <div class="placeholder"></div>
       </div>
 
-      <!-- Фильтры: курьер, период, сброс -->
-      <div class="filters-section" role="region" aria-label="Фильтры отчётов">
+      <!-- Мобильная строка: открыть фильтры + бейдж + сброс -->
+      <div
+        class="filters-mobile-bar"
+        role="toolbar"
+        aria-label="Фильтры отчётов"
+      >
+        <button
+          type="button"
+          id="filter-open-sheet-btn"
+          class="filters-mobile-bar__open"
+          aria-expanded="false"
+          aria-controls="filters-sheet"
+        >
+          <span class="filters-mobile-bar__open-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+          </span>
+          <span class="filters-mobile-bar__open-text">Фильтры</span>
+          <span
+            id="filter-active-badge"
+            class="filter-active-badge"
+            hidden
+            aria-label=""
+          ></span>
+        </button>
+        <button
+          type="button"
+          id="filter-mobile-reset-btn"
+          class="filters-mobile-bar__reset"
+          aria-label="Сбросить фильтр"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Фильтры (десктоп): курьер, период, сброс -->
+      <div
+        class="filters-section filters-section--desktop"
+        role="region"
+        aria-label="Фильтры отчётов"
+      >
         <div class="filters-compact">
           <div class="filter-block">
             <label class="filter-label" for="filter-courier">Курьер</label>
@@ -106,6 +167,86 @@
           >
             Сбросить фильтр
           </button>
+        </div>
+      </div>
+
+      <!-- Нижняя шторка фильтров (мобильная) -->
+      <div
+        id="filters-sheet"
+        class="filters-sheet"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="filters-sheet-title"
+      >
+        <div
+          class="filters-sheet__backdrop"
+          id="filters-sheet-backdrop"
+          tabindex="-1"
+        ></div>
+        <div class="filters-sheet__panel">
+          <div class="filters-sheet__handle" aria-hidden="true"></div>
+          <h2 id="filters-sheet-title" class="filters-sheet__title">
+            Фильтры
+          </h2>
+          <div class="filters-sheet__body">
+            <div class="filter-block">
+              <label class="filter-label" for="filter-courier-sheet"
+                >Курьер</label
+              >
+              <select
+                id="filter-courier-sheet"
+                class="max-input filter-select-native"
+              >
+                <option value="all">Все курьеры</option>
+              </select>
+            </div>
+            <div class="filter-block">
+              <span class="filter-label">Период</span>
+              <div class="filter-period-row filter-period-row--sheet">
+                <div class="filter-date-group">
+                  <label class="filter-sublabel" for="filter-date-from-sheet"
+                    >С</label
+                  >
+                  <input
+                    type="date"
+                    id="filter-date-from-sheet"
+                    class="max-input filter-date"
+                    autocomplete="off"
+                    value=""
+                  />
+                </div>
+                <div class="filter-date-group">
+                  <label class="filter-sublabel" for="filter-date-to-sheet"
+                    >По</label
+                  >
+                  <input
+                    type="date"
+                    id="filter-date-to-sheet"
+                    class="max-input filter-date"
+                    autocomplete="off"
+                    value=""
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="filters-sheet__actions">
+            <button
+              type="button"
+              id="filters-sheet-reset"
+              class="max-button filters-sheet__btn filters-sheet__btn--secondary"
+            >
+              Сбросить
+            </button>
+            <button
+              type="button"
+              id="filters-sheet-apply"
+              class="max-button filters-sheet__btn filters-sheet__btn--primary"
+            >
+              Применить
+            </button>
+          </div>
         </div>
       </div>
 
