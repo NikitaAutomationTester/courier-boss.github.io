@@ -72,26 +72,24 @@
           </select>
         </div>
 
-        <div class="filter-period">
-          <div class="filter-period-label">Период</div>
-          <div class="filter-date-group">
+        <div class="filter-dates-row">
+          <div class="filter-date-item">
+            <label for="filter-date-from">С</label>
             <input
               type="date"
               id="filter-date-from"
-              class="filter-input"
-              placeholder="дд.мм.гггг"
+              class="filter-date-input"
             />
-            <span class="filter-date-separator">—</span>
-            <input
-              type="date"
-              id="filter-date-to"
-              class="filter-input"
-              placeholder="дд.мм.гггг"
-            />
+          </div>
+          <div class="filter-date-item">
+            <label for="filter-date-to">По</label>
+            <input type="date" id="filter-date-to" class="filter-date-input" />
           </div>
         </div>
 
-        <button id="filter-reset-btn" class="filter-reset-btn">Сбросить</button>
+        <button id="filter-reset-btn" class="filter-reset-btn-primary">
+          Сбросить
+        </button>
       </div>
 
       <div id="reports-list-container" class="reports-list">
