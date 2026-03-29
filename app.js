@@ -1185,15 +1185,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const clinicsCounter = new Map();
     monthReports.forEach((report) => {
       if (!Array.isArray(report?.clinics)) return;
+      const courierName =
+        (report.userName || report.userPhone || "Курьер").trim() || "Курьер";
       report.clinics.forEach((clinic) => {
         const normalized = normalizeClinicExportData(clinic);
         const key = [
+          courierName.toLowerCase(),
           normalized.clinicName.toLowerCase(),
           normalized.city.toLowerCase(),
           normalized.address.toLowerCase(),
         ].join("|");
         if (!clinicsCounter.has(key)) {
           clinicsCounter.set(key, {
+            courierName,
             clinicName: normalized.clinicName,
             city: normalized.city,
             address: normalized.address,
@@ -1217,6 +1221,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const dayHeaders = Array.from({ length: 31 }, (_, i) => String(i + 1));
     const rows = [[
+      "Курьер",
       "Наименование МЦ",
       "Город",
       "Адрес отправления",
@@ -1225,12 +1230,17 @@ document.addEventListener("DOMContentLoaded", () => {
     ]];
 
     Array.from(clinicsCounter.values())
-      .sort((a, b) => a.clinicName.localeCompare(b.clinicName, "ru"))
+      .sort((a, b) => {
+        const byCourier = a.courierName.localeCompare(b.courierName, "ru");
+        if (byCourier !== 0) return byCourier;
+        return a.clinicName.localeCompare(b.clinicName, "ru");
+      })
       .forEach((item) => {
         const dayCells = Array.from({ length: 31 }, (_, index) =>
           item.dayMarks.has(index + 1) ? "+" : "",
         );
         rows.push([
+          item.courierName,
           item.clinicName,
           item.city,
           item.address,
