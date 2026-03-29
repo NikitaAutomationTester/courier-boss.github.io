@@ -1198,9 +1198,15 @@ document.addEventListener("DOMContentLoaded", () => {
             city: normalized.city,
             address: normalized.address,
             visits: 0,
+            dayMarks: new Set(),
           });
         }
-        clinicsCounter.get(key).visits += 1;
+        const clinicStat = clinicsCounter.get(key);
+        clinicStat.visits += 1;
+        const day = Number(String(report.date).slice(8, 10));
+        if (day >= 1 && day <= 31) {
+          clinicStat.dayMarks.add(day);
+        }
       });
     });
 
@@ -1209,14 +1215,28 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const rows = [
-      ["Наименование МЦ", "Город", "Адрес отправления", "Количество посещений"],
-    ];
+    const dayHeaders = Array.from({ length: 31 }, (_, i) => String(i + 1));
+    const rows = [[
+      "Наименование МЦ",
+      "Город",
+      "Адрес отправления",
+      "Количество посещений",
+      ...dayHeaders,
+    ]];
 
     Array.from(clinicsCounter.values())
       .sort((a, b) => a.clinicName.localeCompare(b.clinicName, "ru"))
       .forEach((item) => {
-        rows.push([item.clinicName, item.city, item.address, item.visits]);
+        const dayCells = Array.from({ length: 31 }, (_, index) =>
+          item.dayMarks.has(index + 1) ? "+" : "",
+        );
+        rows.push([
+          item.clinicName,
+          item.city,
+          item.address,
+          item.visits,
+          ...dayCells,
+        ]);
       });
 
     try {
