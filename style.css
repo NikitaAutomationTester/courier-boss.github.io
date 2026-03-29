@@ -931,6 +931,9 @@ textarea.max-input {
     border: 1px solid var(--max-border-color, #e0e0e0);
     border-radius: 12px;
     background-color: var(--max-input-bg, #ffffff);
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .filters-compact {
@@ -973,23 +976,48 @@ textarea.max-input {
 
 .filter-period-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 10px;
     align-items: start;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .filter-date-group {
     min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .filter-date {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     cursor: pointer;
 }
 
 .filter-date::-webkit-calendar-picker-indicator {
     opacity: 0.55;
     cursor: pointer;
+}
+
+/* Мобильные / iOS WebKit: выравнивание текста даты и внутренние отступы */
+@media (max-width: 639px) {
+    .max-input.filter-date {
+        min-height: 44px;
+        line-height: 1.25;
+        padding: 11px 12px;
+    }
+
+    .max-input.filter-date::-webkit-datetime-edit {
+        padding: 1px 0 0;
+    }
+
+    .max-input.filter-date::-webkit-datetime-edit-fields-wrapper {
+        padding: 0;
+    }
 }
 
 /* Вторичная кнопка — не конкурирует с основными действиями */

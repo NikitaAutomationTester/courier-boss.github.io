@@ -657,6 +657,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ========== ФУНКЦИИ ДЛЯ АДМИНИСТРАТОРА ==========
 
+  /** Поля даты в DOM всегда совпадают с состоянием (иначе десктопный WebView МАКС может подставить «сегодня» при пустом фильтре). */
+  function syncFilterDateInputsFromState() {
+    const dateFromInput = document.getElementById("filter-date-from");
+    const dateToInput = document.getElementById("filter-date-to");
+    if (dateFromInput) dateFromInput.value = currentFilterDateFrom || "";
+    if (dateToInput) dateToInput.value = currentFilterDateTo || "";
+  }
+
+  function scheduleFilterDateInputsSync() {
+    syncFilterDateInputsFromState();
+    requestAnimationFrame(syncFilterDateInputsFromState);
+    setTimeout(syncFilterDateInputsFromState, 0);
+    setTimeout(syncFilterDateInputsFromState, 150);
+  }
+
   // Показываем экран списка отчётов
   function showReportsListScreen() {
     console.log("showReportsListScreen вызван");
@@ -673,6 +688,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Заполняем фильтр курьеров
     populateCourierFilter();
+
+    scheduleFilterDateInputsSync();
   }
 
   // Загружаем все отчёты из localStorage
