@@ -1121,6 +1121,22 @@ document.addEventListener("DOMContentLoaded", () => {
     return Promise.resolve();
   }
 
+  function formatIsoMonthToRu(isoMonth) {
+    if (!isoMonth || !isoMonth.includes("-")) return "";
+    const [year, month] = isoMonth.split("-");
+    return `${month}.${year}`;
+  }
+
+  function syncDetailsMonthDisplay() {
+    const monthInput = document.getElementById("details-month");
+    const monthDisplay = document.getElementById("details-month-display");
+    if (!monthDisplay) return;
+    monthDisplay.textContent =
+      monthInput?.value && monthInput.value.length === 7
+        ? formatIsoMonthToRu(monthInput.value)
+        : "ММ.ГГГГ";
+  }
+
   function showDetailsScreen() {
     if (adminScreen) adminScreen.style.display = "none";
     const detailsScreen = document.getElementById("details-screen");
@@ -1133,6 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const now = new Date();
       detailsMonthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     }
+    syncDetailsMonthDisplay();
     if (detailsScreen) detailsScreen.style.display = "block";
   }
 
@@ -1463,9 +1480,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const detailsExportBtn = document.getElementById("details-export-btn");
+  const detailsMonthInput = document.getElementById("details-month");
   if (detailsExportBtn) {
     detailsExportBtn.addEventListener("click", exportDetailsToExcel);
   }
+  if (detailsMonthInput) {
+    detailsMonthInput.addEventListener("change", syncDetailsMonthDisplay);
+    detailsMonthInput.addEventListener("input", syncDetailsMonthDisplay);
+  }
+  syncDetailsMonthDisplay();
 
   // Обработчики фильтров
   const filterCourier = document.getElementById("filter-courier");
