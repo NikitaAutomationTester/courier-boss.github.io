@@ -932,7 +932,6 @@ textarea.max-input {
     border-radius: 12px;
     background-color: var(--max-input-bg, #ffffff);
     max-width: 100%;
-    overflow-x: hidden;
     box-sizing: border-box;
 }
 
@@ -985,12 +984,15 @@ textarea.max-input {
 }
 
 .filter-date-group {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     max-width: 100%;
-    overflow: hidden;
 }
 
 .filter-date {
+    align-self: stretch;
+    flex-shrink: 1;
     width: 100%;
     max-width: 100%;
     min-width: 0;
