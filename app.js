@@ -1137,6 +1137,20 @@ document.addEventListener("DOMContentLoaded", () => {
         : "ММ.ГГГГ";
   }
 
+  function showDetailsInlineError(message) {
+    const detailsError = document.getElementById("details-error");
+    if (!detailsError) return;
+    detailsError.textContent = message;
+    detailsError.style.display = "block";
+  }
+
+  function hideDetailsInlineError() {
+    const detailsError = document.getElementById("details-error");
+    if (!detailsError) return;
+    detailsError.textContent = "";
+    detailsError.style.display = "none";
+  }
+
   function showDetailsScreen() {
     if (adminScreen) adminScreen.style.display = "none";
     const detailsScreen = document.getElementById("details-screen");
@@ -1149,15 +1163,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const now = new Date();
       detailsMonthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     }
+    hideDetailsInlineError();
     syncDetailsMonthDisplay();
     if (detailsScreen) detailsScreen.style.display = "block";
   }
 
   function exportDetailsToExcel() {
+    hideDetailsInlineError();
     const detailsMonthInput = document.getElementById("details-month");
     const monthValue = detailsMonthInput ? detailsMonthInput.value : "";
     if (!monthValue) {
-      showError("Выберите месяц и год");
+      showDetailsInlineError("Выберите месяц и год");
       return;
     }
     const reports = JSON.parse(localStorage.getItem("reports") || "[]");
@@ -1189,7 +1205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (clinicsCounter.size === 0) {
-      showError("За выбранный месяц нет посещений медцентров");
+      showDetailsInlineError("Нет отчётов за выбранный период");
       return;
     }
 
@@ -1487,6 +1503,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (detailsMonthInput) {
     detailsMonthInput.addEventListener("change", syncDetailsMonthDisplay);
     detailsMonthInput.addEventListener("input", syncDetailsMonthDisplay);
+    detailsMonthInput.addEventListener("change", hideDetailsInlineError);
+    detailsMonthInput.addEventListener("input", hideDetailsInlineError);
   }
   syncDetailsMonthDisplay();
 
