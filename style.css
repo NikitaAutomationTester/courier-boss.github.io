@@ -542,22 +542,10 @@ textarea.max-input {
     cursor: pointer;
 }
 
-.details-month-input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.001;
-    border: none;
-    background: transparent;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-    cursor: pointer;
-    font-size: 16px;
-}
-
+/* Визуальная рамка под нативным input: фокус переносим на display через :focus-within */
 .details-month-display {
+    position: relative;
+    z-index: 0;
     display: flex;
     align-items: center;
     width: 100%;
@@ -577,8 +565,28 @@ textarea.max-input {
     pointer-events: none;
 }
 
-.details-month-input:focus + .details-month-display {
+.details-month-control:focus-within .details-month-display {
     border-color: var(--max-primary-color, #007aff);
+}
+
+/* Нативный month поверх рамки — иначе в десктопном WebView клик не доходит / не открывается picker */
+.details-month-input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    cursor: pointer;
+    font-size: 16px;
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: auto;
 }
 
 @media (max-width: 639px) {

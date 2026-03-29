@@ -1137,6 +1137,25 @@ document.addEventListener("DOMContentLoaded", () => {
         : "ММ.ГГГГ";
   }
 
+  /** Десктопный WebView (в т.ч. MAX на macOS): без showPicker() нативный month часто не открывается. */
+  function openDetailsMonthPicker() {
+    const el = document.getElementById("details-month");
+    if (!el) return;
+    try {
+      if (typeof el.showPicker === "function") {
+        el.showPicker();
+        return;
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    el.focus();
+  }
+
+  function isFinePointerDesktop() {
+    return window.matchMedia("(pointer: fine)").matches;
+  }
+
   function showDetailsInlineError(message) {
     const detailsError = document.getElementById("details-error");
     if (!detailsError) return;
@@ -1535,6 +1554,9 @@ document.addEventListener("DOMContentLoaded", () => {
     detailsMonthInput.addEventListener("input", syncDetailsMonthDisplay);
     detailsMonthInput.addEventListener("change", hideDetailsInlineError);
     detailsMonthInput.addEventListener("input", hideDetailsInlineError);
+    detailsMonthInput.addEventListener("click", () => {
+      if (isFinePointerDesktop()) openDetailsMonthPicker();
+    });
   }
   syncDetailsMonthDisplay();
 
