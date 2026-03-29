@@ -767,7 +767,7 @@ textarea.max-input {
     appearance: textfield;
 }
 
-/* Стили для списка отчётов */
+/* ========== СТИЛИ ДЛЯ СПИСКА ОТЧЁТОВ ========== */
 .reports-list {
     display: flex;
     flex-direction: column;
@@ -803,12 +803,7 @@ textarea.max-input {
     margin-bottom: 4px;
 }
 
-.report-item-salary {
-    font-size: 13px;
-    color: var(--max-hint-color, #8e8e93);
-}
-
-/* Стили для детального просмотра отчёта */
+/* ========== СТИЛИ ДЛЯ ДЕТАЛЬНОГО ПРОСМОТРА ОТЧЁТА ========== */
 .report-detail {
     padding: 4px 0 20px 0;
 }
@@ -924,18 +919,10 @@ textarea.max-input {
     font-weight: bold;
     color: var(--max-primary-color, #007aff);
 }
-/* Фильтры отчётов (админ): в стиле остального приложения */
-.filters-section {
-    margin-bottom: 12px;
-    padding: 12px;
-    border: 1px solid var(--max-border-color, #e0e0e0);
-    border-radius: 12px;
-    background-color: var(--max-input-bg, #ffffff);
-    max-width: 100%;
-    box-sizing: border-box;
-}
 
-/* Мобильная строка «Фильтры» (узкий экран) */
+/* ========== ФИЛЬТРЫ ОТЧЁТОВ ========== */
+
+/* Мобильная строка «Фильтры» */
 .filters-mobile-bar {
     display: none;
     align-items: center;
@@ -956,10 +943,8 @@ textarea.max-input {
     color: var(--max-text-color, #000000);
     font-size: 16px;
     font-weight: 600;
-    font-family: inherit;
     cursor: pointer;
     text-align: left;
-    box-sizing: border-box;
 }
 
 .filters-mobile-bar__open:active {
@@ -970,12 +955,6 @@ textarea.max-input {
     flex-shrink: 0;
     display: flex;
     color: var(--max-primary-color, #007aff);
-    opacity: 0.95;
-}
-
-.filters-mobile-bar__open-text {
-    flex: 1;
-    min-width: 0;
 }
 
 .filter-active-badge {
@@ -999,20 +978,106 @@ textarea.max-input {
     justify-content: center;
     width: 48px;
     height: 48px;
-    padding: 0;
     border: 1px solid var(--max-border-color, #e0e0e0);
     border-radius: 12px;
     background-color: var(--max-input-bg, #ffffff);
     color: var(--max-primary-color, #007aff);
     cursor: pointer;
+}
+
+/* Десктопная секция фильтров */
+.filters-section--desktop {
+    margin-bottom: 12px;
+    padding: 12px;
+    border: 1px solid var(--max-border-color, #e0e0e0);
+    border-radius: 12px;
+    background-color: var(--max-input-bg, #ffffff);
+}
+
+.filters-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.filter-block {
+    width: 100%;
+}
+
+.filter-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--max-text-color, #000000);
+    opacity: 0.75;
+    margin-bottom: 6px;
+}
+
+.filter-select-native {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--max-border-color, #e0e0e0);
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: var(--max-input-bg, #ffffff);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.filter-period-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.filter-date-group {
+    width: 100%;
+}
+
+.filter-sublabel {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--max-hint-color, #8e8e93);
+    margin-bottom: 4px;
+}
+
+/* Основные стили для полей даты */
+.filter-date {
+    width: 100%;
+    min-width: 0;
     box-sizing: border-box;
+    cursor: pointer;
+    padding: 10px 12px;
+    border: 1px solid var(--max-border-color, #e0e0e0);
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: var(--max-input-bg, #ffffff);
+    color: var(--max-text-color, #000000);
 }
 
-.filters-mobile-bar__reset:active {
-    opacity: 0.8;
+.filter-date::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
 }
 
-/* Нижняя шторка фильтров */
+/* Кнопка сброса фильтров */
+.max-button.filter-reset-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--max-primary-color, #007aff);
+    background-color: transparent;
+    border: 1px solid var(--max-border-color, #e0e0e0);
+    border-radius: 10px;
+}
+
+/* ========== НИЖНЯЯ ШТОРКА ФИЛЬТРОВ (МОБИЛЬНАЯ) ========== */
 .filters-sheet {
     position: fixed;
     inset: 0;
@@ -1044,21 +1109,13 @@ textarea.max-input {
 
 .filters-sheet__panel {
     position: relative;
-    z-index: 1;
     width: 100%;
-    max-width: 100%;
-    min-width: 0;
     max-height: min(92vh, 640px);
     padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));
     border-radius: 16px 16px 0 0;
     background-color: var(--max-bg-color, #ffffff);
-    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
     transform: translateY(100%);
     transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
 }
 
 .filters-sheet--open .filters-sheet__panel {
@@ -1078,18 +1135,11 @@ textarea.max-input {
     font-weight: 600;
     text-align: center;
     margin: 4px 0 14px;
-    color: var(--max-text-color, #000000);
 }
 
 .filters-sheet__body {
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    flex: 1;
-    min-height: 0;
-    min-width: 0;
-    /* Запас от края scrollport: рамка date не упирается в клип (iOS WebKit) */
     padding: 0 4px 4px;
-    box-sizing: border-box;
 }
 
 .filters-sheet__actions {
@@ -1102,7 +1152,6 @@ textarea.max-input {
 
 .filters-sheet__btn {
     flex: 1;
-    margin: 0;
     padding: 14px 16px;
     font-size: 16px;
     font-weight: 600;
@@ -1121,218 +1170,94 @@ textarea.max-input {
     border: 1px solid var(--max-primary-color, #007aff);
 }
 
-.filters-sheet__btn--primary:active,
-.filters-sheet__btn--secondary:active {
-    opacity: 0.9;
-}
-
-.filter-period-row--sheet {
-    margin-top: 2px;
-}
-
-/*
- * Шторка фильтров (мобильная): WebKit bug 301648 — type=date с padding и width:100%
- * в узкой колонке рисуется шире контейнера; индикатор календаря добавляет ширину.
- * Решение: период «С/По» в шторке — всегда в одну колонку на всю ширину + отступы body.
- */
-@media (max-width: 639px) {
-    .filter-period-row--sheet {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .filters-sheet .max-input.filter-date {
-        display: block;
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
-        min-height: 44px;
-        line-height: 1.25;
-        /* Чуть меньше горизонтальный padding — меньше ошибка расчёта 100% на iOS */
-        padding: 11px 10px;
-    }
-
-    .filters-sheet .max-input.filter-date::-webkit-calendar-picker-indicator {
-        opacity: 0.55;
-        cursor: pointer;
-        width: 22px;
-        height: 22px;
-        margin: 0;
-        padding: 0;
-        flex-shrink: 0;
-    }
-
-    .filters-sheet .max-input.filter-date::-webkit-datetime-edit {
-        padding: 1px 0 0;
-        max-width: 100%;
-    }
-
-    .filters-sheet .max-input.filter-date::-webkit-datetime-edit-fields-wrapper {
-        padding: 0;
-        max-width: 100%;
-    }
-}
-
-@media (max-width: 639px) {
-    .filters-mobile-bar {
-        display: flex;
-    }
-
-    .filters-section--desktop {
-        display: none;
-    }
-
-    .filters-sheet {
-        display: flex;
-    }
-}
-
+/* ========== АДАПТАЦИЯ ДЛЯ ПЛАНШЕТОВ И ДЕСКТОПА ========== */
 @media (min-width: 640px) {
     .filters-mobile-bar {
         display: none !important;
     }
-
+    
     .filters-sheet {
         display: none !important;
     }
-}
-
-.filters-compact {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.filter-block {
-    width: 100%;
-    min-width: 0;
-}
-
-.filter-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--max-text-color, #000000);
-    opacity: 0.75;
-    margin-bottom: 6px;
-}
-
-.filter-sublabel {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--max-hint-color, #8e8e93);
-    margin-bottom: 4px;
-}
-
-/* Select как у полей ввода + стрелка */
-.filter-select-native {
-    cursor: pointer;
-    appearance: none;
-    padding-right: 36px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-}
-
-.filter-period-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 10px;
-    align-items: start;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-}
-
-.filter-date-group {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    max-width: 100%;
-}
-
-.filter-date {
-    align-self: stretch;
-    flex-shrink: 1;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-    cursor: pointer;
-}
-
-.filter-date::-webkit-calendar-picker-indicator {
-    opacity: 0.55;
-    cursor: pointer;
-}
-
-/* Мобильные / iOS WebKit: выравнивание текста даты и внутренние отступы */
-@media (max-width: 639px) {
-    .max-input.filter-date {
-        min-height: 44px;
-        line-height: 1.25;
-        padding: 11px 12px;
-    }
-
-    .max-input.filter-date::-webkit-datetime-edit {
-        padding: 1px 0 0;
-    }
-
-    .max-input.filter-date::-webkit-datetime-edit-fields-wrapper {
-        padding: 0;
-    }
-}
-
-/* Вторичная кнопка — не конкурирует с основными действиями */
-.max-button.filter-reset-btn {
-    width: 100%;
-    margin-top: 2px;
-    padding: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--max-primary-color, #007aff);
-    background-color: transparent;
-    border: 1px solid var(--max-border-color, #e0e0e0);
-    border-radius: 10px;
-}
-
-.max-button.filter-reset-btn:active {
-    opacity: 0.75;
-}
-
-/* Узкий экран: период в колонку */
-@media (max-width: 400px) {
-    .filter-period-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Широкий экран: компактная строка курьер + период (опционально) */
-@media (min-width: 640px) {
+    
     .filters-compact {
         display: grid;
         grid-template-columns: minmax(180px, 1fr) minmax(260px, 1.2fr);
         grid-template-rows: auto auto;
         gap: 12px 16px;
-        align-items: start;
     }
-
+    
     .filter-block:first-child {
         grid-column: 1;
         grid-row: 1 / -1;
-        align-self: stretch;
     }
-
+    
     .filter-block:nth-child(2) {
         grid-column: 2;
         grid-row: 1;
     }
-
+    
+    .filter-period-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        flex-direction: row;
+        gap: 10px;
+    }
+    
     .max-button.filter-reset-btn {
         grid-column: 2;
         grid-row: 2;
         margin-top: 0;
+    }
+}
+
+/* ========== МОБИЛЬНАЯ АДАПТАЦИЯ (до 640px) ========== */
+@media (max-width: 639px) {
+    .filters-mobile-bar {
+        display: flex;
+    }
+    
+    .filters-section--desktop {
+        display: none;
+    }
+    
+    .filters-sheet {
+        display: flex;
+    }
+    
+    .filter-period-row {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .filter-date-group {
+        width: 100%;
+    }
+    
+    /* Фикс для iOS WebView — поля даты не вылезают */
+    .filters-sheet .filter-date {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .filters-sheet .filter-date::-webkit-datetime-edit {
+        padding: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .filters-sheet .filter-date::-webkit-datetime-edit-fields-wrapper {
+        padding: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }
