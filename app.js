@@ -1121,27 +1121,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return Promise.resolve();
   }
 
-  function formatIsoMonthToRu(isoMonth) {
-    if (!isoMonth || !isoMonth.includes("-")) return "";
-    const [year, month] = isoMonth.split("-");
-    return `${month}.${year}`;
-  }
-
-  function syncDetailsMonthDisplay() {
-    const hidden = document.getElementById("details-month");
-    const monthDisplay = document.getElementById("details-month-display");
-    const v = hidden?.value || "";
-    if (monthDisplay) {
-      monthDisplay.textContent =
-        v.length === 7 ? formatIsoMonthToRu(v) : "ММ.ГГГГ";
-    }
-  }
-
   function syncDetailsMonthUIsFromHidden() {
     const hidden = document.getElementById("details-month");
     const v = hidden?.value || "";
-    const nativeUi = document.getElementById("details-month-native-ui");
-    if (nativeUi) nativeUi.value = v.length === 7 ? v : "";
     if (v.length === 7) {
       const [year, month] = v.split("-");
       const monthPart = document.getElementById("details-month-part");
@@ -1227,7 +1209,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     hideDetailsInlineError();
     syncDetailsMonthUIsFromHidden();
-    syncDetailsMonthDisplay();
     if (detailsScreen) detailsScreen.style.display = "block";
   }
 
@@ -1590,7 +1571,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const detailsExportBtn = document.getElementById("details-export-btn");
   const detailsMonthHidden = document.getElementById("details-month");
-  const detailsMonthNativeUi = document.getElementById("details-month-native-ui");
   const detailsMonthPart = document.getElementById("details-month-part");
   const detailsYearPart = document.getElementById("details-year-part");
 
@@ -1599,44 +1579,20 @@ document.addEventListener("DOMContentLoaded", () => {
   if (detailsExportBtn) {
     detailsExportBtn.addEventListener("click", exportDetailsToExcel);
   }
-  if (detailsMonthNativeUi) {
-    const onNativeMonthChange = () => {
-      const hidden = document.getElementById("details-month");
-      if (hidden) hidden.value = detailsMonthNativeUi.value || "";
-      syncDetailsMonthUIsFromHidden();
-      syncDetailsMonthDisplay();
-      hideDetailsInlineError();
-    };
-    detailsMonthNativeUi.addEventListener("change", onNativeMonthChange);
-    detailsMonthNativeUi.addEventListener("input", onNativeMonthChange);
-  }
   if (detailsMonthPart && detailsYearPart) {
-    const onDesktopChange = () => {
+    const onMonthYearChange = () => {
       applyDetailsDesktopPickToHidden();
       syncDetailsMonthUIsFromHidden();
-      syncDetailsMonthDisplay();
       hideDetailsInlineError();
     };
-    detailsMonthPart.addEventListener("change", onDesktopChange);
-    detailsYearPart.addEventListener("change", onDesktopChange);
+    detailsMonthPart.addEventListener("change", onMonthYearChange);
+    detailsYearPart.addEventListener("change", onMonthYearChange);
   }
   if (detailsMonthHidden && !detailsMonthHidden.value) {
     const now = new Date();
     detailsMonthHidden.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   }
   syncDetailsMonthUIsFromHidden();
-  syncDetailsMonthDisplay();
-
-  let detailsResizeTimer;
-  window.addEventListener("resize", () => {
-    clearTimeout(detailsResizeTimer);
-    detailsResizeTimer = setTimeout(() => {
-      const ds = document.getElementById("details-screen");
-      if (!ds || window.getComputedStyle(ds).display === "none") return;
-      syncDetailsMonthUIsFromHidden();
-      syncDetailsMonthDisplay();
-    }, 150);
-  });
 
   // Обработчики фильтров
   const filterCourier = document.getElementById("filter-courier");
