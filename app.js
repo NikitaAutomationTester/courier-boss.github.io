@@ -1535,11 +1535,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const deleteReportBackdrop = document.getElementById(
     "delete-report-modal-backdrop",
   );
-  const deleteReportClose = document.getElementById("delete-report-modal-close");
   const deleteReportCancel = document.getElementById("delete-report-modal-cancel");
   const deleteReportConfirm = document.getElementById("delete-report-modal-confirm");
-  if (deleteReportClose)
-    deleteReportClose.addEventListener("click", closeDeleteReportModal);
   if (deleteReportCancel)
     deleteReportCancel.addEventListener("click", closeDeleteReportModal);
   if (deleteReportConfirm)

@@ -361,6 +361,10 @@ label {
     font-weight: 600;
 }
 
+.delete-report-modal-header {
+    justify-content: flex-start;
+}
+
 .delete-report-modal-summary {
     font-size: 16px;
     font-weight: 500;
