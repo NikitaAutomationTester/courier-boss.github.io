@@ -600,6 +600,16 @@ textarea.max-input {
     }
 }
 
+/*
+ * Выбор месяца: type="month" в десктопном WebView MAX часто не открывает UI.
+ * Селекты показываем при широком окне ИЛИ при мыши/трекпаде — тогда узкое окно
+ * на десктопе тоже получает рабочие поля.
+ * Нативный month оставляем только для узкого тач-экрана (телефон).
+ */
+.details-month-native {
+    display: block;
+}
+
 .details-month-desktop {
     display: none;
 }
@@ -613,7 +623,7 @@ textarea.max-input {
     min-width: 0;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 640px), (pointer: fine) {
     .details-month-native {
         display: none !important;
     }
@@ -622,6 +632,16 @@ textarea.max-input {
         display: block;
         width: 100%;
         min-width: 0;
+    }
+}
+
+@media (pointer: coarse) and (max-width: 639px) {
+    .details-month-native {
+        display: block !important;
+    }
+
+    .details-month-desktop {
+        display: none !important;
     }
 }
 

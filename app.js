@@ -1627,6 +1627,17 @@ document.addEventListener("DOMContentLoaded", () => {
   syncDetailsMonthUIsFromHidden();
   syncDetailsMonthDisplay();
 
+  let detailsResizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(detailsResizeTimer);
+    detailsResizeTimer = setTimeout(() => {
+      const ds = document.getElementById("details-screen");
+      if (!ds || window.getComputedStyle(ds).display === "none") return;
+      syncDetailsMonthUIsFromHidden();
+      syncDetailsMonthDisplay();
+    }, 150);
+  });
+
   // Обработчики фильтров
   const filterCourier = document.getElementById("filter-courier");
   const filterDateFrom = document.getElementById("filter-date-from");
