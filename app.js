@@ -1491,18 +1491,27 @@ document.addEventListener("DOMContentLoaded", () => {
         (report.userName || report.userPhone || "Курьер").trim() || "Курьер";
       report.clinics.forEach((clinic) => {
         const normalized = normalizeClinicExportData(clinic);
+        const laboratory = String(clinic?.laboratory ?? "").trim();
+        const costRaw = clinic?.cost_for_laboratory;
+        const costForLaboratory = Number.isFinite(Number(costRaw))
+          ? Number(costRaw)
+          : 0;
         const key = [
           courierName.toLowerCase(),
+          laboratory.toLowerCase(),
           normalized.clinicName.toLowerCase(),
           normalized.city.toLowerCase(),
           normalized.address.toLowerCase(),
+          String(costForLaboratory),
         ].join("|");
         if (!clinicsCounter.has(key)) {
           clinicsCounter.set(key, {
             courierName,
+            laboratory,
             clinicName: normalized.clinicName,
             city: normalized.city,
             address: normalized.address,
+            costForLaboratory,
             visits: 0,
             dayMarks: new Set(),
           });
@@ -1525,10 +1534,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const rows = [
       [
         "Курьер",
+        "Лаборатория",
         "Наименование МЦ",
         "Город",
-        "Адрес отправления",
-        "Количество посещений",
+        "Адрес",
+        "Количество",
+        "Стоимость",
+        "Итого",
         ...dayHeaders,
       ],
     ];
@@ -1537,18 +1549,26 @@ document.addEventListener("DOMContentLoaded", () => {
       .sort((a, b) => {
         const byCourier = a.courierName.localeCompare(b.courierName, "ru");
         if (byCourier !== 0) return byCourier;
+        const byLab = a.laboratory.localeCompare(b.laboratory, "ru");
+        if (byLab !== 0) return byLab;
         return a.clinicName.localeCompare(b.clinicName, "ru");
       })
       .forEach((item) => {
         const dayCells = Array.from({ length: 31 }, (_, index) =>
           item.dayMarks.has(index + 1) ? "+" : "",
         );
+        const qty = item.visits;
+        const unitCost = item.costForLaboratory;
+        const lineTotal = qty * unitCost;
         rows.push([
           item.courierName,
+          item.laboratory,
           item.clinicName,
           item.city,
           item.address,
-          item.visits,
+          qty,
+          unitCost,
+          lineTotal,
           ...dayCells,
         ]);
       });
