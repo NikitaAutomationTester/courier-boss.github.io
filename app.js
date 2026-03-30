@@ -1378,6 +1378,36 @@ document.addEventListener("DOMContentLoaded", () => {
     return Promise.resolve();
   }
 
+  /**
+   * Ширина столбцов xlsx (SheetJS !cols / wch) по содержимому строк.
+   * dayColumnStartIndex — с какого индекса идут узкие колонки дней (1–31).
+   */
+  function buildXlsxSheetColumnWidths(matrix, dayColumnStartIndex) {
+    if (!matrix.length) return [];
+    const colCount = matrix.reduce((m, row) => Math.max(m, row.length), 0);
+    const cols = [];
+    for (let c = 0; c < colCount; c++) {
+      let maxLen = 1;
+      for (let r = 0; r < matrix.length; r++) {
+        const cell = matrix[r][c];
+        if (cell == null || cell === "") continue;
+        const L = String(cell).length;
+        if (L > maxLen) maxLen = L;
+      }
+      const isDayCol =
+        typeof dayColumnStartIndex === "number" && c >= dayColumnStartIndex;
+      let wch;
+      if (isDayCol) {
+        wch = Math.min(Math.max(maxLen + 1, 4), 8);
+      } else {
+        wch = Math.min(Math.ceil(maxLen * 1.15) + 2, 55);
+        wch = Math.max(wch, 10);
+      }
+      cols.push({ wch });
+    }
+    return cols;
+  }
+
   function syncDetailsMonthUIsFromHidden() {
     const hidden = document.getElementById("details-month");
     const v = hidden?.value || "";
@@ -1577,6 +1607,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (window.XLSX) {
         const workbook = window.XLSX.utils.book_new();
         const worksheet = window.XLSX.utils.aoa_to_sheet(rows);
+        const dayColStart =
+          rows[0] && rows[0].length > 31 ? rows[0].length - 31 : 8;
+        worksheet["!cols"] = buildXlsxSheetColumnWidths(rows, dayColStart);
         window.XLSX.utils.book_append_sheet(workbook, worksheet, "Детализация");
         const xlsxBuffer = window.XLSX.write(workbook, {
           bookType: "xlsx",
