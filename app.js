@@ -16,6 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentFilterDateFrom = "";
   let currentFilterDateTo = "";
   let allReports = [];
+  let pendingDeleteReportId = null;
+  let adminViewingReportId = null;
+
+  const REPORT_DELETE_ICON_SVG = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
 
   // Элементы DOM
   const mainScreen = document.getElementById("main-screen");
@@ -889,6 +893,59 @@ document.addEventListener("DOMContentLoaded", () => {
     updateFilterBadge();
   }
 
+  function openDeleteReportModal(report) {
+    if (currentUserRole !== "admin" || !report) return;
+    pendingDeleteReportId = report.id;
+    const summary = document.getElementById("delete-report-modal-summary");
+    if (summary) {
+      const courier = report.userName || report.userPhone || "Курьер";
+      summary.textContent = `${report.formattedDate || report.date} · ${courier}`;
+    }
+    const bd = document.getElementById("delete-report-modal-backdrop");
+    if (bd) bd.hidden = false;
+  }
+
+  function closeDeleteReportModal() {
+    const bd = document.getElementById("delete-report-modal-backdrop");
+    if (bd) bd.hidden = true;
+    pendingDeleteReportId = null;
+  }
+
+  function confirmDeleteReport() {
+    const id = pendingDeleteReportId;
+    if (!id || currentUserRole !== "admin") {
+      closeDeleteReportModal();
+      return;
+    }
+
+    const detailScreen = document.getElementById("report-detail-screen");
+    const onDetail =
+      detailScreen &&
+      window.getComputedStyle(detailScreen).display !== "none" &&
+      adminViewingReportId != null &&
+      String(adminViewingReportId) === String(id);
+
+    const list = JSON.parse(localStorage.getItem("reports") || "[]");
+    const filtered = list.filter((r) => String(r.id) !== String(id));
+    localStorage.setItem("reports", JSON.stringify(filtered));
+    allReports = filtered;
+    allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    closeDeleteReportModal();
+
+    if (onDetail) {
+      adminViewingReportId = null;
+      if (detailScreen) detailScreen.style.display = "none";
+      const reportsListScreen = document.getElementById("reports-list-screen");
+      if (reportsListScreen) reportsListScreen.style.display = "block";
+      closeFiltersSheet();
+    }
+
+    populateCourierFilter();
+    applyFiltersAndDisplay();
+    showSuccess("Отчёт удалён");
+  }
+
   // Отображаем список отчётов
   function displayReportsList(reports) {
     const container = document.getElementById("reports-list-container");
@@ -900,20 +957,40 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const isAdmin = currentUserRole === "admin";
     container.innerHTML = "";
+
     reports.forEach((report) => {
       const reportDiv = document.createElement("div");
       reportDiv.className = "report-item";
       reportDiv.dataset.id = report.id;
 
-      reportDiv.innerHTML = `
-        <div class="report-item-date">${report.formattedDate || report.date}</div>
-        <div class="report-item-courier">${report.userName || report.userPhone || "Курьер"}</div>
-      `;
+      const mainBtn = document.createElement("button");
+      mainBtn.type = "button";
+      mainBtn.className = "report-item-main";
+      const dateEl = document.createElement("div");
+      dateEl.className = "report-item-date";
+      dateEl.textContent = report.formattedDate || report.date;
+      const courierEl = document.createElement("div");
+      courierEl.className = "report-item-courier";
+      courierEl.textContent = report.userName || report.userPhone || "Курьер";
+      mainBtn.appendChild(dateEl);
+      mainBtn.appendChild(courierEl);
+      mainBtn.addEventListener("click", () => showReportDetail(report));
+      reportDiv.appendChild(mainBtn);
 
-      reportDiv.addEventListener("click", () => {
-        showReportDetail(report);
-      });
+      if (isAdmin) {
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "report-item-delete";
+        delBtn.setAttribute("aria-label", "Удалить отчёт");
+        delBtn.innerHTML = REPORT_DELETE_ICON_SVG;
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openDeleteReportModal(report);
+        });
+        reportDiv.appendChild(delBtn);
+      }
 
       container.appendChild(reportDiv);
     });
@@ -959,6 +1036,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Показываем детальный просмотр отчёта
   function showReportDetail(report) {
     console.log("showReportDetail вызван для отчёта:", report.id);
+    adminViewingReportId = report.id;
     closeFiltersSheet();
 
     const reportsListScreen = document.getElementById("reports-list-screen");
@@ -1025,6 +1103,15 @@ document.addEventListener("DOMContentLoaded", () => {
       extraDeliveriesHTML += "</div>";
     }
 
+    const adminDeleteBlock =
+      currentUserRole === "admin"
+        ? `<div class="report-detail-delete-wrap">
+        <button type="button" class="report-detail-delete-btn" id="report-detail-delete-btn">
+          Удалить отчёт
+        </button>
+      </div>`
+        : "";
+
     container.innerHTML = `
       <div class="detail-section">
         <div class="detail-section-title">Основная информация</div>
@@ -1043,14 +1130,23 @@ document.addEventListener("DOMContentLoaded", () => {
       
       <div class="total-salary-row">
         <span class="total-salary-label">Итого зп за день:</span>
-        <span class="total-salary-amount">${report.totalSalary.toLocaleString("ru-RU")} ₽</span>
+        <span class="total-salary-amount">${(report.totalSalary ?? 0).toLocaleString("ru-RU")} ₽</span>
       </div>
+      ${adminDeleteBlock}
     `;
+
+    if (currentUserRole === "admin") {
+      const delDetailBtn = document.getElementById("report-detail-delete-btn");
+      if (delDetailBtn) {
+        delDetailBtn.addEventListener("click", () => openDeleteReportModal(report));
+      }
+    }
   }
 
   // Возврат к списку отчётов
   function backToReportsList() {
     console.log("backToReportsList вызван");
+    adminViewingReportId = null;
 
     const reportDetailScreen = document.getElementById("report-detail-screen");
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
@@ -1457,6 +1553,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const deleteReportBackdrop = document.getElementById(
+    "delete-report-modal-backdrop",
+  );
+  const deleteReportClose = document.getElementById("delete-report-modal-close");
+  const deleteReportCancel = document.getElementById("delete-report-modal-cancel");
+  const deleteReportConfirm = document.getElementById("delete-report-modal-confirm");
+  if (deleteReportClose)
+    deleteReportClose.addEventListener("click", closeDeleteReportModal);
+  if (deleteReportCancel)
+    deleteReportCancel.addEventListener("click", closeDeleteReportModal);
+  if (deleteReportConfirm)
+    deleteReportConfirm.addEventListener("click", confirmDeleteReport);
+  if (deleteReportBackdrop) {
+    deleteReportBackdrop.addEventListener("click", (e) => {
+      if (e.target === deleteReportBackdrop) closeDeleteReportModal();
+    });
+  }
+
   // Настройка поля даты
   const dateInput = document.getElementById("report-date");
   const dateDisplay = document.getElementById("report-date-display");
@@ -1655,6 +1769,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
+    const delBd = document.getElementById("delete-report-modal-backdrop");
+    if (delBd && !delBd.hidden) {
+      e.preventDefault();
+      closeDeleteReportModal();
+      return;
+    }
     const sheet = document.getElementById("filters-sheet");
     if (sheet && sheet.classList.contains("filters-sheet--open")) {
       e.preventDefault();

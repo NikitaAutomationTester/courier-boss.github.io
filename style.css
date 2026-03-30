@@ -361,6 +361,77 @@ label {
     font-weight: 600;
 }
 
+.delete-report-modal-summary {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0 0 12px 0;
+    color: var(--max-text-color, #000000);
+}
+
+.delete-report-modal-hint {
+    font-size: 14px;
+    line-height: 1.45;
+    margin: 0;
+    color: var(--max-hint-color, #8e8e93);
+}
+
+.delete-report-modal-footer {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.delete-report-modal-footer .max-button {
+    flex: 1;
+    width: auto;
+    margin: 0;
+}
+
+.delete-report-btn-cancel {
+    background-color: var(--max-secondary-bg-color, #f5f5f5);
+    border: 1px solid var(--max-border-color, #e0e0e0);
+    color: var(--max-text-color, #000000);
+}
+
+.delete-report-btn-cancel:active {
+    opacity: 0.85;
+}
+
+.delete-report-btn-confirm {
+    background-color: #ff3b30;
+    border: 1px solid #ff3b30;
+    color: #ffffff;
+}
+
+.delete-report-btn-confirm:active {
+    opacity: 0.9;
+}
+
+.report-detail-delete-wrap {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--max-border-color, #e0e0e0);
+}
+
+.report-detail-delete-btn {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 59, 48, 0.45);
+    background-color: rgba(255, 59, 48, 0.08);
+    color: #ff3b30;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.report-detail-delete-btn:active {
+    opacity: 0.85;
+}
+
 /* Убираем стрелки в number input */
 .max-input[type="number"] {
     -moz-appearance: textfield;
@@ -819,16 +890,54 @@ textarea.max-input {
 }
 
 .report-item {
-    padding: 12px;
+    display: flex;
+    align-items: stretch;
+    padding: 0;
     border: 1px solid var(--max-border-color, #e0e0e0);
     border-radius: 12px;
     background-color: var(--max-secondary-bg-color, #f5f5f5);
-    cursor: pointer;
+    overflow: hidden;
     transition: background-color 0.2s;
 }
 
-.report-item:active {
-    opacity: 0.7;
+.report-item-main {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.report-item-main:active {
+    opacity: 0.85;
+}
+
+.report-item-delete {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    border: none;
+    border-left: 1px solid var(--max-border-color, #e0e0e0);
+    background-color: var(--max-input-bg, #ffffff);
+    color: #ff3b30;
+    cursor: pointer;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.report-item-delete:active {
+    background-color: rgba(255, 59, 48, 0.08);
+}
+
+.report-item-delete svg {
+    display: block;
 }
 
 .report-item-date {
@@ -841,7 +950,7 @@ textarea.max-input {
 .report-item-courier {
     font-size: 15px;
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 0;
 }
 
 .report-item-salary {

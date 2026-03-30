@@ -59,7 +59,11 @@
     <!-- ЭКРАН ДЕТАЛИЗАЦИИ (для администратора) -->
     <div class="container" id="details-screen" style="display: none">
       <div class="screen-header">
-        <button type="button" id="back-to-admin-from-details-btn" class="back-button">
+        <button
+          type="button"
+          id="back-to-admin-from-details-btn"
+          class="back-button"
+        >
           ←
         </button>
         <h1 class="screen-title">Детализация</h1>
@@ -68,7 +72,7 @@
 
       <div class="details-panel">
         <div class="form-group">
-          <span class="filter-label">Месяц отчёта</span>
+          <span class="filter-label">Месяц и год</span>
           <input type="hidden" id="details-month" value="" />
           <div class="details-month-row">
             <select
@@ -91,7 +95,11 @@
         >
           Выгрузить в Excel
         </button>
-        <div id="details-error" class="inline-auth-error" style="display: none"></div>
+        <div
+          id="details-error"
+          class="inline-auth-error"
+          style="display: none"
+        ></div>
       </div>
     </div>
 
@@ -228,9 +236,7 @@
         ></div>
         <div class="filters-sheet__panel">
           <div class="filters-sheet__handle" aria-hidden="true"></div>
-          <h2 id="filters-sheet-title" class="filters-sheet__title">
-            Фильтр
-          </h2>
+          <h2 id="filters-sheet-title" class="filters-sheet__title">Фильтр</h2>
           <div class="filters-sheet__body">
             <div class="filter-block">
               <label class="filter-label" for="filter-courier-sheet"
@@ -258,7 +264,10 @@
                       autocomplete="off"
                       value=""
                     />
-                    <div class="sheet-date-display" id="filter-date-from-sheet-display">
+                    <div
+                      class="sheet-date-display"
+                      id="filter-date-from-sheet-display"
+                    >
                       ДД.ММ.ГГГГ
                     </div>
                   </div>
@@ -275,7 +284,10 @@
                       autocomplete="off"
                       value=""
                     />
-                    <div class="sheet-date-display" id="filter-date-to-sheet-display">
+                    <div
+                      class="sheet-date-display"
+                      id="filter-date-to-sheet-display"
+                    >
                       ДД.ММ.ГГГГ
                     </div>
                   </div>
@@ -496,6 +508,54 @@
             id="extra-delivery-modal-add"
           >
             Добавить
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Подтверждение удаления отчёта (только админ) -->
+    <div class="modal-backdrop" id="delete-report-modal-backdrop" hidden>
+      <div
+        class="modal delete-report-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-report-modal-title"
+        aria-describedby="delete-report-modal-summary"
+      >
+        <div class="modal-header">
+          <div class="modal-title" id="delete-report-modal-title">
+            Удалить отчёт?
+          </div>
+          <button
+            type="button"
+            class="modal-close"
+            id="delete-report-modal-close"
+            aria-label="Закрыть"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="delete-report-modal-summary" id="delete-report-modal-summary"></p>
+          <p class="delete-report-modal-hint">
+            Отчёт исчезнет у всех, включая курьера. Отменить удаление будет
+            нельзя.
+          </p>
+        </div>
+        <div class="modal-footer delete-report-modal-footer">
+          <button
+            type="button"
+            class="max-button delete-report-btn-cancel"
+            id="delete-report-modal-cancel"
+          >
+            Отмена
+          </button>
+          <button
+            type="button"
+            class="max-button delete-report-btn-confirm"
+            id="delete-report-modal-confirm"
+          >
+            Удалить
           </button>
         </div>
       </div>
