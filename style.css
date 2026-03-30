@@ -302,7 +302,8 @@ label {
     display: none !important;
 }
 
-.modal {
+.modal,
+.delete-report-modal {
     width: 100%;
     background-color: var(--max-bg-color, #ffffff);
     border-radius: 20px 20px 0 0;
@@ -363,6 +364,17 @@ label {
 
 .delete-report-modal-header {
     justify-content: flex-start;
+}
+
+/* max-ui на десктопе может добавлять крестик к .modal / шапке; у этой панели нет класса modal */
+.delete-report-modal .modal-close,
+#delete-report-modal-backdrop .modal-close {
+    display: none !important;
+}
+
+/* если WebView вставляет кнопку закрытия в шапку */
+#delete-report-modal-backdrop .modal-header button {
+    display: none !important;
 }
 
 .delete-report-modal-summary {
@@ -490,16 +502,19 @@ textarea.max-input {
     }
     
     /* Адаптация модалки для маленьких экранов */
-    .modal {
+    .modal,
+    .delete-report-modal {
         padding: 16px 16px 24px 16px;
         padding-bottom: max(24px, env(safe-area-inset-bottom) + 10px);
     }
     
-    .modal-header {
+    .modal-header,
+    .delete-report-modal .modal-header {
         margin-bottom: 16px;
     }
     
-    .modal-title {
+    .modal-title,
+    .delete-report-modal .modal-title {
         font-size: 17px;
     }
     
@@ -509,7 +524,8 @@ textarea.max-input {
         font-size: 16px;
     }
     
-    .modal-body {
+    .modal-body,
+    .delete-report-modal .modal-body {
         margin-bottom: 20px;
     }
 }
