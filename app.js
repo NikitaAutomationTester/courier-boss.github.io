@@ -314,70 +314,216 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function loadClinicsForUser(userId) {
     console.log("loadClinicsForUser вызван, userId:", userId);
+    /** Поля клиники: id, name, city, address, courier_salary, cost_for_laboratory, laboratory */
     const mockClinics = [
       {
         id: 1,
-        name: 'Медицинский центр "Здоровье"',
-        address: "ул. Ленина, 15, офис 301",
-        salary: 500,
+        name: 'Хороший доктор"',
+        city: "Ростов-на-Дону",
+        address: "ул. Немировича-Данченко, 76",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
       },
       {
         id: 2,
-        name: 'Клиника "Семейный доктор"',
-        address: "пр. Мира, 42, этаж 2",
-        salary: 750,
+        name: "РГУПС",
+        city: "Ростов-на-Дону",
+        address: "ул. Ларина, 2",
+        courier_salary: 150,
+        cost_for_laboratory: 300,
+        laboratory: "Инвитро",
       },
       {
         id: 3,
-        name: 'Диагностический центр "МРТ-Эксперт"',
-        address: "ул. Гагарина, 7, корпус Б",
-        salary: 1200,
+        name: 'ИП Агапов"',
+        city: "Ростов-на-Дону",
+        address: "пр. Ленина, 251",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
       },
       {
         id: 4,
-        name: "Женская консультация №5",
-        address: "бульвар Строителей, 23",
-        salary: 600,
+        name: "Мать и Дитя",
+        city: "Ростов-на-Дону",
+        address: "пр. Ленина, 145",
+        courier_salary: 150,
+        cost_for_laboratory: 300,
+        laboratory: "Инвитро",
       },
       {
         id: 5,
-        name: 'Стоматология "Улыбка"',
-        address: "ул. Советская, 10",
-        salary: 450,
+        name: "МСЧ Роствертол",
+        city: "Ростов-на-Дону",
+        address: "ул. Новаторов, 5",
+        courier_salary: 150,
+        cost_for_laboratory: 300,
+        laboratory: "Диалаб",
       },
       {
         id: 6,
-        name: 'Клиника "Медси" на Ленина',
-        address: "ул. Ленина, 55",
-        salary: 950,
+        name: "Ситилаб",
+        city: "Ростов-на-Дону",
+        address: "пр-т. Нагибина, 49",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
       },
       {
         id: 7,
-        name: 'Лаборатория "Гемотест" Центральная',
-        address: "ул. Центральная, 8",
-        salary: 800,
+        name: "Умная Клиника",
+        city: "Ростов-на-Дону",
+        address: "ул. Башкирская, 4",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Гемотест",
       },
       {
         id: 8,
-        name: 'Медицинский центр "Промед"',
-        address: "ул. Промышленная, 12",
-        salary: 680,
+        name: "Гемотест",
+        city: "Ростов-на-Дону",
+        address: "пр. Нагибина, 21/2",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Гемотест",
       },
       {
         id: 9,
-        name: 'Клиника "Скандинавия"',
-        address: "пр. Победы, 34",
-        salary: 1100,
+        name: "Гемотест",
+        city: "Ростов-на-Дону",
+        address: "пр. Будённовский, 96",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Гемотест",
       },
       {
         id: 10,
-        name: 'Центр репродукции "Эмбрио"',
-        address: "ул. Садовая, 7",
-        salary: 890,
+        name: "Здоровые руки",
+        city: "Ростов-на-Дону",
+        address: "ул. Юфимцева, 10/1",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Гемотест",
+      },
+
+      {
+        id: 11,
+        name: "Медина",
+        city: "Ростов-на-Дону",
+        address: "п. Халтуринский, 206В",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Гемотест",
+      },
+
+      {
+        id: 12,
+        name: "Гемотест",
+        city: "Ростов-на-Дону",
+        address: "ул. Пушкинская, 81",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Гемотест",
+      },
+
+      {
+        id: 13,
+        name: "Клиника профессора Буштыревой",
+        city: "Ростов-на-Дону",
+        address: "п. Соборный, 58",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
+      },
+      {
+        id: 14,
+        name: "Гемотест",
+        city: "Ростов-на-Дону",
+        address: "пр. Ворошиловский, 64/257",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Гемотест",
+      },
+      {
+        id: 15,
+        name: "Привелегия",
+        city: "Ростов-на-Дону",
+        address: "пр. Тельмана, 110",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
+      },
+      {
+        id: 16,
+        name: "Южный Ветер",
+        city: "Ростов-на-Дону",
+        address: "ул. Восточная, 13/113",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Гемотест",
+      },
+      {
+        id: 17,
+        name: "Medical Home",
+        city: "Ростов-на-Дону",
+        address: "ул. Пушкинская, 225",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
+      },
+      {
+        id: 18,
+        name: "СтатисМед",
+        city: "Ростов-на-Дону",
+        address: "ул. Пушкинская, 243",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
+      },
+      {
+        id: 19,
+        name: "Биорайз",
+        city: "Ростов-на-Дону",
+        address: "ул. Чехова, 51",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
+      },
+      {
+        id: 20,
+        name: "ДонЗдрав",
+        city: "Ростов-на-Дону",
+        address: "п. Университетский, 115",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
+      },
+      {
+        id: 21,
+        name: "Ситилаб",
+        city: "Ростов-на-Дону",
+        address: "ул. Пушкинская, 135/33",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
+      },
+      {
+        id: 22,
+        name: "Лонга Вита",
+        city: "Ростов-на-Дону",
+        address: "ул. Соколова, 13",
+        courier_salary: 200,
+        cost_for_laboratory: 300,
+        laboratory: "Ситилаб",
       },
     ];
     console.log("loadClinicsForUser вернул", mockClinics.length, "клиник");
     return mockClinics;
+  }
+
+  function clinicCourierPay(clinic) {
+    return clinic?.courier_salary ?? clinic?.salary ?? 0;
   }
 
   function checkFormValidity() {
@@ -436,6 +582,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const clinicDiv = document.createElement("div");
       clinicDiv.className = "clinic-item";
       clinicDiv.dataset.id = clinic.id;
+      clinicDiv.dataset.city = clinic.city ?? "";
+      clinicDiv.dataset.streetAddress = clinic.address ?? "";
+      clinicDiv.dataset.costForLaboratory = String(
+        clinic.cost_for_laboratory ?? 0,
+      );
+      clinicDiv.dataset.laboratory = clinic.laboratory ?? "";
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
@@ -451,15 +603,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const addressSpan = document.createElement("span");
       addressSpan.className = "clinic-address";
-      addressSpan.textContent = clinic.address;
+      const cityPart = (clinic.city || "").trim();
+      const streetPart = (clinic.address || "").trim();
+      addressSpan.textContent = [cityPart, streetPart]
+        .filter(Boolean)
+        .join(", ");
 
+      const pay = clinicCourierPay(clinic);
       const salarySpan = document.createElement("span");
       salarySpan.className = "clinic-salary";
       const salaryValue = document.createElement("span");
       salaryValue.className = "clinic-salary-value";
-      salaryValue.dataset.salary = clinic.salary;
+      salaryValue.dataset.salary = String(pay);
       salaryValue.style.display = "none";
-      salarySpan.textContent = `${clinic.salary.toLocaleString("ru-RU")} ₽`;
+      salarySpan.textContent = `${pay.toLocaleString("ru-RU")} ₽`;
 
       infoDiv.appendChild(nameSpan);
       infoDiv.appendChild(addressSpan);
@@ -505,18 +662,24 @@ document.addEventListener("DOMContentLoaded", () => {
       const checkbox = item.querySelector(".clinic-checkbox");
       if (checkbox && checkbox.checked) {
         const nameSpan = item.querySelector(".clinic-name");
-        const addressSpan = item.querySelector(".clinic-address");
         const salaryValueSpan = item.querySelector(".clinic-salary-value");
-        const salary = salaryValueSpan
-          ? parseInt(salaryValueSpan.dataset.salary)
+        const pay = salaryValueSpan
+          ? parseInt(salaryValueSpan.dataset.salary, 10)
           : 0;
+        const city = item.dataset.city || "";
+        const street = item.dataset.streetAddress || "";
+        const lab = parseInt(item.dataset.costForLaboratory || "0", 10) || 0;
+        const laboratory = item.dataset.laboratory || "";
         selectedClinics.push({
           id: item.dataset.id,
-          name: nameSpan.textContent,
-          address: addressSpan.textContent,
-          salary: salary,
+          name: nameSpan ? nameSpan.textContent : "",
+          city,
+          address: street,
+          courier_salary: pay,
+          cost_for_laboratory: lab,
+          laboratory,
         });
-        totalSalary += salary;
+        totalSalary += pay;
       }
     });
 
@@ -681,7 +844,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function syncSheetDateDisplays() {
     const fromInput = document.getElementById("filter-date-from-sheet");
     const toInput = document.getElementById("filter-date-to-sheet");
-    const fromDisplay = document.getElementById("filter-date-from-sheet-display");
+    const fromDisplay = document.getElementById(
+      "filter-date-from-sheet-display",
+    );
     const toDisplay = document.getElementById("filter-date-to-sheet-display");
 
     if (fromDisplay) {
@@ -1041,13 +1206,17 @@ document.addEventListener("DOMContentLoaded", () => {
         ")</span></div>";
       clinicsHTML += '<div class="clinics-compact-list">';
       report.clinics.forEach((clinic) => {
+        const pay = clinicCourierPay(clinic);
+        const city = (clinic.city || "").trim();
+        const street = (clinic.address || "").trim();
+        const addrShown = [city, street].filter(Boolean).join(", ") || street;
         clinicsHTML += `
           <div class="clinic-compact-item">
             <div class="clinic-compact-info">
               <div class="clinic-compact-name">${clinic.name}</div>
-              <div class="clinic-compact-address">${clinic.address}</div>
+              <div class="clinic-compact-address">${addrShown}</div>
             </div>
-            <div class="clinic-compact-salary-badge">${clinic.salary.toLocaleString("ru-RU")} ₽</div>
+            <div class="clinic-compact-salary-badge">${pay.toLocaleString("ru-RU")} ₽</div>
           </div>
         `;
       });
@@ -1117,7 +1286,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentUserRole === "admin") {
       const delDetailBtn = document.getElementById("report-detail-delete-btn");
       if (delDetailBtn) {
-        delDetailBtn.addEventListener("click", () => openDeleteReportModal(report));
+        delDetailBtn.addEventListener("click", () =>
+          openDeleteReportModal(report),
+        );
       }
     }
   }
@@ -1169,10 +1340,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function normalizeClinicExportData(clinic) {
     const clinicName = (clinic?.name || "").trim() || "Без названия";
+    const explicitCity = (clinic?.city || "").trim();
+    if (explicitCity) {
+      const street = (clinic?.address || "").trim();
+      return {
+        clinicName,
+        city: explicitCity,
+        address: street || "Не указан",
+      };
+    }
     const parsed = splitCityAndAddress(clinic?.address);
-    const city = (clinic?.city || "").trim() || parsed.city;
-    const address = parsed.address || (clinic?.address || "").trim();
-    return { clinicName, city, address };
+    return {
+      clinicName,
+      city: parsed.city,
+      address: parsed.address || (clinic?.address || "").trim(),
+    };
   }
 
   function triggerFileDownload(blob, fileName) {
@@ -1298,7 +1480,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const reports = JSON.parse(localStorage.getItem("reports") || "[]");
     const monthReports = reports.filter(
       (report) =>
-        typeof report?.date === "string" && report.date.startsWith(`${monthValue}-`),
+        typeof report?.date === "string" &&
+        report.date.startsWith(`${monthValue}-`),
     );
 
     const clinicsCounter = new Map();
@@ -1339,14 +1522,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const dayHeaders = Array.from({ length: 31 }, (_, i) => String(i + 1));
-    const rows = [[
-      "Курьер",
-      "Наименование МЦ",
-      "Город",
-      "Адрес отправления",
-      "Количество посещений",
-      ...dayHeaders,
-    ]];
+    const rows = [
+      [
+        "Курьер",
+        "Наименование МЦ",
+        "Город",
+        "Адрес отправления",
+        "Количество посещений",
+        ...dayHeaders,
+      ],
+    ];
 
     Array.from(clinicsCounter.values())
       .sort((a, b) => {
@@ -1388,9 +1573,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const csv = rows
         .map((row) =>
-          row
-            .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
-            .join(";"),
+          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(";"),
         )
         .join("\n");
       const csvBlob = new Blob(["\uFEFF" + csv], {
@@ -1535,8 +1718,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const deleteReportBackdrop = document.getElementById(
     "delete-report-modal-backdrop",
   );
-  const deleteReportCancel = document.getElementById("delete-report-modal-cancel");
-  const deleteReportConfirm = document.getElementById("delete-report-modal-confirm");
+  const deleteReportCancel = document.getElementById(
+    "delete-report-modal-cancel",
+  );
+  const deleteReportConfirm = document.getElementById(
+    "delete-report-modal-confirm",
+  );
   if (deleteReportCancel)
     deleteReportCancel.addEventListener("click", closeDeleteReportModal);
   if (deleteReportConfirm)
@@ -1705,8 +1892,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Мобильная шторка фильтров
   const filterOpenSheetBtn = document.getElementById("filter-open-sheet-btn");
-  const filterMobileResetBtn = document.getElementById("filter-mobile-reset-btn");
-  const filtersSheetBackdrop = document.getElementById("filters-sheet-backdrop");
+  const filterMobileResetBtn = document.getElementById(
+    "filter-mobile-reset-btn",
+  );
+  const filtersSheetBackdrop = document.getElementById(
+    "filters-sheet-backdrop",
+  );
   const filtersSheetApply = document.getElementById("filters-sheet-apply");
   const filtersSheetReset = document.getElementById("filters-sheet-reset");
   const filterDateFromSheet = document.getElementById("filter-date-from-sheet");
