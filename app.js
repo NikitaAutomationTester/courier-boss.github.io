@@ -1128,32 +1128,75 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function syncDetailsMonthDisplay() {
-    const monthInput = document.getElementById("details-month");
+    const hidden = document.getElementById("details-month");
     const monthDisplay = document.getElementById("details-month-display");
-    if (!monthDisplay) return;
-    monthDisplay.textContent =
-      monthInput?.value && monthInput.value.length === 7
-        ? formatIsoMonthToRu(monthInput.value)
-        : "ММ.ГГГГ";
-  }
-
-  /** Десктопный WebView (в т.ч. MAX на macOS): без showPicker() нативный month часто не открывается. */
-  function openDetailsMonthPicker() {
-    const el = document.getElementById("details-month");
-    if (!el) return;
-    try {
-      if (typeof el.showPicker === "function") {
-        el.showPicker();
-        return;
-      }
-    } catch (_) {
-      /* ignore */
+    const v = hidden?.value || "";
+    if (monthDisplay) {
+      monthDisplay.textContent =
+        v.length === 7 ? formatIsoMonthToRu(v) : "ММ.ГГГГ";
     }
-    el.focus();
   }
 
-  function isFinePointerDesktop() {
-    return window.matchMedia("(pointer: fine)").matches;
+  function syncDetailsMonthUIsFromHidden() {
+    const hidden = document.getElementById("details-month");
+    const v = hidden?.value || "";
+    const nativeUi = document.getElementById("details-month-native-ui");
+    if (nativeUi) nativeUi.value = v.length === 7 ? v : "";
+    if (v.length === 7) {
+      const [year, month] = v.split("-");
+      const monthPart = document.getElementById("details-month-part");
+      const yearPart = document.getElementById("details-year-part");
+      if (monthPart) monthPart.value = month;
+      if (yearPart) yearPart.value = year;
+    }
+  }
+
+  function applyDetailsDesktopPickToHidden() {
+    const monthPart = document.getElementById("details-month-part");
+    const yearPart = document.getElementById("details-year-part");
+    const hidden = document.getElementById("details-month");
+    if (!monthPart || !yearPart || !hidden) return;
+    if (!monthPart.value || !yearPart.value) {
+      hidden.value = "";
+      return;
+    }
+    hidden.value = `${yearPart.value}-${monthPart.value}`;
+  }
+
+  function populateDetailsMonthDesktopSelects() {
+    const monthPart = document.getElementById("details-month-part");
+    const yearPart = document.getElementById("details-year-part");
+    if (monthPart && monthPart.options.length === 0) {
+      const months = [
+        ["01", "Январь"],
+        ["02", "Февраль"],
+        ["03", "Март"],
+        ["04", "Апрель"],
+        ["05", "Май"],
+        ["06", "Июнь"],
+        ["07", "Июль"],
+        ["08", "Август"],
+        ["09", "Сентябрь"],
+        ["10", "Октябрь"],
+        ["11", "Ноябрь"],
+        ["12", "Декабрь"],
+      ];
+      months.forEach(([val, label]) => {
+        const o = document.createElement("option");
+        o.value = val;
+        o.textContent = label;
+        monthPart.appendChild(o);
+      });
+    }
+    if (yearPart && yearPart.options.length === 0) {
+      const currentY = new Date().getFullYear();
+      for (let y = currentY - 6; y <= currentY + 2; y += 1) {
+        const o = document.createElement("option");
+        o.value = String(y);
+        o.textContent = String(y);
+        yearPart.appendChild(o);
+      }
+    }
   }
 
   function showDetailsInlineError(message) {
@@ -1177,12 +1220,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const reportDetailScreen = document.getElementById("report-detail-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
-    const detailsMonthInput = document.getElementById("details-month");
-    if (detailsMonthInput && !detailsMonthInput.value) {
+    const detailsMonthHidden = document.getElementById("details-month");
+    if (detailsMonthHidden && !detailsMonthHidden.value) {
       const now = new Date();
-      detailsMonthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      detailsMonthHidden.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     }
     hideDetailsInlineError();
+    syncDetailsMonthUIsFromHidden();
     syncDetailsMonthDisplay();
     if (detailsScreen) detailsScreen.style.display = "block";
   }
@@ -1545,19 +1589,42 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const detailsExportBtn = document.getElementById("details-export-btn");
-  const detailsMonthInput = document.getElementById("details-month");
+  const detailsMonthHidden = document.getElementById("details-month");
+  const detailsMonthNativeUi = document.getElementById("details-month-native-ui");
+  const detailsMonthPart = document.getElementById("details-month-part");
+  const detailsYearPart = document.getElementById("details-year-part");
+
+  populateDetailsMonthDesktopSelects();
+
   if (detailsExportBtn) {
     detailsExportBtn.addEventListener("click", exportDetailsToExcel);
   }
-  if (detailsMonthInput) {
-    detailsMonthInput.addEventListener("change", syncDetailsMonthDisplay);
-    detailsMonthInput.addEventListener("input", syncDetailsMonthDisplay);
-    detailsMonthInput.addEventListener("change", hideDetailsInlineError);
-    detailsMonthInput.addEventListener("input", hideDetailsInlineError);
-    detailsMonthInput.addEventListener("click", () => {
-      if (isFinePointerDesktop()) openDetailsMonthPicker();
-    });
+  if (detailsMonthNativeUi) {
+    const onNativeMonthChange = () => {
+      const hidden = document.getElementById("details-month");
+      if (hidden) hidden.value = detailsMonthNativeUi.value || "";
+      syncDetailsMonthUIsFromHidden();
+      syncDetailsMonthDisplay();
+      hideDetailsInlineError();
+    };
+    detailsMonthNativeUi.addEventListener("change", onNativeMonthChange);
+    detailsMonthNativeUi.addEventListener("input", onNativeMonthChange);
   }
+  if (detailsMonthPart && detailsYearPart) {
+    const onDesktopChange = () => {
+      applyDetailsDesktopPickToHidden();
+      syncDetailsMonthUIsFromHidden();
+      syncDetailsMonthDisplay();
+      hideDetailsInlineError();
+    };
+    detailsMonthPart.addEventListener("change", onDesktopChange);
+    detailsYearPart.addEventListener("change", onDesktopChange);
+  }
+  if (detailsMonthHidden && !detailsMonthHidden.value) {
+    const now = new Date();
+    detailsMonthHidden.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  }
+  syncDetailsMonthUIsFromHidden();
   syncDetailsMonthDisplay();
 
   // Обработчики фильтров

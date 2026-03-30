@@ -68,17 +68,36 @@
 
       <div class="details-panel">
         <div class="form-group">
-          <label for="details-month">Месяц отчёта</label>
-          <div class="details-month-control">
-            <div class="details-month-display" id="details-month-display">
-              ММ.ГГГГ
+          <span class="filter-label">Месяц отчёта</span>
+          <input type="hidden" id="details-month" value="" />
+          <!-- Мобильный WebView: нативный month обычно работает -->
+          <div class="details-month-native">
+            <div class="details-month-control">
+              <div class="details-month-display" id="details-month-display">
+                ММ.ГГГГ
+              </div>
+              <input
+                type="month"
+                id="details-month-native-ui"
+                class="details-month-input"
+                autocomplete="off"
+              />
             </div>
-            <input
-              type="month"
-              id="details-month"
-              class="details-month-input"
-              autocomplete="off"
-            />
+          </div>
+          <!-- Десктоп MAX (macOS): нативный month часто не открывает UI — только select -->
+          <div class="details-month-desktop">
+            <div class="details-month-desktop-row">
+              <select
+                id="details-month-part"
+                class="max-input filter-select-native"
+                aria-label="Месяц"
+              ></select>
+              <select
+                id="details-year-part"
+                class="max-input filter-select-native"
+                aria-label="Год"
+              ></select>
+            </div>
           </div>
         </div>
 

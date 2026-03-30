@@ -600,6 +600,31 @@ textarea.max-input {
     }
 }
 
+.details-month-desktop {
+    display: none;
+}
+
+.details-month-desktop-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+}
+
+@media (min-width: 640px) {
+    .details-month-native {
+        display: none !important;
+    }
+
+    .details-month-desktop {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+}
+
 .deliveries-list {
     display: flex;
     flex-direction: column;
