@@ -890,54 +890,17 @@ textarea.max-input {
 }
 
 .report-item {
-    display: flex;
-    align-items: stretch;
-    padding: 0;
+    flex-shrink: 0;
+    padding: 12px;
     border: 1px solid var(--max-border-color, #e0e0e0);
     border-radius: 12px;
     background-color: var(--max-secondary-bg-color, #f5f5f5);
-    overflow: hidden;
+    cursor: pointer;
     transition: background-color 0.2s;
 }
 
-.report-item-main {
-    flex: 1;
-    min-width: 0;
-    padding: 12px 14px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    text-align: left;
-    font: inherit;
-    color: inherit;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.report-item-main:active {
-    opacity: 0.85;
-}
-
-.report-item-delete {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    border: none;
-    border-left: 1px solid var(--max-border-color, #e0e0e0);
-    background-color: var(--max-input-bg, #ffffff);
-    color: #ff3b30;
-    cursor: pointer;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.report-item-delete:active {
-    background-color: rgba(255, 59, 48, 0.08);
-}
-
-.report-item-delete svg {
-    display: block;
+.report-item:active {
+    opacity: 0.7;
 }
 
 .report-item-date {
@@ -950,7 +913,9 @@ textarea.max-input {
 .report-item-courier {
     font-size: 15px;
     font-weight: 600;
-    margin-bottom: 0;
+    line-height: 1.35;
+    word-break: break-word;
+    margin-bottom: 4px;
 }
 
 .report-item-salary {

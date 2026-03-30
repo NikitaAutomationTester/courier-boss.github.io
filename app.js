@@ -19,8 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let pendingDeleteReportId = null;
   let adminViewingReportId = null;
 
-  const REPORT_DELETE_ICON_SVG = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`;
-
   // Элементы DOM
   const mainScreen = document.getElementById("main-screen");
   const deliveriesScreen = document.getElementById("deliveries-screen");
@@ -957,41 +955,22 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const isAdmin = currentUserRole === "admin";
     container.innerHTML = "";
-
     reports.forEach((report) => {
       const reportDiv = document.createElement("div");
       reportDiv.className = "report-item";
       reportDiv.dataset.id = report.id;
 
-      const mainBtn = document.createElement("button");
-      mainBtn.type = "button";
-      mainBtn.className = "report-item-main";
       const dateEl = document.createElement("div");
       dateEl.className = "report-item-date";
       dateEl.textContent = report.formattedDate || report.date;
       const courierEl = document.createElement("div");
       courierEl.className = "report-item-courier";
       courierEl.textContent = report.userName || report.userPhone || "Курьер";
-      mainBtn.appendChild(dateEl);
-      mainBtn.appendChild(courierEl);
-      mainBtn.addEventListener("click", () => showReportDetail(report));
-      reportDiv.appendChild(mainBtn);
 
-      if (isAdmin) {
-        const delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.className = "report-item-delete";
-        delBtn.setAttribute("aria-label", "Удалить отчёт");
-        delBtn.innerHTML = REPORT_DELETE_ICON_SVG;
-        delBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openDeleteReportModal(report);
-        });
-        reportDiv.appendChild(delBtn);
-      }
-
+      reportDiv.appendChild(dateEl);
+      reportDiv.appendChild(courierEl);
+      reportDiv.addEventListener("click", () => showReportDetail(report));
       container.appendChild(reportDiv);
     });
   }
