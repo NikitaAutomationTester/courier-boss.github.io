@@ -18,6 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let allReports = [];
   let pendingDeleteReportId = null;
   let adminViewingReportId = null;
+  /** Откуда открыли детали: список админа или «Мои отчёты» курьера */
+  let reportsListContext = "admin";
+  let currentCourierFilterDateFrom = "";
+  let currentCourierFilterDateTo = "";
 
   // Элементы DOM
   const mainScreen = document.getElementById("main-screen");
@@ -27,6 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const authScreen = document.getElementById("auth-screen");
   const adminScreen = document.getElementById("admin-screen");
   const courierMenuScreen = document.getElementById("courier-menu-screen");
+  const courierReportsListScreen = document.getElementById(
+    "courier-reports-list-screen",
+  );
   const adminReportsBtn = document.getElementById("admin-reports-btn");
   const adminDetailsBtn = document.getElementById("admin-details-btn");
   const authPhone = document.getElementById("auth-phone");
@@ -55,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
   }
 
   // Скрываем экран загрузки
@@ -95,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
   }
 
   // Показываем экран отказа в доступе
@@ -117,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
   }
 
   // Показываем основной интерфейс (в зависимости от роли)
@@ -148,6 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
 
     // Показываем нужный экран в зависимости от роли
     if (currentUserRole === "admin") {
@@ -189,6 +200,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    closeCourierFiltersSheet();
     currentScreen = "courier-menu";
   }
 
@@ -988,14 +1001,229 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(syncFilterDateInputsFromState, 150);
   }
 
+  // ========== «МОИ ОТЧЁТЫ» (курьер) ==========
+
+  function syncCourierSheetDateDisplays() {
+    const fromInput = document.getElementById("courier-filter-date-from-sheet");
+    const toInput = document.getElementById("courier-filter-date-to-sheet");
+    const fromDisplay = document.getElementById(
+      "courier-filter-date-from-sheet-display",
+    );
+    const toDisplay = document.getElementById(
+      "courier-filter-date-to-sheet-display",
+    );
+
+    if (fromDisplay) {
+      fromDisplay.textContent = fromInput?.value
+        ? formatIsoDateToRu(fromInput.value)
+        : "ДД.ММ.ГГГГ";
+    }
+    if (toDisplay) {
+      toDisplay.textContent = toInput?.value
+        ? formatIsoDateToRu(toInput.value)
+        : "ДД.ММ.ГГГГ";
+    }
+  }
+
+  function syncCourierFilterDateInputsFromState() {
+    const dateFromInput = document.getElementById("courier-filter-date-from");
+    const dateToInput = document.getElementById("courier-filter-date-to");
+    if (dateFromInput) dateFromInput.value = currentCourierFilterDateFrom || "";
+    if (dateToInput) dateToInput.value = currentCourierFilterDateTo || "";
+  }
+
+  function syncCourierSheetInputsFromState() {
+    const dateFromInput = document.getElementById("courier-filter-date-from-sheet");
+    const dateToInput = document.getElementById("courier-filter-date-to-sheet");
+    if (dateFromInput) dateFromInput.value = currentCourierFilterDateFrom || "";
+    if (dateToInput) dateToInput.value = currentCourierFilterDateTo || "";
+    syncCourierSheetDateDisplays();
+  }
+
+  function syncAllCourierFilterInputsFromState() {
+    syncCourierFilterDateInputsFromState();
+    syncCourierSheetInputsFromState();
+  }
+
+  function countActiveCourierFilters() {
+    let n = 0;
+    if (currentCourierFilterDateFrom) n += 1;
+    if (currentCourierFilterDateTo) n += 1;
+    return n;
+  }
+
+  function updateCourierFilterBadge() {
+    const badge = document.getElementById("courier-filter-active-badge");
+    if (!badge) return;
+    const n = countActiveCourierFilters();
+    if (n > 0) {
+      badge.textContent = String(n);
+      badge.hidden = false;
+      badge.setAttribute("aria-label", `Активных условий: ${n}`);
+    } else {
+      badge.textContent = "";
+      badge.hidden = true;
+      badge.removeAttribute("aria-label");
+    }
+  }
+
+  function openCourierFiltersSheet() {
+    syncCourierSheetInputsFromState();
+    const sheet = document.getElementById("courier-filters-sheet");
+    const openBtn = document.getElementById("courier-filter-open-sheet-btn");
+    if (sheet) {
+      sheet.classList.add("filters-sheet--open");
+      sheet.setAttribute("aria-hidden", "false");
+    }
+    if (openBtn) openBtn.setAttribute("aria-expanded", "true");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeCourierFiltersSheet() {
+    const sheet = document.getElementById("courier-filters-sheet");
+    const openBtn = document.getElementById("courier-filter-open-sheet-btn");
+    if (sheet) {
+      sheet.classList.remove("filters-sheet--open");
+      sheet.setAttribute("aria-hidden", "true");
+    }
+    if (openBtn) openBtn.setAttribute("aria-expanded", "false");
+    document.body.style.overflow = "";
+  }
+
+  function applyCourierFiltersFromSheet() {
+    const dateFromInput = document.getElementById("courier-filter-date-from-sheet");
+    const dateToInput = document.getElementById("courier-filter-date-to-sheet");
+    if (dateFromInput) currentCourierFilterDateFrom = dateFromInput.value || "";
+    if (dateToInput) currentCourierFilterDateTo = dateToInput.value || "";
+    syncCourierFilterDateInputsFromState();
+    scheduleCourierFilterDateInputsSync();
+    applyCourierFiltersAndDisplay();
+    closeCourierFiltersSheet();
+  }
+
+  function scheduleCourierFilterDateInputsSync() {
+    syncCourierFilterDateInputsFromState();
+    requestAnimationFrame(syncCourierFilterDateInputsFromState);
+    setTimeout(syncCourierFilterDateInputsFromState, 0);
+    setTimeout(syncCourierFilterDateInputsFromState, 150);
+  }
+
+  function resetCourierFilters() {
+    currentCourierFilterDateFrom = "";
+    currentCourierFilterDateTo = "";
+    syncAllCourierFilterInputsFromState();
+    scheduleCourierFilterDateInputsSync();
+    applyCourierFiltersAndDisplay();
+  }
+
+  function applyCourierFiltersAndDisplay() {
+    let filteredReports = allReports.filter(
+      (report) => String(report.userId) === String(currentUserId),
+    );
+
+    if (currentCourierFilterDateFrom) {
+      filteredReports = filteredReports.filter(
+        (report) => report.date >= currentCourierFilterDateFrom,
+      );
+    }
+    if (currentCourierFilterDateTo) {
+      filteredReports = filteredReports.filter(
+        (report) => report.date <= currentCourierFilterDateTo,
+      );
+    }
+
+    displayCourierReportsList(filteredReports);
+    updateCourierFilterBadge();
+  }
+
+  function displayCourierReportsList(reports) {
+    const container = document.getElementById("courier-reports-list-container");
+    if (!container) return;
+
+    if (reports.length === 0) {
+      container.innerHTML =
+        '<div class="empty-deliveries">Нет отчётов по выбранным фильтрам</div>';
+      return;
+    }
+
+    container.innerHTML = "";
+    reports.forEach((report) => {
+      const reportDiv = document.createElement("div");
+      reportDiv.className = "report-item report-item--compact";
+      reportDiv.dataset.id = report.id;
+
+      const dateEl = document.createElement("div");
+      dateEl.className = "report-item-date";
+      dateEl.textContent = report.formattedDate || report.date;
+
+      reportDiv.appendChild(dateEl);
+      reportDiv.addEventListener("click", () => showReportDetail(report));
+      container.appendChild(reportDiv);
+    });
+  }
+
+  function showCourierReportsListScreen() {
+    reportsListContext = "courier";
+    if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
+    if (mainScreen) mainScreen.style.display = "none";
+    if (deliveriesScreen) deliveriesScreen.style.display = "none";
+    if (adminScreen) adminScreen.style.display = "none";
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportDetailScreen) reportDetailScreen.style.display = "none";
+    const detailsScreen = document.getElementById("details-screen");
+    if (detailsScreen) detailsScreen.style.display = "none";
+
+    if (courierReportsListScreen) {
+      courierReportsListScreen.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      `;
+    }
+
+    loadAllReports();
+    syncAllCourierFilterInputsFromState();
+    scheduleCourierFilterDateInputsSync();
+    applyCourierFiltersAndDisplay();
+    currentScreen = "courier-reports";
+  }
+
+  function backToCourierMenuFromReports() {
+    closeCourierFiltersSheet();
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    showCourierMenuScreen();
+  }
+
+  function updateCourierFilterDateFrom() {
+    const el = document.getElementById("courier-filter-date-from");
+    if (el) {
+      currentCourierFilterDateFrom = el.value || "";
+      applyCourierFiltersAndDisplay();
+    }
+  }
+
+  function updateCourierFilterDateTo() {
+    const el = document.getElementById("courier-filter-date-to");
+    if (el) {
+      currentCourierFilterDateTo = el.value || "";
+      applyCourierFiltersAndDisplay();
+    }
+  }
+
   // Показываем экран списка отчётов
   function showReportsListScreen() {
     console.log("showReportsListScreen вызван");
+    reportsListContext = "admin";
 
     // Скрываем админ-панель
     if (adminScreen) adminScreen.style.display = "none";
     const detailsScreen = document.getElementById("details-screen");
     if (detailsScreen) detailsScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
 
     // Показываем экран списка отчётов
     const reportsListScreen = document.getElementById("reports-list-screen");
@@ -1089,12 +1317,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openDeleteReportModal(report) {
-    if (currentUserRole !== "admin" || !report) return;
+    if (!report) return;
+    if (currentUserRole === "courier") {
+      if (String(report.userId) !== String(currentUserId)) return;
+    } else if (currentUserRole !== "admin") {
+      return;
+    }
     pendingDeleteReportId = report.id;
     const summary = document.getElementById("delete-report-modal-summary");
     if (summary) {
       const courier = report.userName || report.userPhone || "Курьер";
-      summary.textContent = `${report.formattedDate || report.date} · ${courier}`;
+      summary.textContent =
+        currentUserRole === "courier"
+          ? `${report.formattedDate || report.date}`
+          : `${report.formattedDate || report.date} · ${courier}`;
     }
     const bd = document.getElementById("delete-report-modal-backdrop");
     if (bd) bd.hidden = false;
@@ -1108,7 +1344,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function confirmDeleteReport() {
     const id = pendingDeleteReportId;
-    if (!id || currentUserRole !== "admin") {
+    if (!id) {
+      closeDeleteReportModal();
+      return;
+    }
+
+    const reportToDelete = allReports.find((r) => String(r.id) === String(id));
+    let allowed = false;
+    if (currentUserRole === "admin") allowed = true;
+    else if (
+      currentUserRole === "courier" &&
+      reportToDelete &&
+      String(reportToDelete.userId) === String(currentUserId)
+    ) {
+      allowed = true;
+    }
+    if (!allowed) {
       closeDeleteReportModal();
       return;
     }
@@ -1132,12 +1383,30 @@ document.addEventListener("DOMContentLoaded", () => {
       adminViewingReportId = null;
       if (detailScreen) detailScreen.style.display = "none";
       const reportsListScreen = document.getElementById("reports-list-screen");
-      if (reportsListScreen) reportsListScreen.style.display = "block";
+      if (reportsListContext === "courier") {
+        if (reportsListScreen) reportsListScreen.style.display = "none";
+        if (courierReportsListScreen) {
+          courierReportsListScreen.style.cssText = `
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 1 !important;
+          `;
+        }
+      } else {
+        if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+        if (reportsListScreen) reportsListScreen.style.display = "block";
+      }
       closeFiltersSheet();
+      closeCourierFiltersSheet();
     }
 
     populateCourierFilter();
     applyFiltersAndDisplay();
+    if (reportsListContext === "courier") {
+      applyCourierFiltersAndDisplay();
+    }
     showSuccess("Отчёт удалён");
   }
 
@@ -1217,6 +1486,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const reportsListScreen = document.getElementById("reports-list-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
 
     const reportDetailScreen = document.getElementById("report-detail-screen");
     if (reportDetailScreen) reportDetailScreen.style.display = "block";
@@ -1283,14 +1553,19 @@ document.addEventListener("DOMContentLoaded", () => {
       extraDeliveriesHTML += "</div>";
     }
 
-    const adminDeleteBlock =
-      currentUserRole === "admin"
-        ? `<div class="report-detail-delete-wrap">
+    const canDeleteReport =
+      currentUserRole === "admin" ||
+      (currentUserRole === "courier" &&
+        report &&
+        String(report.userId) === String(currentUserId));
+
+    const adminDeleteBlock = canDeleteReport
+      ? `<div class="report-detail-delete-wrap">
         <button type="button" class="report-detail-delete-btn" id="report-detail-delete-btn">
           Удалить отчёт
         </button>
       </div>`
-        : "";
+      : "";
 
     container.innerHTML = `
       <div class="detail-section">
@@ -1315,7 +1590,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ${adminDeleteBlock}
     `;
 
-    if (currentUserRole === "admin") {
+    if (canDeleteReport) {
       const delDetailBtn = document.getElementById("report-detail-delete-btn");
       if (delDetailBtn) {
         delDetailBtn.addEventListener("click", () =>
@@ -1333,18 +1608,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const reportDetailScreen = document.getElementById("report-detail-screen");
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
 
-    showReportsListScreen();
+    if (reportsListContext === "courier") {
+      showCourierReportsListScreen();
+    } else {
+      showReportsListScreen();
+    }
   }
 
   // Возврат к админ-панели
   function backToAdminPanel() {
     console.log("backToAdminPanel вызван");
     closeFiltersSheet();
+    closeCourierFiltersSheet();
 
     const reportsListScreen = document.getElementById("reports-list-screen");
     const detailsScreen = document.getElementById("details-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
 
     if (adminScreen) adminScreen.style.display = "block";
   }
@@ -1520,6 +1801,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const reportsListScreen = document.getElementById("reports-list-screen");
     const reportDetailScreen = document.getElementById("report-detail-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     const detailsMonthHidden = document.getElementById("details-month");
     if (detailsMonthHidden && !detailsMonthHidden.value) {
@@ -1923,8 +2205,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (courierMyReportsBtn) {
     courierMyReportsBtn.addEventListener("click", () => {
-      /* «Мои отчёты» — позже */
+      showCourierReportsListScreen();
     });
+  }
+  const backToCourierMenuFromReportsBtn = document.getElementById(
+    "back-to-courier-menu-from-reports-btn",
+  );
+  if (backToCourierMenuFromReportsBtn) {
+    backToCourierMenuFromReportsBtn.addEventListener(
+      "click",
+      backToCourierMenuFromReports,
+    );
   }
   if (backToCourierMenuBtn) {
     backToCourierMenuBtn.addEventListener("click", backToCourierMenu);
@@ -2040,12 +2331,83 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   syncSheetDateDisplays();
 
+  const courierFilterDateFrom = document.getElementById("courier-filter-date-from");
+  const courierFilterDateTo = document.getElementById("courier-filter-date-to");
+  const courierFilterResetBtn = document.getElementById("courier-filter-reset-btn");
+  const courierFilterOpenSheetBtn = document.getElementById(
+    "courier-filter-open-sheet-btn",
+  );
+  const courierFilterMobileResetBtn = document.getElementById(
+    "courier-filter-mobile-reset-btn",
+  );
+  const courierFiltersSheetBackdrop = document.getElementById(
+    "courier-filters-sheet-backdrop",
+  );
+  const courierFiltersSheetApply = document.getElementById(
+    "courier-filters-sheet-apply",
+  );
+  const courierFiltersSheetReset = document.getElementById(
+    "courier-filters-sheet-reset",
+  );
+  const courierFilterDateFromSheet = document.getElementById(
+    "courier-filter-date-from-sheet",
+  );
+  const courierFilterDateToSheet = document.getElementById(
+    "courier-filter-date-to-sheet",
+  );
+
+  if (courierFilterOpenSheetBtn) {
+    courierFilterOpenSheetBtn.addEventListener("click", openCourierFiltersSheet);
+  }
+  if (courierFilterMobileResetBtn) {
+    courierFilterMobileResetBtn.addEventListener("click", () => {
+      resetCourierFilters();
+      closeCourierFiltersSheet();
+    });
+  }
+  if (courierFiltersSheetBackdrop) {
+    courierFiltersSheetBackdrop.addEventListener("click", closeCourierFiltersSheet);
+  }
+  if (courierFiltersSheetApply) {
+    courierFiltersSheetApply.addEventListener("click", applyCourierFiltersFromSheet);
+  }
+  if (courierFiltersSheetReset) {
+    courierFiltersSheetReset.addEventListener("click", () => {
+      resetCourierFilters();
+      closeCourierFiltersSheet();
+    });
+  }
+  if (courierFilterDateFrom) {
+    courierFilterDateFrom.addEventListener("change", updateCourierFilterDateFrom);
+  }
+  if (courierFilterDateTo) {
+    courierFilterDateTo.addEventListener("change", updateCourierFilterDateTo);
+  }
+  if (courierFilterResetBtn) {
+    courierFilterResetBtn.addEventListener("click", resetCourierFilters);
+  }
+  if (courierFilterDateFromSheet) {
+    courierFilterDateFromSheet.addEventListener("change", syncCourierSheetDateDisplays);
+    courierFilterDateFromSheet.addEventListener("input", syncCourierSheetDateDisplays);
+  }
+  if (courierFilterDateToSheet) {
+    courierFilterDateToSheet.addEventListener("change", syncCourierSheetDateDisplays);
+    courierFilterDateToSheet.addEventListener("input", syncCourierSheetDateDisplays);
+  }
+  syncCourierSheetDateDisplays();
+
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     const delBd = document.getElementById("delete-report-modal-backdrop");
     if (delBd && !delBd.hidden) {
       e.preventDefault();
       closeDeleteReportModal();
+      return;
+    }
+    const courierSheet = document.getElementById("courier-filters-sheet");
+    if (courierSheet && courierSheet.classList.contains("filters-sheet--open")) {
+      e.preventDefault();
+      closeCourierFiltersSheet();
       return;
     }
     const sheet = document.getElementById("filters-sheet");
@@ -2056,6 +2418,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   window.addEventListener("resize", () => {
-    if (window.innerWidth >= 640) closeFiltersSheet();
+    if (window.innerWidth >= 640) {
+      closeFiltersSheet();
+      closeCourierFiltersSheet();
+    }
   });
 });

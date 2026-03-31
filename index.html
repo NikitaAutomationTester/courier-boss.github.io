@@ -341,6 +341,216 @@
       </div>
     </div>
 
+    <!-- ЭКРАН «МОИ ОТЧЁТЫ» (курьер) -->
+    <div class="container" id="courier-reports-list-screen" style="display: none">
+      <div class="screen-header">
+        <button
+          type="button"
+          id="back-to-courier-menu-from-reports-btn"
+          class="back-button"
+          aria-label="Назад в главное меню"
+        >
+          ←
+        </button>
+        <h1 class="screen-title">Мои отчёты</h1>
+        <div class="placeholder"></div>
+      </div>
+
+      <div
+        class="filters-mobile-bar"
+        role="toolbar"
+        aria-label="Фильтры отчётов"
+      >
+        <button
+          type="button"
+          id="courier-filter-open-sheet-btn"
+          class="filters-mobile-bar__open"
+          aria-expanded="false"
+          aria-controls="courier-filters-sheet"
+        >
+          <span class="filters-mobile-bar__open-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+          </span>
+          <span class="filters-mobile-bar__open-text">Фильтр</span>
+          <span
+            id="courier-filter-active-badge"
+            class="filter-active-badge"
+            hidden
+            aria-label=""
+          ></span>
+        </button>
+        <button
+          type="button"
+          id="courier-filter-mobile-reset-btn"
+          class="filters-mobile-bar__reset"
+          aria-label="Сбросить фильтр"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        </button>
+      </div>
+
+      <div
+        class="filters-section filters-section--desktop"
+        role="region"
+        aria-label="Фильтры отчётов"
+      >
+        <div class="filters-compact filters-compact--courier-only">
+          <div class="filter-block">
+            <span class="filter-label">Период</span>
+            <div class="filter-period-row">
+              <div class="filter-date-group">
+                <label class="filter-sublabel" for="courier-filter-date-from"
+                  >С</label
+                >
+                <input
+                  type="date"
+                  id="courier-filter-date-from"
+                  class="max-input filter-date"
+                  autocomplete="off"
+                  value=""
+                />
+              </div>
+              <div class="filter-date-group">
+                <label class="filter-sublabel" for="courier-filter-date-to"
+                  >По</label
+                >
+                <input
+                  type="date"
+                  id="courier-filter-date-to"
+                  class="max-input filter-date"
+                  autocomplete="off"
+                  value=""
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="courier-filter-reset-btn"
+            class="max-button filter-reset-btn"
+          >
+            Сбросить фильтр
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="courier-filters-sheet"
+        class="filters-sheet"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="courier-filters-sheet-title"
+      >
+        <div
+          class="filters-sheet__backdrop"
+          id="courier-filters-sheet-backdrop"
+          tabindex="-1"
+        ></div>
+        <div class="filters-sheet__panel">
+          <div class="filters-sheet__handle" aria-hidden="true"></div>
+          <h2 id="courier-filters-sheet-title" class="filters-sheet__title">
+            Фильтр
+          </h2>
+          <div class="filters-sheet__body">
+            <div class="filter-block">
+              <span class="filter-label">Период</span>
+              <div class="filter-period-row filter-period-row--sheet">
+                <div class="filter-date-group">
+                  <label
+                    class="filter-sublabel"
+                    for="courier-filter-date-from-sheet"
+                    >С</label
+                  >
+                  <div class="sheet-date-control">
+                    <input
+                      type="date"
+                      id="courier-filter-date-from-sheet"
+                      class="sheet-date-input"
+                      autocomplete="off"
+                      value=""
+                    />
+                    <div
+                      class="sheet-date-display"
+                      id="courier-filter-date-from-sheet-display"
+                    >
+                      ДД.ММ.ГГГГ
+                    </div>
+                  </div>
+                </div>
+                <div class="filter-date-group">
+                  <label
+                    class="filter-sublabel"
+                    for="courier-filter-date-to-sheet"
+                    >По</label
+                  >
+                  <div class="sheet-date-control">
+                    <input
+                      type="date"
+                      id="courier-filter-date-to-sheet"
+                      class="sheet-date-input"
+                      autocomplete="off"
+                      value=""
+                    />
+                    <div
+                      class="sheet-date-display"
+                      id="courier-filter-date-to-sheet-display"
+                    >
+                      ДД.ММ.ГГГГ
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="filters-sheet__actions">
+            <button
+              type="button"
+              id="courier-filters-sheet-reset"
+              class="max-button filters-sheet__btn filters-sheet__btn--secondary"
+            >
+              Сбросить
+            </button>
+            <button
+              type="button"
+              id="courier-filters-sheet-apply"
+              class="max-button filters-sheet__btn filters-sheet__btn--primary"
+            >
+              Применить
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="courier-reports-list-container" class="reports-list">
+        <div class="loading">Загрузка отчётов...</div>
+      </div>
+    </div>
+
     <!-- ЭКРАН ДЕТАЛЬНОГО ПРОСМОТРА ОТЧЁТА -->
     <div class="container" id="report-detail-screen" style="display: none">
       <div class="screen-header">
