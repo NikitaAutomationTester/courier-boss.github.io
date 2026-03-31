@@ -763,7 +763,7 @@
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="delete-report-modal-title"
-        aria-describedby="delete-report-modal-summary"
+        aria-describedby="delete-report-modal-summary delete-report-modal-hint"
       >
         <div class="modal-header delete-report-modal-header">
           <div class="modal-title" id="delete-report-modal-title">
@@ -775,10 +775,10 @@
             class="delete-report-modal-summary"
             id="delete-report-modal-summary"
           ></p>
-          <p class="delete-report-modal-hint">
-            Отчёт удалится у всех, включая курьера. Отменить удаление будет
-            нельзя.
-          </p>
+          <p
+            class="delete-report-modal-hint"
+            id="delete-report-modal-hint"
+          ></p>
         </div>
         <div class="modal-footer delete-report-modal-footer">
           <button

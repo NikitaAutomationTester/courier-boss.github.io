@@ -1332,6 +1332,13 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `${report.formattedDate || report.date}`
           : `${report.formattedDate || report.date} · ${courier}`;
     }
+    const hint = document.getElementById("delete-report-modal-hint");
+    if (hint) {
+      hint.textContent =
+        currentUserRole === "courier"
+          ? "Отчёт удалится у всех, включая админа. Отменить удаление будет нельзя."
+          : "Отчёт удалится у всех, включая курьера. Отменить удаление будет нельзя.";
+    }
     const bd = document.getElementById("delete-report-modal-backdrop");
     if (bd) bd.hidden = false;
   }
