@@ -56,6 +56,28 @@
       </div>
     </div>
 
+    <!-- Главное меню курьера (как у админа по вёрстке) -->
+    <div class="container" id="courier-menu-screen" style="display: none">
+      <h1>Главное меню</h1>
+
+      <div class="admin-menu">
+        <button
+          type="button"
+          id="courier-create-report-btn"
+          class="max-button max-button--primary"
+        >
+          Создать отчёт
+        </button>
+        <button
+          type="button"
+          id="courier-my-reports-btn"
+          class="max-button max-button--primary"
+        >
+          Мои отчёты
+        </button>
+      </div>
+    </div>
+
     <!-- ЭКРАН ДЕТАЛИЗАЦИИ (для администратора) -->
     <div class="container" id="details-screen" style="display: none">
       <div class="screen-header">
@@ -342,6 +364,16 @@
 
     <!-- ОСНОВНОЙ ЭКРАН -->
     <div class="container" id="main-screen" style="display: none">
+      <div id="courier-menu-back-row" class="courier-menu-back-row" style="display: none">
+        <button
+          type="button"
+          id="back-to-courier-menu-btn"
+          class="back-button"
+          aria-label="Назад в главное меню"
+        >
+          ←
+        </button>
+      </div>
       <h1>Отчёт за день</h1>
 
       <!-- Поле для выбора даты -->

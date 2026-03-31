@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadingScreen = document.getElementById("loading-screen");
   const authScreen = document.getElementById("auth-screen");
   const adminScreen = document.getElementById("admin-screen");
+  const courierMenuScreen = document.getElementById("courier-menu-screen");
   const adminReportsBtn = document.getElementById("admin-reports-btn");
   const adminDetailsBtn = document.getElementById("admin-details-btn");
   const authPhone = document.getElementById("auth-phone");
@@ -47,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
     if (authScreen) authScreen.style.display = "none";
     if (adminScreen) adminScreen.style.display = "none";
+    if (courierMenuScreen) courierMenuScreen.style.display = "none";
     const reportsListScreen = document.getElementById("reports-list-screen");
     const reportDetailScreen = document.getElementById("report-detail-screen");
     const detailsScreen = document.getElementById("details-screen");
@@ -85,6 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
     if (adminScreen) adminScreen.style.display = "none";
+    if (courierMenuScreen) courierMenuScreen.style.display = "none";
     if (authError) authError.style.display = "none";
     const reportsListScreen = document.getElementById("reports-list-screen");
     const reportDetailScreen = document.getElementById("report-detail-screen");
@@ -107,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "block";
     if (adminScreen) adminScreen.style.display = "none";
+    if (courierMenuScreen) courierMenuScreen.style.display = "none";
     const reportsListScreen = document.getElementById("reports-list-screen");
     const reportDetailScreen = document.getElementById("report-detail-screen");
     const detailsScreen = document.getElementById("details-screen");
@@ -159,25 +163,65 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("adminScreen показан");
       }
       if (mainScreen) mainScreen.style.display = "none";
+      if (courierMenuScreen) courierMenuScreen.style.display = "none";
     } else {
-      // Курьер — показываем главный экран
-      if (mainScreen) {
-        mainScreen.style.cssText = `
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-          position: relative !important;
-          z-index: 1 !important;
-        `;
-        console.log("mainScreen показан");
-      }
+      // Курьер — главное меню (как панель администратора)
       if (adminScreen) adminScreen.style.display = "none";
+      showCourierMenuScreen();
+      console.log("courierMenuScreen показан");
     }
 
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (accessDeniedScreen) accessDeniedScreen.style.display = "none";
 
     console.log("=== showMainInterface END ===");
+  }
+
+  function setCourierMainBackRowVisible(visible) {
+    const row = document.getElementById("courier-menu-back-row");
+    if (!row) return;
+    if (currentUserRole === "admin") {
+      row.style.display = "none";
+      return;
+    }
+    row.style.display = visible ? "flex" : "none";
+  }
+
+  function showCourierMenuScreen() {
+    if (courierMenuScreen) {
+      courierMenuScreen.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      `;
+    }
+    if (mainScreen) mainScreen.style.display = "none";
+    if (deliveriesScreen) deliveriesScreen.style.display = "none";
+    setCourierMainBackRowVisible(false);
+    currentScreen = "courier-menu";
+  }
+
+  function showCourierCreateReport() {
+    if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
+    if (mainScreen) {
+      mainScreen.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      `;
+    }
+    setCourierMainBackRowVisible(true);
+    currentScreen = "main";
+    updateTotalSalary();
+  }
+
+  function backToCourierMenu() {
+    if (currentUserRole === "admin") return;
+    showCourierMenuScreen();
   }
 
   // Показываем ошибку на экране авторизации
@@ -782,6 +826,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mainScreen) mainScreen.style.display = "block";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     currentScreen = "main";
+    setCourierMainBackRowVisible(currentUserRole !== "admin");
     updateTotalSalary();
   }
 
@@ -1875,6 +1920,27 @@ document.addEventListener("DOMContentLoaded", () => {
       showDetailsScreen();
     });
     console.log("adminDetailsBtn обработчик добавлен");
+  }
+
+  const courierCreateReportBtn = document.getElementById(
+    "courier-create-report-btn",
+  );
+  const courierMyReportsBtn = document.getElementById("courier-my-reports-btn");
+  const backToCourierMenuBtn = document.getElementById(
+    "back-to-courier-menu-btn",
+  );
+  if (courierCreateReportBtn) {
+    courierCreateReportBtn.addEventListener("click", () => {
+      showCourierCreateReport();
+    });
+  }
+  if (courierMyReportsBtn) {
+    courierMyReportsBtn.addEventListener("click", () => {
+      /* «Мои отчёты» — позже */
+    });
+  }
+  if (backToCourierMenuBtn) {
+    backToCourierMenuBtn.addEventListener("click", backToCourierMenu);
   }
 
   // Обработчики навигации для экранов администратора

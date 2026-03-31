@@ -602,6 +602,14 @@ textarea.max-input {
     margin-top: 12px;
 }
 
+/* Строка «назад в главное меню» над формой отчёта (только курьер) */
+.courier-menu-back-row {
+    display: flex;
+    align-items: center;
+    margin: 0 0 2px;
+    min-height: 44px;
+}
+
 .details-panel {
     margin-top: 8px;
     padding: 14px;
