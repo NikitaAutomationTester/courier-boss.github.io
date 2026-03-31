@@ -177,16 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("=== showMainInterface END ===");
   }
 
-  function setCourierMainBackRowVisible(visible) {
-    const row = document.getElementById("courier-menu-back-row");
-    if (!row) return;
-    if (currentUserRole === "admin") {
-      row.style.display = "none";
-      return;
-    }
-    row.style.display = visible ? "flex" : "none";
-  }
-
   function showCourierMenuScreen() {
     if (courierMenuScreen) {
       courierMenuScreen.style.cssText = `
@@ -199,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
-    setCourierMainBackRowVisible(false);
     currentScreen = "courier-menu";
   }
 
@@ -214,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
         z-index: 1 !important;
       `;
     }
-    setCourierMainBackRowVisible(true);
     currentScreen = "main";
     updateTotalSalary();
   }
@@ -826,7 +814,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mainScreen) mainScreen.style.display = "block";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     currentScreen = "main";
-    setCourierMainBackRowVisible(currentUserRole !== "admin");
     updateTotalSalary();
   }
 
