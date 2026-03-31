@@ -1049,27 +1049,6 @@ textarea.max-input {
     margin-left: 6px;
 }
 
-/* Строка итоговой зарплаты (без лишних разделителей) */
-.total-salary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 0 8px 0;
-    margin-top: 8px;
-    border-top: 1px solid var(--max-border-color, #e0e0e0);
-}
-
-.total-salary-label {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--max-text-color, #000000);
-}
-
-.total-salary-amount {
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--max-primary-color, #007aff);
-}
 /* Фильтры отчётов (админ): в стиле остального приложения */
 .filters-section {
     margin-bottom: 12px;

@@ -1590,9 +1590,9 @@ document.addEventListener("DOMContentLoaded", () => {
       ${clinicsHTML}
       ${extraDeliveriesHTML}
       
-      <div class="total-salary-row">
-        <span class="total-salary-label">Итого зп за день:</span>
-        <span class="total-salary-amount">${(report.totalSalary ?? 0).toLocaleString("ru-RU")} ₽</span>
+      <div class="salary-row">
+        <span class="salary-label">Зарплата за день:</span>
+        <span class="salary-amount-inline">${(report.totalSalary ?? 0).toLocaleString("ru-RU")} ₽</span>
       </div>
       ${adminDeleteBlock}
     `;
