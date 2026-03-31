@@ -206,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showCourierCreateReport() {
+    hideMainReportError();
     if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
     if (mainScreen) {
       mainScreen.style.cssText = `
@@ -606,7 +607,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalSalaryElement = document.getElementById("total-salary");
     if (totalSalaryElement)
       totalSalaryElement.textContent = total.toLocaleString("ru-RU") + " ₽";
-    checkFormValidity();
+    const valid = checkFormValidity();
+    const errEl = document.getElementById("main-report-error");
+    if (
+      errEl &&
+      errEl.style.display === "block" &&
+      errEl.dataset.errorKind !== "duplicate" &&
+      valid
+    ) {
+      hideMainReportError();
+    }
     return total;
   }
 
@@ -689,11 +699,51 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("displayClinics завершён");
   }
 
-  async function saveReport() {
+  function hideMainReportError() {
+    const el = document.getElementById("main-report-error");
+    if (el) {
+      el.textContent = "";
+      el.style.display = "none";
+      delete el.dataset.errorKind;
+    }
+  }
+
+  /** kind: "duplicate" — не гасим при смене клиник/доставок, только дата или новая отправка */
+  function showMainReportError(message, kind = "default") {
+    const el = document.getElementById("main-report-error");
+    if (el) {
+      el.textContent = message;
+      el.style.display = "block";
+      el.dataset.errorKind = kind;
+    }
+  }
+
+  function resetMainReportForm() {
+    hideMainReportError();
     const dateInput = document.getElementById("report-date");
-    const selectedDate = dateInput.value;
+    const dateDisplay = document.getElementById("report-date-display");
+    if (dateInput) dateInput.value = "";
+    if (dateDisplay) dateDisplay.textContent = "";
+    extraDeliveries = [];
+    updateDeliveriesList();
+    document.querySelectorAll(".clinic-item").forEach((item) => {
+      const checkbox = item.querySelector(".clinic-checkbox");
+      if (checkbox) {
+        checkbox.checked = false;
+        item.classList.remove("selected");
+      }
+    });
+    updateTotalSalary();
+    checkFormValidity();
+  }
+
+  async function saveReport() {
+    hideMainReportError();
+
+    const dateInput = document.getElementById("report-date");
+    const selectedDate = dateInput ? dateInput.value : "";
     if (!selectedDate) {
-      showError("Пожалуйста, выберите дату");
+      showMainReportError("Пожалуйста, выберите дату");
       return;
     }
 
@@ -731,7 +781,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const hasExtraDeliveries = extraDeliveries.length > 0;
 
     if (selectedClinics.length === 0 && !hasExtraDeliveries) {
-      showError("Выберите клиники или добавьте доставку");
+      showMainReportError("Выберите клиники или добавьте доставку");
+      return;
+    }
+
+    let savedReports;
+    try {
+      savedReports = JSON.parse(localStorage.getItem("reports") || "[]");
+    } catch {
+      showMainReportError("Не удалось сохранить отчёт. Попробуйте ещё раз.");
+      return;
+    }
+
+    const duplicateForDate = savedReports.some(
+      (r) =>
+        String(r.userId) === String(currentUserId) &&
+        String(r.date) === String(selectedDate),
+    );
+    if (duplicateForDate) {
+      showMainReportError("Отчёт за эту дату уже создан", "duplicate");
       return;
     }
 
@@ -752,16 +820,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Отправлен отчет:", report);
 
-    // Сохраняем отчёт в localStorage
-    const savedReports = JSON.parse(localStorage.getItem("reports") || "[]");
     savedReports.push(report);
-    localStorage.setItem("reports", JSON.stringify(savedReports));
+    try {
+      localStorage.setItem("reports", JSON.stringify(savedReports));
+    } catch {
+      showMainReportError("Не удалось сохранить отчёт. Попробуйте ещё раз.");
+      return;
+    }
     console.log(
       "Отчёт сохранён в localStorage, всего отчётов:",
       savedReports.length,
     );
 
-    showSuccess("Отчёт успешно отправлен");
+    resetMainReportForm();
+    showCourierMenuScreen();
   }
 
   // Функции для дополнительных доставок
@@ -2126,16 +2198,19 @@ document.addEventListener("DOMContentLoaded", () => {
     dateInput.value = "";
     syncDateDisplay();
     dateInput.addEventListener("change", () => {
+      hideMainReportError();
       syncDateDisplay();
       checkFormValidity();
     });
     dateInput.addEventListener("input", () => {
+      hideMainReportError();
       syncDateDisplay();
       checkFormValidity();
     });
 
     const dateQuickButtons = document.querySelectorAll(".date-quick-btn");
     const setDateByOffsetDays = (offsetDays) => {
+      hideMainReportError();
       const d = new Date();
       d.setHours(0, 0, 0, 0);
       d.setDate(d.getDate() + offsetDays);
