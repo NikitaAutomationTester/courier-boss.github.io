@@ -75,6 +75,82 @@
         >
           Мои отчёты
         </button>
+        <button
+          type="button"
+          id="courier-finances-btn"
+          class="max-button max-button--primary"
+        >
+          Мои финансы
+        </button>
+      </div>
+    </div>
+
+    <!-- Мои финансы (курьер) -->
+    <div class="container" id="courier-finances-screen" style="display: none">
+      <div class="screen-header">
+        <button
+          type="button"
+          id="back-to-courier-menu-from-finances-btn"
+          class="back-button"
+          aria-label="Назад в главное меню"
+        >
+          ←
+        </button>
+        <h1 class="screen-title">Мои финансы</h1>
+        <div class="placeholder"></div>
+      </div>
+
+      <div class="finance-panel finance-panel--debt">
+        <div class="finance-panel-label">Текущий долг по зарплате</div>
+        <div class="finance-debt-amount" id="courier-finance-debt">0 ₽</div>
+        <p class="finance-panel-hint">
+          Сумма, которую вам ещё должны выплатить (начисления минус выплаты).
+        </p>
+      </div>
+
+      <div class="finance-summary-grid">
+        <div class="finance-summary-card">
+          <div class="finance-summary-label">Начисления</div>
+          <div class="finance-summary-value" id="courier-finance-accruals-total">
+            0 ₽
+          </div>
+        </div>
+        <div class="finance-summary-card">
+          <div class="finance-summary-label">Выплаты</div>
+          <div class="finance-summary-value" id="courier-finance-payouts-total">
+            0 ₽
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-menu finance-history-cta">
+        <button
+          type="button"
+          id="courier-finances-history-btn"
+          class="max-button max-button--primary"
+        >
+          История операций
+        </button>
+      </div>
+    </div>
+
+    <!-- История операций (курьер) -->
+    <div class="container" id="courier-finances-history-screen" style="display: none">
+      <div class="screen-header">
+        <button
+          type="button"
+          id="back-to-courier-finances-btn"
+          class="back-button"
+          aria-label="Назад к моим финансам"
+        >
+          ←
+        </button>
+        <h1 class="screen-title">История операций</h1>
+        <div class="placeholder"></div>
+      </div>
+
+      <div id="courier-finances-history-list" class="reports-list">
+        <div class="empty-deliveries">Нет операций</div>
       </div>
     </div>
 

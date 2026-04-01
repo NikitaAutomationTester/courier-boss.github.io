@@ -34,7 +34,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const courierReportsListScreen = document.getElementById(
     "courier-reports-list-screen",
   );
+  const courierFinancesScreen = document.getElementById("courier-finances-screen");
+  const courierFinancesHistoryScreen = document.getElementById(
+    "courier-finances-history-screen",
+  );
   const adminReportsBtn = document.getElementById("admin-reports-btn");
+
+  /** Выплаты курьеру (позже — из данных бухгалтера). Формат: { id, userId, amount, date, formattedDate?, note?, createdAt? } */
+  const COURIER_PAYOUTS_STORAGE_KEY = "courier_payouts";
+
+  function hideCourierFinanceScreens() {
+    if (courierFinancesScreen) courierFinancesScreen.style.cssText = "display: none;";
+    if (courierFinancesHistoryScreen)
+      courierFinancesHistoryScreen.style.cssText = "display: none;";
+  }
   const adminDetailsBtn = document.getElementById("admin-details-btn");
   const authPhone = document.getElementById("auth-phone");
   const authLoginBtn = document.getElementById("auth-login-btn");
@@ -63,6 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    hideCourierFinanceScreens();
   }
 
   // Скрываем экран загрузки
@@ -104,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    hideCourierFinanceScreens();
   }
 
   // Показываем экран отказа в доступе
@@ -127,6 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    hideCourierFinanceScreens();
   }
 
   // Показываем основной интерфейс (в зависимости от роли)
@@ -159,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    hideCourierFinanceScreens();
 
     // Показываем нужный экран в зависимости от роли
     if (currentUserRole === "admin") {
@@ -201,12 +218,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    hideCourierFinanceScreens();
     closeCourierFiltersSheet();
     currentScreen = "courier-menu";
   }
 
   function showCourierCreateReport() {
     hideMainReportError();
+    hideCourierFinanceScreens();
     if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
     if (mainScreen) {
       mainScreen.style.cssText = `
@@ -1236,6 +1255,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showCourierReportsListScreen() {
     reportsListContext = "courier";
+    hideCourierFinanceScreens();
     if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
     if (mainScreen) mainScreen.style.display = "none";
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
@@ -1267,6 +1287,199 @@ document.addEventListener("DOMContentLoaded", () => {
   function backToCourierMenuFromReports() {
     closeCourierFiltersSheet();
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    showCourierMenuScreen();
+  }
+
+  function loadCourierPayoutsFromStorage() {
+    try {
+      const raw = localStorage.getItem(COURIER_PAYOUTS_STORAGE_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function getCourierFinanceSnapshot() {
+    const uid = String(currentUserId || "");
+    let reports = [];
+    try {
+      reports = JSON.parse(localStorage.getItem("reports") || "[]");
+    } catch {
+      reports = [];
+    }
+
+    let accrualsTotal = 0;
+    const accrualOps = [];
+    reports.forEach((r) => {
+      if (String(r.userId) !== uid) return;
+      const amt = Number(r.totalSalary) || 0;
+      accrualsTotal += amt;
+      const dateLabel = r.formattedDate || r.date || "—";
+      accrualOps.push({
+        kind: "accrual",
+        amount: amt,
+        sortDate: r.date || "",
+        sortTime: r.timestamp ? new Date(r.timestamp).getTime() : 0,
+        subtitle: `Отчёт за ${dateLabel}`,
+        label: "Начисление",
+      });
+    });
+
+    const payoutOps = loadCourierPayoutsFromStorage()
+      .filter((p) => String(p.userId) === uid)
+      .map((p) => {
+        const amt = Math.abs(Number(p.amount) || 0);
+        const sortTime = p.createdAt
+          ? new Date(p.createdAt).getTime()
+          : Number(p.id) || 0;
+        const sub =
+          p.note ||
+          (p.formattedDate
+            ? `Выплата за ${p.formattedDate}`
+            : p.date
+              ? "Выплата"
+              : "Выплата");
+        return {
+          kind: "payout",
+          amount: amt,
+          sortDate: p.date || "",
+          sortTime,
+          subtitle: sub,
+          label: "Выплата",
+        };
+      });
+
+    const payoutsTotal = payoutOps.reduce((s, p) => s + p.amount, 0);
+    const operations = [...accrualOps, ...payoutOps].sort((a, b) => {
+      const da = a.sortDate || "";
+      const db = b.sortDate || "";
+      if (da !== db) return db.localeCompare(da);
+      return b.sortTime - a.sortTime;
+    });
+
+    return {
+      accrualsTotal,
+      payoutsTotal,
+      debt: accrualsTotal - payoutsTotal,
+      operations,
+    };
+  }
+
+  function formatMoneyRub(amount) {
+    const n = Math.round(Number(amount) || 0);
+    return `${n.toLocaleString("ru-RU")} ₽`;
+  }
+
+  function refreshCourierFinancesOverview() {
+    const { accrualsTotal, payoutsTotal, debt } = getCourierFinanceSnapshot();
+    const debtEl = document.getElementById("courier-finance-debt");
+    const accEl = document.getElementById("courier-finance-accruals-total");
+    const payEl = document.getElementById("courier-finance-payouts-total");
+    if (debtEl) debtEl.textContent = formatMoneyRub(debt);
+    if (accEl) accEl.textContent = formatMoneyRub(accrualsTotal);
+    if (payEl) payEl.textContent = formatMoneyRub(payoutsTotal);
+  }
+
+  function renderCourierFinanceHistoryList() {
+    const container = document.getElementById("courier-finances-history-list");
+    if (!container) return;
+    const { operations } = getCourierFinanceSnapshot();
+    if (operations.length === 0) {
+      container.innerHTML = '<div class="empty-deliveries">Нет операций</div>';
+      return;
+    }
+    container.innerHTML = "";
+    operations.forEach((op) => {
+      const card = document.createElement("div");
+      card.className = "finance-operation-card";
+      const top = document.createElement("div");
+      top.className = "finance-operation-top";
+      const amountEl = document.createElement("span");
+      amountEl.className =
+        "finance-operation-amount " +
+        (op.kind === "accrual"
+          ? "finance-operation-amount--plus"
+          : "finance-operation-amount--minus");
+      const sign = op.kind === "accrual" ? "+ " : "− ";
+      amountEl.textContent = sign + formatMoneyRub(op.amount);
+      const badge = document.createElement("span");
+      badge.className = "finance-operation-badge";
+      badge.textContent = op.label;
+      top.appendChild(amountEl);
+      top.appendChild(badge);
+      const sub = document.createElement("div");
+      sub.className = "finance-operation-subtitle";
+      sub.textContent = op.subtitle;
+      card.appendChild(top);
+      card.appendChild(sub);
+      container.appendChild(card);
+    });
+  }
+
+  function showCourierFinancesScreen() {
+    if (currentUserRole === "admin") return;
+    if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
+    if (mainScreen) mainScreen.style.display = "none";
+    if (deliveriesScreen) deliveriesScreen.style.display = "none";
+    if (adminScreen) adminScreen.style.display = "none";
+    const reportsListScreen = document.getElementById("reports-list-screen");
+    if (reportsListScreen) reportsListScreen.style.display = "none";
+    const reportDetailScreen = document.getElementById("report-detail-screen");
+    if (reportDetailScreen) reportDetailScreen.style.display = "none";
+    const detailsScreen = document.getElementById("details-screen");
+    if (detailsScreen) detailsScreen.style.display = "none";
+    if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    if (courierFinancesHistoryScreen)
+      courierFinancesHistoryScreen.style.cssText = "display: none;";
+    if (courierFinancesScreen) {
+      courierFinancesScreen.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      `;
+    }
+    refreshCourierFinancesOverview();
+    currentScreen = "courier-finances";
+  }
+
+  function showCourierFinancesHistoryScreen() {
+    if (currentUserRole === "admin") return;
+    if (courierFinancesScreen) courierFinancesScreen.style.cssText = "display: none;";
+    if (courierFinancesHistoryScreen) {
+      courierFinancesHistoryScreen.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      `;
+    }
+    renderCourierFinanceHistoryList();
+    currentScreen = "courier-finances-history";
+  }
+
+  function backToCourierFinancesFromHistory() {
+    if (courierFinancesHistoryScreen)
+      courierFinancesHistoryScreen.style.cssText = "display: none;";
+    if (courierFinancesScreen) {
+      courierFinancesScreen.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      `;
+    }
+    refreshCourierFinancesOverview();
+    currentScreen = "courier-finances";
+  }
+
+  function backToCourierMenuFromFinances() {
+    hideCourierFinanceScreens();
     showCourierMenuScreen();
   }
 
@@ -1707,6 +1920,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (detailsScreen) detailsScreen.style.display = "none";
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    hideCourierFinanceScreens();
 
     if (adminScreen) adminScreen.style.display = "block";
   }
@@ -1883,6 +2097,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const reportDetailScreen = document.getElementById("report-detail-screen");
     if (reportsListScreen) reportsListScreen.style.display = "none";
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
+    hideCourierFinanceScreens();
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
     const detailsMonthHidden = document.getElementById("details-month");
     if (detailsMonthHidden && !detailsMonthHidden.value) {
@@ -2299,6 +2514,38 @@ document.addEventListener("DOMContentLoaded", () => {
     backToCourierMenuFromReportsBtn.addEventListener(
       "click",
       backToCourierMenuFromReports,
+    );
+  }
+  const courierFinancesBtn = document.getElementById("courier-finances-btn");
+  const courierFinancesHistoryBtn = document.getElementById(
+    "courier-finances-history-btn",
+  );
+  const backToCourierMenuFromFinancesBtn = document.getElementById(
+    "back-to-courier-menu-from-finances-btn",
+  );
+  const backToCourierFinancesBtn = document.getElementById(
+    "back-to-courier-finances-btn",
+  );
+  if (courierFinancesBtn) {
+    courierFinancesBtn.addEventListener("click", () => {
+      showCourierFinancesScreen();
+    });
+  }
+  if (courierFinancesHistoryBtn) {
+    courierFinancesHistoryBtn.addEventListener("click", () => {
+      showCourierFinancesHistoryScreen();
+    });
+  }
+  if (backToCourierMenuFromFinancesBtn) {
+    backToCourierMenuFromFinancesBtn.addEventListener(
+      "click",
+      backToCourierMenuFromFinances,
+    );
+  }
+  if (backToCourierFinancesBtn) {
+    backToCourierFinancesBtn.addEventListener(
+      "click",
+      backToCourierFinancesFromHistory,
     );
   }
   if (backToCourierMenuBtn) {
