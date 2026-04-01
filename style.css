@@ -19,6 +19,47 @@ body {
     width: 100%;
 }
 
+/* Экран «Отчёт за день»: шапка и низ фиксированы по высоте окна, клиники скроллятся */
+.main-screen-courier {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.main-screen-courier > .screen-header,
+.main-screen-courier__date {
+    flex-shrink: 0;
+}
+
+.main-screen-courier__clinics-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    margin-bottom: 0;
+}
+
+.main-screen-courier__clinics-wrap > label {
+    flex-shrink: 0;
+}
+
+.main-screen-courier .clinics-grid--main-screen {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
+}
+
+.main-screen-courier .bottom-actions {
+    position: static;
+    flex-shrink: 0;
+    margin-top: 8px;
+}
+
 h1 {
     font-size: 20px;
     margin: 8px 0 12px;
