@@ -684,6 +684,9 @@ document.addEventListener("DOMContentLoaded", () => {
         .join(", ");
 
       const pay = clinicCourierPay(clinic);
+      const badgesRow = document.createElement("div");
+      badgesRow.className = "clinic-badges-row";
+
       const salarySpan = document.createElement("span");
       salarySpan.className = "clinic-salary";
       const salaryValue = document.createElement("span");
@@ -692,10 +695,20 @@ document.addEventListener("DOMContentLoaded", () => {
       salaryValue.style.display = "none";
       salarySpan.textContent = `${pay.toLocaleString("ru-RU")} ₽`;
 
+      badgesRow.appendChild(salarySpan);
+      badgesRow.appendChild(salaryValue);
+
+      const labName = (clinic.laboratory || "").trim();
+      if (labName) {
+        const labSpan = document.createElement("span");
+        labSpan.className = "clinic-laboratory";
+        labSpan.textContent = labName.toLowerCase();
+        badgesRow.appendChild(labSpan);
+      }
+
       infoDiv.appendChild(nameSpan);
       infoDiv.appendChild(addressSpan);
-      infoDiv.appendChild(salarySpan);
-      infoDiv.appendChild(salaryValue);
+      infoDiv.appendChild(badgesRow);
 
       clinicDiv.appendChild(checkbox);
       clinicDiv.appendChild(infoDiv);
