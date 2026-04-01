@@ -228,13 +228,12 @@ document.addEventListener("DOMContentLoaded", () => {
     hideCourierFinanceScreens();
     if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
     if (mainScreen) {
-      mainScreen.style.cssText = `
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        position: relative !important;
-        z-index: 1 !important;
-      `;
+      /* Не задавать display:block — ломает flex-раскладку .main-screen-courier */
+      mainScreen.style.cssText = "";
+      mainScreen.style.setProperty("visibility", "visible", "important");
+      mainScreen.style.setProperty("opacity", "1", "important");
+      mainScreen.style.setProperty("position", "relative", "important");
+      mainScreen.style.setProperty("z-index", "1", "important");
     }
     currentScreen = "main";
     updateTotalSalary();
@@ -928,7 +927,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showMainScreen() {
-    if (mainScreen) mainScreen.style.display = "block";
+    if (mainScreen) {
+      mainScreen.style.removeProperty("display");
+      mainScreen.style.visibility = "visible";
+      mainScreen.style.opacity = "1";
+    }
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     currentScreen = "main";
     updateTotalSalary();
