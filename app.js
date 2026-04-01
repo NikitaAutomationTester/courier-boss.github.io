@@ -1373,13 +1373,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function refreshCourierFinancesOverview() {
-    const { accrualsTotal, payoutsTotal, debt } = getCourierFinanceSnapshot();
+    const { debt } = getCourierFinanceSnapshot();
     const debtEl = document.getElementById("courier-finance-debt");
-    const accEl = document.getElementById("courier-finance-accruals-total");
-    const payEl = document.getElementById("courier-finance-payouts-total");
     if (debtEl) debtEl.textContent = formatMoneyRub(debt);
-    if (accEl) accEl.textContent = formatMoneyRub(accrualsTotal);
-    if (payEl) payEl.textContent = formatMoneyRub(payoutsTotal);
   }
 
   function renderCourierFinanceHistoryList() {
@@ -1402,8 +1398,7 @@ document.addEventListener("DOMContentLoaded", () => {
         (op.kind === "accrual"
           ? "finance-operation-amount--plus"
           : "finance-operation-amount--minus");
-      const sign = op.kind === "accrual" ? "+ " : "− ";
-      amountEl.textContent = sign + formatMoneyRub(op.amount);
+      amountEl.textContent = formatMoneyRub(op.amount);
       const badge = document.createElement("span");
       badge.className = "finance-operation-badge";
       badge.textContent = op.label;

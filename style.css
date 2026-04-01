@@ -995,42 +995,6 @@ textarea.max-input {
     font-weight: 700;
     color: var(--max-primary-color, #007aff);
     line-height: 1.2;
-    margin-bottom: 8px;
-}
-
-.finance-panel-hint {
-    font-size: 12px;
-    line-height: 1.4;
-    color: var(--max-hint-color, #8e8e93);
-    margin: 0;
-}
-
-.finance-summary-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 16px;
-}
-
-.finance-summary-card {
-    padding: 12px;
-    border: 1px solid var(--max-border-color, #e0e0e0);
-    border-radius: 12px;
-    background-color: var(--max-secondary-bg-color, #f5f5f5);
-    box-sizing: border-box;
-}
-
-.finance-summary-label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--max-hint-color, #8e8e93);
-    margin-bottom: 6px;
-}
-
-.finance-summary-value {
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--max-text-color, #000000);
 }
 
 .finance-history-cta {
