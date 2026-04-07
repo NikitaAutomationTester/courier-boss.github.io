@@ -54,6 +54,11 @@
           Детализация
         </button>
       </div>
+      <div class="main-menu-footer-logout">
+        <button type="button" class="max-button menu-logout-btn" id="admin-logout-btn">
+          Выйти из аккаунта
+        </button>
+      </div>
     </div>
 
     <!-- Главное меню курьера (как у админа по вёрстке) -->
@@ -81,6 +86,11 @@
           class="max-button max-button--primary"
         >
           Мои финансы
+        </button>
+      </div>
+      <div class="main-menu-footer-logout">
+        <button type="button" class="max-button menu-logout-btn" id="courier-logout-btn">
+          Выйти из аккаунта
         </button>
       </div>
     </div>
@@ -645,66 +655,108 @@
         >
           ←
         </button>
-        <h1 class="screen-title">Отчёт за день</h1>
+        <h1 class="screen-title" id="courier-report-screen-title">
+          Отчёт за день
+        </h1>
         <div class="placeholder"></div>
       </div>
 
-      <!-- Поле для выбора даты -->
-      <div class="form-group main-screen-courier__date">
-        <label for="report-date">Выберите дату</label>
-        <div class="date-control">
-          <input type="date" id="report-date" />
-          <div
-            class="date-display"
-            id="report-date-display"
-            aria-hidden="true"
-          ></div>
+      <div class="courier-report-steps-host">
+        <!-- Шаг 1: дата и маршрут -->
+        <div id="courier-report-step-1" class="courier-report-step is-visible">
+          <div class="form-group main-screen-courier__date">
+            <label for="report-date">Дата поездки</label>
+            <div class="date-control">
+              <input type="date" id="report-date" />
+              <div
+                class="date-display"
+                id="report-date-display"
+                aria-hidden="true"
+              ></div>
+            </div>
+            <div class="date-quick-actions" aria-label="Быстрый выбор даты">
+              <button type="button" class="date-quick-btn" data-offset="0">
+                Сегодня
+              </button>
+              <button type="button" class="date-quick-btn" data-offset="-1">
+                Вчера
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" id="courier-route-field-wrap">
+            <label for="courier-route-select">Маршрут</label>
+            <select id="courier-route-select" class="max-input">
+              <option value="">— Загрузка… —</option>
+            </select>
+            <p
+              id="courier-route-legacy-hint"
+              class="courier-route-legacy-hint"
+              style="display: none"
+            >
+              Маршруты в базе не настроены — будут показаны все ваши клиники.
+            </p>
+          </div>
+
+          <div class="courier-report-step-spacer"></div>
+
+          <div class="bottom-actions courier-report-step1-bottom">
+            <button
+              type="button"
+              id="courier-report-next-btn"
+              class="max-button max-button--primary"
+              disabled
+            >
+              Далее
+            </button>
+            <div
+              id="courier-report-step1-error"
+              class="inline-auth-error"
+              style="display: none"
+              role="alert"
+            ></div>
+          </div>
         </div>
-        <div class="date-quick-actions" aria-label="Быстрый выбор даты">
-          <button type="button" class="date-quick-btn" data-offset="0">
-            Сегодня
-          </button>
-          <button type="button" class="date-quick-btn" data-offset="-1">
-            Вчера
-          </button>
+
+        <!-- Шаг 2: клиники и отправка -->
+        <div id="courier-report-step-2" class="courier-report-step">
+          <div class="form-group main-screen-courier__clinics-wrap">
+            <label>Отметьте клиники, которые посетили</label>
+            <div id="clinics-list" class="clinics-grid clinics-grid--main-screen">
+              <div class="loading">Загрузка списка…</div>
+            </div>
+          </div>
+
+          <div class="bottom-actions" id="bottom-actions">
+            <div class="salary-row" id="salary-row">
+              <span class="salary-label">Зарплата за день:</span>
+              <span class="salary-amount-inline" id="total-salary">0 ₽</span>
+            </div>
+
+            <button
+              type="button"
+              id="extra-deliveries-btn"
+              class="max-button add-extra-delivery-cta"
+            >
+              Дополнительные доставки (<span id="extra-count">0</span>)
+            </button>
+
+            <button
+              id="save-report-btn"
+              class="max-button max-button--primary"
+              disabled
+            >
+              Отправить отчёт
+            </button>
+
+            <div
+              id="main-report-error"
+              class="inline-auth-error"
+              style="display: none"
+              role="alert"
+            ></div>
+          </div>
         </div>
-      </div>
-
-      <div class="form-group main-screen-courier__clinics-wrap">
-        <label>Клиники, которые я посетил(а):</label>
-        <div id="clinics-list" class="clinics-grid clinics-grid--main-screen">
-          <div class="loading">Загрузка списка...</div>
-        </div>
-      </div>
-
-      <div class="bottom-actions" id="bottom-actions">
-        <div class="salary-row" id="salary-row">
-          <span class="salary-label">Зарплата за день:</span>
-          <span class="salary-amount-inline" id="total-salary">0 ₽</span>
-        </div>
-
-        <button
-          type="button"
-          id="extra-deliveries-btn"
-          class="max-button add-extra-delivery-cta"
-        >
-          Дополнительные доставки (<span id="extra-count">0</span>)
-        </button>
-
-        <button
-          id="save-report-btn"
-          class="max-button max-button--primary"
-          disabled
-        >
-          Отправить отчёт
-        </button>
-
-        <div
-          id="main-report-error"
-          class="inline-auth-error"
-          style="display: none"
-          role="alert"
-        ></div>
       </div>
     </div>
 
@@ -868,7 +920,7 @@
       </div>
     </div>
 
-    <script src="allowed-users.js"></script>
+    <script src="api.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="app.js"></script>
   </body>

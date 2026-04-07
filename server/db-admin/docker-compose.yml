@@ -1,0 +1,30 @@
+# Веб-админка SQLite (Adminer) за логином/паролем через Nginx.
+# Не затрагивает код BBEx; только Docker и конфиг рядом с data/.
+#
+# Запуск: см. README.md
+
+name: bbex-db-admin
+
+services:
+  adminer:
+    # Актуальная ветка 4.x; для SQLite нужен плагин login-password-less (см. generate-adminer-sqlite-plugin.sh)
+    image: adminer:4
+    restart: unless-stopped
+    # Тот же каталог, что использует Node (server/data → bbex.db)
+    volumes:
+      - ../data:/data:rw
+      - ./plugins-enabled:/var/www/html/plugins-enabled:ro
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - adminer
+    ports:
+      # Снаружи только с файрволом / TLS. Для доступа только с сервера:
+      # раскомментируйте строку с 127.0.0.1 и закомментируйте общую.
+      - "${DB_ADMIN_PUBLISH:-127.0.0.1:9080}:80"
+      # - "9080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./.htpasswd:/etc/nginx/.htpasswd:ro

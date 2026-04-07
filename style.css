@@ -33,11 +33,57 @@ body {
     box-sizing: border-box;
 }
 
-.main-screen-courier > .screen-header,
-.main-screen-courier__date {
+.main-screen-courier > .screen-header {
     flex-shrink: 0;
     width: 100%;
     min-width: 0;
+}
+
+.main-screen-courier .courier-report-steps-host {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.courier-report-step {
+    display: none;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.courier-report-step.is-visible {
+    display: flex;
+}
+
+.courier-report-step .main-screen-courier__date {
+    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+}
+
+.courier-route-legacy-hint {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--max-hint-color, #8e8e93);
+}
+
+.courier-report-step-spacer {
+    flex: 1 1 auto;
+    min-height: 8px;
+}
+
+.courier-report-step1-bottom {
+    margin-top: auto;
+    padding-top: 8px;
 }
 
 .main-screen-courier__clinics-wrap {
@@ -697,6 +743,28 @@ textarea.max-input {
     flex-direction: column;
     gap: 12px;
     margin-top: 12px;
+}
+
+/* Вторичная кнопка выхода (outline), в одной системе с primary */
+.main-menu-footer-logout {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--max-border-color, #e8e8e8);
+}
+
+.max-button.menu-logout-btn {
+    background-color: transparent;
+    color: var(--max-button-color, #007aff);
+    border: 1.5px solid rgba(0, 122, 255, 0.5);
+    font-weight: 600;
+    transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.max-button.menu-logout-btn:active {
+    opacity: 1;
+    background-color: rgba(0, 122, 255, 0.09);
+    border-color: var(--max-button-color, #007aff);
 }
 
 .details-panel {

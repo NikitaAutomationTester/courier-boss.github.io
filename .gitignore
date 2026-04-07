@@ -1,0 +1,6 @@
+server/.env
+server/node_modules
+server/db-admin/.htpasswd
+server/db-admin/.env
+server/db-admin/plugins-enabled/001-login-password-less.php
+.DS_Store

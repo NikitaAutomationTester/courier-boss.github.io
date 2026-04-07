@@ -6,6 +6,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentUserId = null;
   let extraDeliveries = [];
+  /** Выбранный маршрут для текущего отчёта (null — все клиники по старой схеме) */
+  let selectedReportRouteId = null;
+  let courierReportUseLegacyClinics = false;
+  let courierReportOnClinicsStep = false;
+  /** Выбранные клиники в сеансе «Создать отчёт»; сброс при выходе в меню курьера или reset формы */
+  let courierReportSelectedClinicIds = new Set();
   let currentScreen = "main";
   let currentUser = null;
   let currentUserRole = null;
@@ -40,14 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   const adminReportsBtn = document.getElementById("admin-reports-btn");
 
-  /** Выплаты курьеру (позже — из данных бухгалтера). Формат: { id, userId, amount, date, formattedDate?, note?, createdAt? } */
-  const COURIER_PAYOUTS_STORAGE_KEY = "courier_payouts";
-
   function hideCourierFinanceScreens() {
     if (courierFinancesScreen) courierFinancesScreen.style.cssText = "display: none;";
     if (courierFinancesHistoryScreen)
       courierFinancesHistoryScreen.style.cssText = "display: none;";
   }
+
   const adminDetailsBtn = document.getElementById("admin-details-btn");
   const authPhone = document.getElementById("auth-phone");
   const authLoginBtn = document.getElementById("auth-login-btn");
@@ -119,6 +123,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (detailsScreen) detailsScreen.style.display = "none";
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
     hideCourierFinanceScreens();
+  }
+
+  async function performLogout() {
+    closeFiltersSheet();
+    closeCourierFiltersSheet();
+    closeDeleteReportModal();
+    try {
+      if (window.BBExApi) await window.BBExApi.logout();
+    } catch (e) {
+      console.error("logout:", e);
+    }
+    currentUser = null;
+    currentUserId = null;
+    currentUserRole = null;
+    isAuthorized = false;
+    allReports = [];
+    extraDeliveries = [];
+    adminViewingReportId = null;
+    pendingDeleteReportId = null;
+    if (authPhone) authPhone.value = "";
+    showAuthScreen();
   }
 
   // Показываем экран отказа в доступе
@@ -223,9 +248,11 @@ document.addEventListener("DOMContentLoaded", () => {
     currentScreen = "courier-menu";
   }
 
-  function showCourierCreateReport() {
+  async function showCourierCreateReport() {
     hideMainReportError();
+    hideCourierReportStep1Error();
     hideCourierFinanceScreens();
+    resetMainReportForm();
     if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
     if (mainScreen) {
       /* Не задавать display:block — ломает flex-раскладку .main-screen-courier */
@@ -236,12 +263,69 @@ document.addEventListener("DOMContentLoaded", () => {
       mainScreen.style.setProperty("z-index", "1", "important");
     }
     currentScreen = "main";
+    await fillCourierRouteSelect();
+    checkCourierReportStep1Validity();
     updateTotalSalary();
   }
 
   function backToCourierMenu() {
     if (currentUserRole === "admin") return;
+    courierReportSelectedClinicIds.clear();
     showCourierMenuScreen();
+  }
+
+  function hideCourierReportStep1Error() {
+    const el = document.getElementById("courier-report-step1-error");
+    if (el) {
+      el.textContent = "";
+      el.style.display = "none";
+    }
+  }
+
+  function showCourierReportStep1Error(message) {
+    const el = document.getElementById("courier-report-step1-error");
+    if (el) {
+      el.textContent = message;
+      el.style.display = "block";
+    }
+  }
+
+  function setCourierReportStep(step) {
+    const s1 = document.getElementById("courier-report-step-1");
+    const s2 = document.getElementById("courier-report-step-2");
+    const title = document.getElementById("courier-report-screen-title");
+    const backBtn = document.getElementById("back-to-courier-menu-btn");
+    if (step === 2) {
+      courierReportOnClinicsStep = true;
+      s1?.classList.remove("is-visible");
+      s2?.classList.add("is-visible");
+      if (title) title.textContent = "Отчёт за день";
+      if (backBtn) {
+        backBtn.setAttribute(
+          "aria-label",
+          "Назад к выбору даты и маршрута",
+        );
+      }
+    } else {
+      courierReportOnClinicsStep = false;
+      s1?.classList.add("is-visible");
+      s2?.classList.remove("is-visible");
+      if (title) title.textContent = "Отчёт за день";
+      if (backBtn) {
+        backBtn.setAttribute("aria-label", "Назад в главное меню");
+      }
+    }
+  }
+
+  function checkCourierReportStep1Validity() {
+    const btn = document.getElementById("courier-report-next-btn");
+    const dateInput = document.getElementById("report-date");
+    const sel = document.getElementById("courier-route-select");
+    if (!btn || !dateInput) return;
+    const dateOk = !!dateInput.value;
+    let routeOk = courierReportUseLegacyClinics;
+    if (!courierReportUseLegacyClinics && sel) routeOk = !!sel.value;
+    btn.disabled = !(dateOk && routeOk);
   }
 
   // Показываем ошибку на экране авторизации
@@ -256,97 +340,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function login() {
+  async function login() {
     console.log("=== login START ===");
     const rawPhone = authPhone ? authPhone.value.trim() : "";
-    console.log("rawPhone:", rawPhone);
-
     if (!rawPhone) {
-      console.log("Номер пустой");
       showAuthError("Введите номер телефона");
       return;
     }
 
     const fullPhone = "+7" + rawPhone.replace(/[^\d]/g, "");
-    console.log("1. Проверка номера:", fullPhone);
-
-    if (window.isUserAllowed && window.isUserAllowed(fullPhone)) {
-      console.log("2. Номер найден в базе");
-      const user = window.getUserByPhone(fullPhone);
-      console.log("user из getUserByPhone:", user);
-      if (user) {
-        console.log("3. Пользователь получен:", user);
-        currentUser = user;
-        currentUserId = user.id;
-        currentUserRole = user.role;
-        isAuthorized = true;
-
-        sessionStorage.setItem("authorizedUserId", user.id);
-        sessionStorage.setItem("authorizedUserPhone", fullPhone);
-        sessionStorage.setItem("authorizedUserName", user.name);
-        sessionStorage.setItem("authorizedUserRole", user.role);
-
-        console.log("4. Сохранили в sessionStorage, роль:", user.role);
-        console.log("5. Вызываем initMainApp()");
-        initMainApp();
-        console.log("6. Вызываем showMainInterface()");
-        showMainInterface();
-        console.log("7. После showMainInterface");
-        console.log("=== login SUCCESS END ===");
-        return;
-      } else {
-        console.log("3.5. getUserByPhone вернул null");
-      }
-    } else {
-      console.log("2. Номер НЕ найден в базе");
+    if (!window.BBExApi) {
+      showAuthError("Ошибка: не загружен api.js");
+      return;
     }
 
-    console.log("8. Показываем ошибку");
-    showAuthError("Номер телефона не верный");
-    console.log("=== login FAIL END ===");
+    try {
+      const { user } = await window.BBExApi.login(fullPhone);
+      currentUser = user;
+      currentUserId = user.id;
+      currentUserRole = user.role;
+      isAuthorized = true;
+      await initMainApp();
+      showMainInterface();
+      console.log("=== login SUCCESS ===");
+    } catch (e) {
+      console.error(e);
+      showAuthError(
+        e.status === 401
+          ? "Номер телефона не верный"
+          : e.message || "Ошибка входа",
+      );
+    }
   }
 
-  // Проверяем сохранённую сессию
-  function checkSavedSession() {
-    console.log("checkSavedSession вызван");
-    const savedUserId = sessionStorage.getItem("authorizedUserId");
-    const savedUserPhone = sessionStorage.getItem("authorizedUserPhone");
-    const savedUserName = sessionStorage.getItem("authorizedUserName");
-    const savedUserRole = sessionStorage.getItem("authorizedUserRole");
-    console.log("savedUserId:", savedUserId);
-    console.log("savedUserPhone:", savedUserPhone);
-    console.log("savedUserRole:", savedUserRole);
-
-    if (savedUserId && savedUserPhone && savedUserName) {
-      console.log("Сохранённые данные найдены");
-      if (window.isUserAllowed && window.isUserAllowed(savedUserPhone)) {
-        currentUser = {
-          id: savedUserId,
-          phone: savedUserPhone,
-          name: savedUserName,
-          role: savedUserRole,
-        };
-        currentUserId = savedUserId;
-        currentUserRole = savedUserRole;
-        isAuthorized = true;
-
-        console.log("Восстановлена сессия для:", currentUser);
-        console.log("Вызываем initMainApp из checkSavedSession");
-        initMainApp();
-        console.log("Вызываем showMainInterface из checkSavedSession");
-        showMainInterface();
-        return true;
-      } else {
-        console.log("Сохранённая сессия невалидна, очищаем");
-        sessionStorage.removeItem("authorizedUserId");
-        sessionStorage.removeItem("authorizedUserPhone");
-        sessionStorage.removeItem("authorizedUserName");
-        sessionStorage.removeItem("authorizedUserRole");
-      }
-    } else {
-      console.log("Сохранённых данных нет");
+  async function checkSavedSession() {
+    if (!window.BBExApi) return false;
+    try {
+      const { user } = await window.BBExApi.me();
+      currentUser = user;
+      currentUserId = user.id;
+      currentUserRole = user.role;
+      isAuthorized = true;
+      await initMainApp();
+      showMainInterface();
+      return true;
+    } catch {
+      return false;
     }
-    return false;
   }
 
   // ========== УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДЛЯ СООБЩЕНИЙ ==========
@@ -375,216 +415,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ========== ОСНОВНЫЕ ФУНКЦИИ ПРИЛОЖЕНИЯ ==========
-
-  function loadClinicsForUser(userId) {
-    console.log("loadClinicsForUser вызван, userId:", userId);
-    /** Поля клиники: id, name, city, address, courier_salary, cost_for_laboratory, laboratory */
-    const mockClinics = [
-      {
-        id: 1,
-        name: 'Хороший доктор"',
-        city: "Ростов-на-Дону",
-        address: "ул. Немировича-Данченко, 76",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 2,
-        name: "РГУПС",
-        city: "Ростов-на-Дону",
-        address: "ул. Ларина, 2",
-        courier_salary: 150,
-        cost_for_laboratory: 300,
-        laboratory: "Инвитро",
-      },
-      {
-        id: 3,
-        name: 'ИП Агапов"',
-        city: "Ростов-на-Дону",
-        address: "пр. Ленина, 251",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 4,
-        name: "Мать и Дитя",
-        city: "Ростов-на-Дону",
-        address: "пр. Ленина, 145",
-        courier_salary: 150,
-        cost_for_laboratory: 300,
-        laboratory: "Инвитро",
-      },
-      {
-        id: 5,
-        name: "МСЧ Роствертол",
-        city: "Ростов-на-Дону",
-        address: "ул. Новаторов, 5",
-        courier_salary: 150,
-        cost_for_laboratory: 300,
-        laboratory: "Диалаб",
-      },
-      {
-        id: 6,
-        name: "Ситилаб",
-        city: "Ростов-на-Дону",
-        address: "пр-т. Нагибина, 49",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 7,
-        name: "Умная Клиника",
-        city: "Ростов-на-Дону",
-        address: "ул. Башкирская, 4",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Гемотест",
-      },
-      {
-        id: 8,
-        name: "Гемотест",
-        city: "Ростов-на-Дону",
-        address: "пр. Нагибина, 21/2",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Гемотест",
-      },
-      {
-        id: 9,
-        name: "Гемотест",
-        city: "Ростов-на-Дону",
-        address: "пр. Будённовский, 96",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Гемотест",
-      },
-      {
-        id: 10,
-        name: "Здоровые руки",
-        city: "Ростов-на-Дону",
-        address: "ул. Юфимцева, 10/1",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Гемотест",
-      },
-
-      {
-        id: 11,
-        name: "Медина",
-        city: "Ростов-на-Дону",
-        address: "п. Халтуринский, 206В",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Гемотест",
-      },
-
-      {
-        id: 12,
-        name: "Гемотест",
-        city: "Ростов-на-Дону",
-        address: "ул. Пушкинская, 81",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Гемотест",
-      },
-
-      {
-        id: 13,
-        name: "Клиника профессора Буштыревой",
-        city: "Ростов-на-Дону",
-        address: "п. Соборный, 58",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 14,
-        name: "Гемотест",
-        city: "Ростов-на-Дону",
-        address: "пр. Ворошиловский, 64/257",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Гемотест",
-      },
-      {
-        id: 15,
-        name: "Привелегия",
-        city: "Ростов-на-Дону",
-        address: "пр. Тельмана, 110",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 16,
-        name: "Южный Ветер",
-        city: "Ростов-на-Дону",
-        address: "ул. Восточная, 13/113",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Гемотест",
-      },
-      {
-        id: 17,
-        name: "Medical Home",
-        city: "Ростов-на-Дону",
-        address: "ул. Пушкинская, 225",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 18,
-        name: "СтатисМед",
-        city: "Ростов-на-Дону",
-        address: "ул. Пушкинская, 243",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 19,
-        name: "Биорайз",
-        city: "Ростов-на-Дону",
-        address: "ул. Чехова, 51",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 20,
-        name: "ДонЗдрав",
-        city: "Ростов-на-Дону",
-        address: "п. Университетский, 115",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 21,
-        name: "Ситилаб",
-        city: "Ростов-на-Дону",
-        address: "ул. Пушкинская, 135/33",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-      {
-        id: 22,
-        name: "Лонга Вита",
-        city: "Ростов-на-Дону",
-        address: "ул. Соколова, 13",
-        courier_salary: 200,
-        cost_for_laboratory: 300,
-        laboratory: "Ситилаб",
-      },
-    ];
-    console.log("loadClinicsForUser вернул", mockClinics.length, "клиник");
-    return mockClinics;
-  }
 
   function clinicCourierPay(clinic) {
     return clinic?.courier_salary ?? clinic?.salary ?? 0;
@@ -652,6 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     clinicsContainer.innerHTML = "";
     clinics.forEach((clinic) => {
+      const cid = String(clinic.id);
       const clinicDiv = document.createElement("div");
       clinicDiv.className = "clinic-item";
       clinicDiv.dataset.id = clinic.id;
@@ -666,6 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.type = "checkbox";
       checkbox.className = "clinic-checkbox";
       checkbox.value = clinic.id;
+      checkbox.checked = courierReportSelectedClinicIds.has(cid);
 
       const infoDiv = document.createElement("div");
       infoDiv.className = "clinic-info";
@@ -713,8 +545,13 @@ document.addEventListener("DOMContentLoaded", () => {
       clinicDiv.appendChild(infoDiv);
 
       const updateSelection = () => {
-        if (checkbox.checked) clinicDiv.classList.add("selected");
-        else clinicDiv.classList.remove("selected");
+        if (checkbox.checked) {
+          clinicDiv.classList.add("selected");
+          courierReportSelectedClinicIds.add(cid);
+        } else {
+          clinicDiv.classList.remove("selected");
+          courierReportSelectedClinicIds.delete(cid);
+        }
         updateTotalSalary();
       };
 
@@ -725,9 +562,82 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.addEventListener("change", updateSelection);
 
       clinicsContainer.appendChild(clinicDiv);
+      updateSelection();
     });
     updateTotalSalary();
     console.log("displayClinics завершён");
+  }
+
+  async function fillCourierRouteSelect() {
+    const sel = document.getElementById("courier-route-select");
+    const hint = document.getElementById("courier-route-legacy-hint");
+    if (!sel || !window.BBExApi) return;
+    courierReportUseLegacyClinics = false;
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">Выберите маршрут</option>';
+    if (hint) hint.style.display = "none";
+    try {
+      const routes = await window.BBExApi.getRoutes();
+      if (routes.length === 0) {
+        courierReportUseLegacyClinics = true;
+        sel.innerHTML = '<option value="">Все клиники</option>';
+        sel.disabled = true;
+        if (hint) hint.style.display = "block";
+      } else {
+        routes.forEach((r) => {
+          const o = document.createElement("option");
+          o.value = String(r.id);
+          o.textContent = r.name;
+          sel.appendChild(o);
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      sel.innerHTML = '<option value="">Ошибка загрузки маршрутов</option>';
+    }
+    checkCourierReportStep1Validity();
+  }
+
+  async function goCourierReportToClinicsStep() {
+    hideCourierReportStep1Error();
+    const dateInput = document.getElementById("report-date");
+    if (!dateInput || !dateInput.value) {
+      showCourierReportStep1Error("Пожалуйста, выберите дату");
+      return;
+    }
+    const sel = document.getElementById("courier-route-select");
+    if (!courierReportUseLegacyClinics && (!sel || !sel.value)) {
+      showCourierReportStep1Error("Выберите маршрут");
+      return;
+    }
+    if (!window.BBExApi) {
+      showCourierReportStep1Error("Ошибка: не загружен api.js");
+      return;
+    }
+    try {
+      let clinics;
+      if (courierReportUseLegacyClinics) {
+        selectedReportRouteId = null;
+        clinics = await window.BBExApi.getClinics();
+      } else {
+        selectedReportRouteId = parseInt(sel.value, 10);
+        if (!Number.isFinite(selectedReportRouteId)) {
+          showCourierReportStep1Error("Некорректный маршрут");
+          return;
+        }
+        clinics = await window.BBExApi.getClinics(selectedReportRouteId);
+      }
+      displayClinics(clinics);
+      setCourierReportStep(2);
+      hideMainReportError();
+      updateTotalSalary();
+      checkFormValidity();
+    } catch (e) {
+      console.error(e);
+      showCourierReportStep1Error(
+        e.message || "Не удалось загрузить клиники",
+      );
+    }
   }
 
   function hideMainReportError() {
@@ -751,10 +661,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function resetMainReportForm() {
     hideMainReportError();
+    hideCourierReportStep1Error();
+    courierReportSelectedClinicIds.clear();
+    selectedReportRouteId = null;
+    courierReportUseLegacyClinics = false;
     const dateInput = document.getElementById("report-date");
     const dateDisplay = document.getElementById("report-date-display");
     if (dateInput) dateInput.value = "";
     if (dateDisplay) dateDisplay.textContent = "";
+    const routeSel = document.getElementById("courier-route-select");
+    if (routeSel) {
+      routeSel.innerHTML = '<option value="">— Загрузка… —</option>';
+      routeSel.disabled = false;
+    }
+    const routeHint = document.getElementById("courier-route-legacy-hint");
+    if (routeHint) routeHint.style.display = "none";
+    const clinicsBox = document.getElementById("clinics-list");
+    if (clinicsBox) {
+      clinicsBox.innerHTML =
+        '<div class="loading">Загрузка списка…</div>';
+    }
+    setCourierReportStep(1);
     extraDeliveries = [];
     updateDeliveriesList();
     document.querySelectorAll(".clinic-item").forEach((item) => {
@@ -766,6 +693,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     updateTotalSalary();
     checkFormValidity();
+    checkCourierReportStep1Validity();
   }
 
   async function saveReport() {
@@ -816,52 +744,34 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    let savedReports;
-    try {
-      savedReports = JSON.parse(localStorage.getItem("reports") || "[]");
-    } catch {
-      showMainReportError("Не удалось сохранить отчёт. Попробуйте ещё раз.");
-      return;
-    }
-
-    const duplicateForDate = savedReports.some(
-      (r) =>
-        String(r.userId) === String(currentUserId) &&
-        String(r.date) === String(selectedDate),
-    );
-    if (duplicateForDate) {
-      showMainReportError("Отчёт за эту дату уже создан", "duplicate");
-      return;
-    }
-
     totalSalary += extraDeliveries.reduce((sum, d) => sum + (d.salary || 0), 0);
 
-    const report = {
-      id: Date.now().toString(),
-      userId: currentUserId,
-      userName: currentUser ? currentUser.name : null,
-      userPhone: currentUser ? currentUser.phone : null,
-      date: selectedDate,
-      formattedDate: formattedDate,
-      clinics: selectedClinics,
-      totalSalary,
-      extraDeliveries: [...extraDeliveries],
-      timestamp: new Date().toISOString(),
-    };
-
-    console.log("Отправлен отчет:", report);
-
-    savedReports.push(report);
-    try {
-      localStorage.setItem("reports", JSON.stringify(savedReports));
-    } catch {
-      showMainReportError("Не удалось сохранить отчёт. Попробуйте ещё раз.");
+    if (!window.BBExApi) {
+      showMainReportError("Ошибка: не загружен api.js");
       return;
     }
-    console.log(
-      "Отчёт сохранён в localStorage, всего отчётов:",
-      savedReports.length,
-    );
+
+    try {
+      const body = {
+        date: selectedDate,
+        formattedDate,
+        clinics: selectedClinics,
+        totalSalary,
+        extraDeliveries: [...extraDeliveries],
+      };
+      if (selectedReportRouteId != null) {
+        body.routeId = selectedReportRouteId;
+      }
+      await window.BBExApi.createReport(body);
+    } catch (e) {
+      console.error(e);
+      if (e.status === 409) {
+        showMainReportError("Отчёт за эту дату уже создан", "duplicate");
+      } else {
+        showMainReportError(e.message || "Не удалось сохранить отчёт");
+      }
+      return;
+    }
 
     resetMainReportForm();
     showCourierMenuScreen();
@@ -934,21 +844,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (deliveriesScreen) deliveriesScreen.style.display = "none";
     currentScreen = "main";
+    if (courierReportOnClinicsStep) {
+      setCourierReportStep(2);
+    } else {
+      setCourierReportStep(1);
+    }
     updateTotalSalary();
   }
 
-  function initMainApp() {
+  async function initMainApp() {
     console.log("=== initMainApp START ===");
     console.log("currentUserId:", currentUserId);
     console.log("currentUser:", currentUser);
     console.log("currentUserRole:", currentUserRole);
 
-    // Для курьеров загружаем клиники
-    if (currentUserRole !== "admin") {
-      const userClinics = loadClinicsForUser(currentUserId);
-      console.log("Клиники загружены, количество:", userClinics.length);
-      displayClinics(userClinics);
-      console.log("displayClinics выполнен");
+    if (currentUserRole !== "admin" && window.BBExApi) {
+      const clinicsContainer = document.getElementById("clinics-list");
+      if (clinicsContainer) {
+        clinicsContainer.innerHTML =
+          '<div class="loading">Откройте «Создать отчёт», чтобы выбрать маршрут и клиники</div>';
+      }
     }
 
     const saveButton = document.getElementById("save-report-btn");
@@ -1269,7 +1184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function showCourierReportsListScreen() {
+  async function showCourierReportsListScreen() {
     reportsListContext = "courier";
     hideCourierFinanceScreens();
     if (courierMenuScreen) courierMenuScreen.style.cssText = "display: none;";
@@ -1293,7 +1208,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     }
 
-    loadAllReports();
+    await loadAllReports();
     syncAllCourierFilterInputsFromState();
     scheduleCourierFilterDateInputsSync();
     applyCourierFiltersAndDisplay();
@@ -1306,127 +1221,72 @@ document.addEventListener("DOMContentLoaded", () => {
     showCourierMenuScreen();
   }
 
-  function loadCourierPayoutsFromStorage() {
-    try {
-      const raw = localStorage.getItem(COURIER_PAYOUTS_STORAGE_KEY);
-      if (!raw) return [];
-      const arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr : [];
-    } catch {
-      return [];
-    }
-  }
-
-  function getCourierFinanceSnapshot() {
-    const uid = String(currentUserId || "");
-    let reports = [];
-    try {
-      reports = JSON.parse(localStorage.getItem("reports") || "[]");
-    } catch {
-      reports = [];
-    }
-
-    let accrualsTotal = 0;
-    const accrualOps = [];
-    reports.forEach((r) => {
-      if (String(r.userId) !== uid) return;
-      const amt = Number(r.totalSalary) || 0;
-      accrualsTotal += amt;
-      const dateLabel = r.formattedDate || r.date || "—";
-      accrualOps.push({
-        kind: "accrual",
-        amount: amt,
-        sortDate: r.date || "",
-        sortTime: r.timestamp ? new Date(r.timestamp).getTime() : 0,
-        subtitle: `Отчёт за ${dateLabel}`,
-        label: "Начисление",
-      });
-    });
-
-    const payoutOps = loadCourierPayoutsFromStorage()
-      .filter((p) => String(p.userId) === uid)
-      .map((p) => {
-        const amt = Math.abs(Number(p.amount) || 0);
-        const sortTime = p.createdAt
-          ? new Date(p.createdAt).getTime()
-          : Number(p.id) || 0;
-        const sub =
-          p.note ||
-          (p.formattedDate
-            ? `Выплата за ${p.formattedDate}`
-            : p.date
-              ? "Выплата"
-              : "Выплата");
-        return {
-          kind: "payout",
-          amount: amt,
-          sortDate: p.date || "",
-          sortTime,
-          subtitle: sub,
-          label: "Выплата",
-        };
-      });
-
-    const payoutsTotal = payoutOps.reduce((s, p) => s + p.amount, 0);
-    const operations = [...accrualOps, ...payoutOps].sort((a, b) => {
-      const da = a.sortDate || "";
-      const db = b.sortDate || "";
-      if (da !== db) return db.localeCompare(da);
-      return b.sortTime - a.sortTime;
-    });
-
-    return {
-      accrualsTotal,
-      payoutsTotal,
-      debt: accrualsTotal - payoutsTotal,
-      operations,
-    };
-  }
-
   function formatMoneyRub(amount) {
     const n = Math.round(Number(amount) || 0);
     return `${n.toLocaleString("ru-RU")} ₽`;
   }
 
-  function refreshCourierFinancesOverview() {
-    const { debt } = getCourierFinanceSnapshot();
+  async function refreshCourierFinancesOverview() {
     const debtEl = document.getElementById("courier-finance-debt");
-    if (debtEl) debtEl.textContent = formatMoneyRub(debt);
-  }
-
-  function renderCourierFinanceHistoryList() {
-    const container = document.getElementById("courier-finances-history-list");
-    if (!container) return;
-    const { operations } = getCourierFinanceSnapshot();
-    if (operations.length === 0) {
-      container.innerHTML = '<div class="empty-deliveries">Нет операций</div>';
+    if (!window.BBExApi) {
+      if (debtEl) debtEl.textContent = "—";
       return;
     }
-    container.innerHTML = "";
-    operations.forEach((op) => {
-      const card = document.createElement("div");
-      card.className = "finance-operation-card";
-      const top = document.createElement("div");
-      top.className = "finance-operation-top";
-      const amountEl = document.createElement("span");
-      amountEl.className =
-        "finance-operation-amount " +
-        (op.kind === "accrual"
-          ? "finance-operation-amount--plus"
-          : "finance-operation-amount--minus");
-      amountEl.textContent = formatMoneyRub(op.amount);
-      const badge = document.createElement("span");
-      badge.className = "finance-operation-badge";
-      badge.textContent = op.label;
-      top.appendChild(amountEl);
-      top.appendChild(badge);
-      const sub = document.createElement("div");
-      sub.className = "finance-operation-subtitle";
-      sub.textContent = op.subtitle;
-      card.appendChild(top);
-      card.appendChild(sub);
-      container.appendChild(card);
-    });
+    try {
+      const data = await window.BBExApi.getFinance();
+      if (debtEl) debtEl.textContent = formatMoneyRub(data.debt);
+    } catch (e) {
+      console.error(e);
+      if (debtEl) debtEl.textContent = "—";
+    }
+  }
+
+  async function renderCourierFinanceHistoryList() {
+    const container = document.getElementById("courier-finances-history-list");
+    if (!container) return;
+    if (!window.BBExApi) {
+      container.innerHTML =
+        '<div class="empty-deliveries">Не загружен api.js</div>';
+      return;
+    }
+    try {
+      const data = await window.BBExApi.getFinance();
+      const operations = data.operations || [];
+      if (operations.length === 0) {
+        container.innerHTML =
+          '<div class="empty-deliveries">Нет операций</div>';
+        return;
+      }
+      container.innerHTML = "";
+      operations.forEach((op) => {
+        const card = document.createElement("div");
+        card.className = "finance-operation-card";
+        const top = document.createElement("div");
+        top.className = "finance-operation-top";
+        const amountEl = document.createElement("span");
+        amountEl.className =
+          "finance-operation-amount " +
+          (op.kind === "accrual"
+            ? "finance-operation-amount--plus"
+            : "finance-operation-amount--minus");
+        amountEl.textContent = formatMoneyRub(op.amount);
+        const badge = document.createElement("span");
+        badge.className = "finance-operation-badge";
+        badge.textContent = op.label;
+        top.appendChild(amountEl);
+        top.appendChild(badge);
+        const sub = document.createElement("div");
+        sub.className = "finance-operation-subtitle";
+        sub.textContent = op.subtitle;
+        card.appendChild(top);
+        card.appendChild(sub);
+        container.appendChild(card);
+      });
+    } catch (e) {
+      console.error(e);
+      container.innerHTML =
+        '<div class="empty-deliveries">Не удалось загрузить историю</div>';
+    }
   }
 
   function showCourierFinancesScreen() {
@@ -1453,7 +1313,7 @@ document.addEventListener("DOMContentLoaded", () => {
         z-index: 1 !important;
       `;
     }
-    refreshCourierFinancesOverview();
+    void refreshCourierFinancesOverview();
     currentScreen = "courier-finances";
   }
 
@@ -1469,7 +1329,7 @@ document.addEventListener("DOMContentLoaded", () => {
         z-index: 1 !important;
       `;
     }
-    renderCourierFinanceHistoryList();
+    void renderCourierFinanceHistoryList();
     currentScreen = "courier-finances-history";
   }
 
@@ -1485,7 +1345,7 @@ document.addEventListener("DOMContentLoaded", () => {
         z-index: 1 !important;
       `;
     }
-    refreshCourierFinancesOverview();
+    void refreshCourierFinancesOverview();
     currentScreen = "courier-finances";
   }
 
@@ -1511,7 +1371,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Показываем экран списка отчётов
-  function showReportsListScreen() {
+  async function showReportsListScreen() {
     console.log("showReportsListScreen вызван");
     reportsListContext = "admin";
 
@@ -1525,8 +1385,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const reportsListScreen = document.getElementById("reports-list-screen");
     if (reportsListScreen) reportsListScreen.style.display = "block";
 
-    // Загружаем все отчёты
-    loadAllReports();
+    await loadAllReports();
 
     // Заполняем фильтр курьеров
     populateCourierFilter();
@@ -1534,15 +1393,21 @@ document.addEventListener("DOMContentLoaded", () => {
     scheduleFilterDateInputsSync();
   }
 
-  // Загружаем все отчёты из localStorage
-  function loadAllReports() {
-    allReports = JSON.parse(localStorage.getItem("reports") || "[]");
+  async function loadAllReports() {
+    if (!window.BBExApi) {
+      allReports = [];
+      applyFiltersAndDisplay();
+      return;
+    }
+    try {
+      allReports = await window.BBExApi.getReports();
+    } catch (e) {
+      console.error(e);
+      allReports = [];
+      showError(e.message || "Не удалось загрузить отчёты");
+    }
     console.log("Загружено отчётов:", allReports.length);
-
-    // Сортируем по дате (новые сверху)
     allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // Применяем фильтры и отображаем
     applyFiltersAndDisplay();
   }
 
@@ -1645,7 +1510,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pendingDeleteReportId = null;
   }
 
-  function confirmDeleteReport() {
+  async function confirmDeleteReport() {
     const id = pendingDeleteReportId;
     if (!id) {
       closeDeleteReportModal();
@@ -1674,11 +1539,19 @@ document.addEventListener("DOMContentLoaded", () => {
       adminViewingReportId != null &&
       String(adminViewingReportId) === String(id);
 
-    const list = JSON.parse(localStorage.getItem("reports") || "[]");
-    const filtered = list.filter((r) => String(r.id) !== String(id));
-    localStorage.setItem("reports", JSON.stringify(filtered));
-    allReports = filtered;
-    allReports.sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (!window.BBExApi) {
+      closeDeleteReportModal();
+      showError("Не загружен api.js");
+      return;
+    }
+
+    try {
+      await window.BBExApi.deleteReport(id);
+    } catch (e) {
+      closeDeleteReportModal();
+      showError(e.message || "Не удалось удалить отчёт");
+      return;
+    }
 
     closeDeleteReportModal();
 
@@ -1705,8 +1578,8 @@ document.addEventListener("DOMContentLoaded", () => {
       closeCourierFiltersSheet();
     }
 
+    await loadAllReports();
     populateCourierFilter();
-    applyFiltersAndDisplay();
     if (reportsListContext === "courier") {
       applyCourierFiltersAndDisplay();
     }
@@ -1914,9 +1787,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (reportDetailScreen) reportDetailScreen.style.display = "none";
 
     if (reportsListContext === "courier") {
-      showCourierReportsListScreen();
+      void showCourierReportsListScreen();
     } else {
-      showReportsListScreen();
+      void showReportsListScreen();
     }
   }
 
@@ -1933,7 +1806,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (courierReportsListScreen) courierReportsListScreen.style.cssText = "display: none;";
     hideCourierFinanceScreens();
 
-    if (adminScreen) adminScreen.style.display = "block";
+    if (adminScreen) {
+      adminScreen.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      `;
+    }
   }
 
   function splitCityAndAddress(rawAddress) {
@@ -2120,7 +2001,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (detailsScreen) detailsScreen.style.display = "block";
   }
 
-  function exportDetailsToExcel() {
+  async function exportDetailsToExcel() {
     hideDetailsInlineError();
     const detailsMonthInput = document.getElementById("details-month");
     const monthValue = detailsMonthInput ? detailsMonthInput.value : "";
@@ -2128,7 +2009,17 @@ document.addEventListener("DOMContentLoaded", () => {
       showDetailsInlineError("Выберите месяц и год");
       return;
     }
-    const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+    if (!window.BBExApi) {
+      showDetailsInlineError("Ошибка: не загружен api.js");
+      return;
+    }
+    let reports;
+    try {
+      reports = await window.BBExApi.getReports();
+    } catch (e) {
+      showDetailsInlineError(e.message || "Не удалось загрузить отчёты");
+      return;
+    }
     const monthReports = reports.filter(
       (report) =>
         typeof report?.date === "string" &&
@@ -2425,24 +2316,30 @@ document.addEventListener("DOMContentLoaded", () => {
     syncDateDisplay();
     dateInput.addEventListener("change", () => {
       hideMainReportError();
+      hideCourierReportStep1Error();
       syncDateDisplay();
       checkFormValidity();
+      checkCourierReportStep1Validity();
     });
     dateInput.addEventListener("input", () => {
       hideMainReportError();
+      hideCourierReportStep1Error();
       syncDateDisplay();
       checkFormValidity();
+      checkCourierReportStep1Validity();
     });
 
     const dateQuickButtons = document.querySelectorAll(".date-quick-btn");
     const setDateByOffsetDays = (offsetDays) => {
       hideMainReportError();
+      hideCourierReportStep1Error();
       const d = new Date();
       d.setHours(0, 0, 0, 0);
       d.setDate(d.getDate() + offsetDays);
       dateInput.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       syncDateDisplay();
       checkFormValidity();
+      checkCourierReportStep1Validity();
     };
     dateQuickButtons.forEach((btn) => {
       btn.addEventListener("click", () =>
@@ -2456,13 +2353,15 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("=== ЗАПУСК ПРИЛОЖЕНИЯ ===");
   console.log("Проверяем сохранённую сессию...");
 
-  // Проверяем сохранённую сессию
-  if (checkSavedSession()) {
-    console.log("Сессия восстановлена, главный экран должен быть показан");
-  } else {
-    console.log("Сессии нет, показываем экран авторизации");
-    showAuthScreen();
-  }
+  void (async () => {
+    const ok = await checkSavedSession();
+    if (ok) {
+      console.log("Сессия восстановлена, главный экран должен быть показан");
+    } else {
+      console.log("Сессии нет, показываем экран авторизации");
+      showAuthScreen();
+    }
+  })();
 
   // Обработчик кнопки авторизации
   if (authLoginBtn) {
@@ -2489,7 +2388,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (adminReportsBtn) {
     adminReportsBtn.addEventListener("click", () => {
       console.log("Кнопка 'Отчёты курьеров' нажата");
-      showReportsListScreen();
+      void showReportsListScreen();
     });
     console.log("adminReportsBtn обработчик добавлен");
   }
@@ -2501,6 +2400,13 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("adminDetailsBtn обработчик добавлен");
   }
 
+  const adminLogoutBtn = document.getElementById("admin-logout-btn");
+  const courierLogoutBtn = document.getElementById("courier-logout-btn");
+  const onLogoutClick = () => void performLogout();
+  if (adminLogoutBtn) adminLogoutBtn.addEventListener("click", onLogoutClick);
+  if (courierLogoutBtn)
+    courierLogoutBtn.addEventListener("click", onLogoutClick);
+
   const courierCreateReportBtn = document.getElementById(
     "courier-create-report-btn",
   );
@@ -2510,12 +2416,12 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   if (courierCreateReportBtn) {
     courierCreateReportBtn.addEventListener("click", () => {
-      showCourierCreateReport();
+      void showCourierCreateReport();
     });
   }
   if (courierMyReportsBtn) {
     courierMyReportsBtn.addEventListener("click", () => {
-      showCourierReportsListScreen();
+      void showCourierReportsListScreen();
     });
   }
   const backToCourierMenuFromReportsBtn = document.getElementById(
@@ -2559,8 +2465,38 @@ document.addEventListener("DOMContentLoaded", () => {
       backToCourierFinancesFromHistory,
     );
   }
+  function handleBackFromCourierMainScreen() {
+    if (currentScreen !== "main") {
+      backToCourierMenu();
+      return;
+    }
+    const step2 = document.getElementById("courier-report-step-2");
+    if (step2 && step2.classList.contains("is-visible")) {
+      setCourierReportStep(1);
+      return;
+    }
+    backToCourierMenu();
+  }
+
   if (backToCourierMenuBtn) {
-    backToCourierMenuBtn.addEventListener("click", backToCourierMenu);
+    backToCourierMenuBtn.addEventListener("click", handleBackFromCourierMainScreen);
+  }
+
+  const courierReportNextBtn = document.getElementById(
+    "courier-report-next-btn",
+  );
+  if (courierReportNextBtn) {
+    courierReportNextBtn.addEventListener("click", () =>
+      void goCourierReportToClinicsStep(),
+    );
+  }
+  const courierRouteSelect = document.getElementById("courier-route-select");
+  if (courierRouteSelect) {
+    courierRouteSelect.addEventListener("change", () => {
+      courierReportSelectedClinicIds.clear();
+      hideCourierReportStep1Error();
+      checkCourierReportStep1Validity();
+    });
   }
 
   // Обработчики навигации для экранов администратора
@@ -2593,7 +2529,7 @@ document.addEventListener("DOMContentLoaded", () => {
   populateDetailsMonthDesktopSelects();
 
   if (detailsExportBtn) {
-    detailsExportBtn.addEventListener("click", exportDetailsToExcel);
+    detailsExportBtn.addEventListener("click", () => void exportDetailsToExcel());
   }
   if (detailsMonthPart && detailsYearPart) {
     const onMonthYearChange = () => {
